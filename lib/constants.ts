@@ -1,0 +1,1 @@
+export const valorUMA = 113.14;
