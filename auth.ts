@@ -45,24 +45,6 @@ export const {
         },
     },
 
-   
-    session: {
-        strategy: "jwt",
-        maxAge: 60 * 60 * 24 * 7, // 7 días
-    },
-
-    cookies: {
-        sessionToken: {
-            name: `next-auth.session-token`,
-            options: {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
-                path: "/",
-            },
-        },
-    },
-
-    secret: process.env.NEXTAUTH_SECRET,
+    session: { strategy: "jwt" },
     ...authConfig,
 });
