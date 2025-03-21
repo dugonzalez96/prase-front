@@ -331,7 +331,6 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
     };
 
     useEffect(() => {
-        console.log("🚀 ~ useEffect ~ step:", step)
         switch (step) {
             case 2:
                 obtenerInicioCaja();
