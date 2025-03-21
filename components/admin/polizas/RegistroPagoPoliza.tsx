@@ -105,8 +105,10 @@ export const RegistroPagoPoliza = ({
     const [isPending, startTransition] = useTransition();
 
     const onSubmit = async (datos: TipoPagoForm) => {
-
+console.log(datos)
         startTransition(async () => {
+            console.log(datos)
+            console.info("holi")
             await onRegistrarPago({
                 ...datos,
                 ReferenciaPago: datos.ReferenciaPago || "",
@@ -182,7 +184,7 @@ export const RegistroPagoPoliza = ({
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <FormLabel>Monto total de póliza</FormLabel>
+                                    <FormLabel>Monto total de póliza:</FormLabel>
                                     <Input
                                         value={formatCurrency(esquemaPago.totalPrima)}
                                         disabled
