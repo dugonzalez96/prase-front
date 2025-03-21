@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import NextAuth from "next-auth";
 
 import authConfig from "./auth.config";
@@ -11,7 +12,12 @@ export default auth(async (req) => {
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
 
-  // Verificar si es una ruta pública
+  // Permitir las rutas de API de autenticación
+  if (isApiAuthRoute) {
+    return NextResponse.next(); // ✅ Corrección: Ahora usa NextResponse
+  }
+
+  // Verificar si la ruta es pública (login, register, etc.)
   const isAuthRoute = authRoutes.some((route) => {
     if (route instanceof RegExp) {
       return route.test(nextUrl.pathname);
@@ -19,25 +25,17 @@ export default auth(async (req) => {
     return route === nextUrl.pathname;
   });
 
-  // Permitir las rutas de API de autenticación
-  if (isApiAuthRoute) {
-    return;
+  // 🔹 Si ya está autenticado y visita una página de login, redirigir al dashboard.
+  if (isAuthRoute && isLoggedIn) {
+    return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, req.url));
   }
 
-  // Redirigir si ya está autenticado en rutas de login
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    }
-    return;
+  // 🔹 Si no está autenticado y no es una ruta pública, redirigir al login.
+  if (!isLoggedIn && !isAuthRoute) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Redirigir a login si no está autenticado
-  if (!isLoggedIn) {
-    return Response.redirect(new URL(`/login`, nextUrl));
-  }
-
-  return;
+  return NextResponse.next(); // ✅ Corrección: Permite continuar con la carga normal
 });
 
 export const config = {
