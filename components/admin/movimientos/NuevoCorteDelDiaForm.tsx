@@ -120,6 +120,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
     const [selectedUser, setSelectedUser] = useState<string>("");
     const [inicioCajaActivo, setInicioCajaActivo] = useState<iGetInicioActivo | null>(null);
     const [corteUsuario, setCorteUsuario] = useState<iGetCorteCajaUsuario | null>(null);
+    const [btnTerminarDisabled, setBtnTerminarDisabled] = useState(true)
 
     const form = useForm<z.infer<typeof CorteDelDiaSchema>>({
         resolver: zodResolver(CorteDelDiaSchema),
@@ -326,11 +327,12 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
 
         setIsLoading(false);
         setStep(4)
+        setBtnTerminarDisabled(false)
     };
 
     useEffect(() => {
+        console.log("🚀 ~ useEffect ~ step:", step)
         switch (step) {
-
             case 2:
                 obtenerInicioCaja();
                 break;
@@ -338,6 +340,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
                 obtenerCorteCerradoHoy();
                 break;
             case 4:
+                resetStates();
                 setOpen(false); // This will close the dialog
                 break;
             default:
@@ -637,6 +640,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
                                                 {corteUsuario.Estatus === "Pendiente" && (
                                                     <Button
                                                         type="submit"
+                                                        className="rounded-md w-full"
                                                         onClick={(e) => {
                                                             if (e.currentTarget.type !== 'submit') {
                                                                 e.preventDefault();
@@ -672,7 +676,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
                                     type="button"
                                     disabled={!selectedUser}
                                 >
-                                    Siguiente
+                                    Siguiente (2)
                                 </Button>
                             )}
                             {step == 2 && (
@@ -680,12 +684,11 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
                                     className="rounded-md"
                                     onClick={() => {
                                         setStep(3)
-                                        resetStates()
                                     }}
                                     type="button"
                                     disabled={inicioCajaActivo ? false : true}
                                 >
-                                    Siguiente
+                                    Siguiente (3)
                                 </Button>
                             )}
                             {step == 3 && (
@@ -693,9 +696,13 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
                                 >
                                     <Button
                                         className="rounded-md"
-                                        onClick={() => setOpen(false)}
+                                        onClick={() => {
+                                            setOpen(false)
+                                            resetStates()
+                                        }}
+                                        disabled={btnTerminarDisabled}
                                     >
-                                        Terminar
+                                        Terminar (Reset)
                                     </Button>
                                 </div>
                             )}
