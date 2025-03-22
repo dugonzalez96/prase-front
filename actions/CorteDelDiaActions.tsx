@@ -28,6 +28,7 @@ export const getCortesDelDiaAdmin = async () => {
         if (!resp.ok) return null;
 
         const data: CorteUsuario[] = await resp.json();
+        console.log("🚀 ~ getCortesDelDiaAdmin ~ data:", data)
         return data;
     } catch (error) {
         console.log(`Error al obtener inicios de caja: ${error}`);
@@ -35,9 +36,24 @@ export const getCortesDelDiaAdmin = async () => {
 }
 
 export const getCorteDelDiaByID = async (id: number) => {
-    // console.log("🚀 ~ getCorteDelDiaByID ~ id:", id)
     try {
         const resp = await fetch(`${url}/cortes-usuarios/usuario/${id}`, {
+            cache: 'no-store'
+        });
+
+        if (!resp.ok) return null;
+
+        const data = await resp.json();
+        return data;
+
+    } catch (error) {
+        console.log(`Error al obtener el corte de caja: ${error}`);
+    }
+}
+
+export const getCorteByID = async (id: number) => {
+    try {
+        const resp = await fetch(`${url}/cortes-usuarios/${id}`, {
             cache: 'no-store'
         });
 

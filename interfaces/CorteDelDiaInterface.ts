@@ -51,6 +51,7 @@ export interface CorteUsuario {
         FirmaElectronica: string
         Estatus: string
     }
+    historial?: any
 }
 export interface IGetAllCorteDia {
     CorteUsuarioID: number;

@@ -89,9 +89,11 @@ const CustomValue: React.FC<{ label: string; value: string; className?: string, 
     );
 };
 
-const MovimientoItem = ({ movimiento, tipo }: { movimiento: DetalleMovimiento; tipo: "ingreso" | "egreso" }) => {
+const MovimientoItem = ({ movimiento, tipo }: { movimiento: DetalleMovimiento; tipo: "ingreso" | "egreso" | "pago" }) => {
     // Determinar el icono según la forma de pago
-    const getIcon = (formaPago: string) => {
+    const getIcon = (formaPago: string | undefined) => {
+        if (!formaPago) return <Banknote className="h-4 w-4 mr-2" />;
+        
         switch (formaPago.toLowerCase()) {
             case "efectivo":
                 return <Banknote className="h-4 w-4 mr-2" />
@@ -114,10 +116,14 @@ const MovimientoItem = ({ movimiento, tipo }: { movimiento: DetalleMovimiento; t
                 <Badge
                     variant="outline"
                     className={
-                        tipo === "ingreso" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"
+                        tipo === "ingreso" 
+                            ? "bg-green-50 text-green-700 border-green-200" 
+                            : tipo === "pago"
+                                ? "bg-blue-50 text-blue-700 border-blue-200"
+                                : "bg-red-50 text-red-700 border-red-200"
                     }
                 >
-                    {tipo === "ingreso" ? "Ingreso" : "Egreso"}
+                    {tipo === "ingreso" ? "Ingreso" : tipo === "pago" ? "Pago" : "Egreso"}
                 </Badge>
             </div>
             <div className="flex justify-between items-center mt-2">
@@ -125,8 +131,8 @@ const MovimientoItem = ({ movimiento, tipo }: { movimiento: DetalleMovimiento; t
                     <Clock className="mr-1 h-3 w-3" />
                     {formatDate(movimiento.Fecha)}
                 </div>
-                <div className={`font-medium ${tipo === "ingreso" ? "text-green-600" : "text-red-600"}`}>
-                    {tipo === "ingreso" ? "+" : "-"}
+                <div className={`font-medium ${tipo === "ingreso" ? "text-green-600" : tipo === "pago" ? "text-blue-600" : "text-red-600"}`}>
+                    {tipo === "ingreso" ? "+" : tipo === "pago" ? "+" : "-"}
                     {formatCurrency(Number(movimiento.Monto))}
                 </div>
             </div>
@@ -135,8 +141,15 @@ const MovimientoItem = ({ movimiento, tipo }: { movimiento: DetalleMovimiento; t
 }
 
 const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return format(date, "d '/' MM '/' yyyy", { locale: es })
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return "Fecha inválida";
+        }
+        return format(date, "d '/' MM '/' yyyy", { locale: es });
+    } catch (error) {
+        return "Fecha inválida";
+    }
 }
 
 interface ModalCorteCajaProps {
@@ -154,6 +167,7 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
     //useState para Ingresos y Egresos
     const [ingresos, setIngresos] = useState<DetalleMovimiento[]>([]);
     const [egresos, setEgresos] = useState<DetalleMovimiento[]>([]);
+    const [pagosPoliza, setPagosPoliza] = useState<DetalleMovimiento[]>([]);
 
     const [showMovementsModal, setShowMovementsModal] = useState(false);
 
@@ -255,6 +269,9 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                 if (Array.isArray(corteDelDia.DetalleEgresos)) {
                     setEgresos(corteDelDia.DetalleEgresos);
                 }
+                if (Array.isArray(corteDelDia.DetallePagosPoliza)) {
+                    setPagosPoliza(corteDelDia.DetallePagosPoliza);
+                }
                 form.reset(corteDelDia);
             } else {
                 manejarGenerarCorte();
@@ -334,6 +351,9 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
             }
             if (Array.isArray(respuesta.DetalleEgresos)) {
                 setEgresos(respuesta.DetalleEgresos);
+            }
+            if (Array.isArray(respuesta.DetallePagosPoliza)) {
+                setPagosPoliza(respuesta.DetallePagosPoliza);
             }
             form.reset(respuesta);
         }
@@ -807,8 +827,28 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                                             </div>
                                                         )}
 
+
+                                                        {/* Pagos de Poliza Section */}
+                                                        {pagosPoliza && pagosPoliza.length > 0 && (
+                                                            <div>
+                                                                <h3 className="text-md font-semibold mb-2 flex items-center">
+                                                                    <ArrowDownLeft className="h-4 w-4 mr-2 text-red-500" />
+                                                                    Pagos de Poliza ({pagosPoliza.length})
+                                                                </h3>
+                                                                <div className="space-y-3">
+                                                                    {pagosPoliza.map((pago, index) => (
+                                                                        <MovimientoItem
+                                                                            key={`pago-${index}`}
+                                                                            movimiento={pago}
+                                                                            tipo="pago"
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
                                                         {/* Mensaje si no hay movimientos */}
-                                                        {(!ingresos?.length && !egresos?.length) && (
+                                                        {(!ingresos?.length && !egresos?.length && !pagosPoliza?.length) && (
                                                             <div className="text-center py-8 text-muted-foreground">
                                                                 No hay movimientos registrados para este corte.
                                                             </div>
