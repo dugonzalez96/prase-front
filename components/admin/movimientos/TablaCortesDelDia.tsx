@@ -55,9 +55,11 @@ interface CorteUsuario {
         FirmaElectronica: string
         Estatus: string
     }
+    historial?: any
 }
 
 export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[], usuarios: any }) => {
+    // console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
     const [selectedCorte, setSelectedCorte] = useState<CorteUsuario | null>(null)
     const [filteredCortes, setFilteredCortes] = useState<CorteUsuario[]>(cortes)
     const [selectedUser, setSelectedUser] = useState<string>("")
