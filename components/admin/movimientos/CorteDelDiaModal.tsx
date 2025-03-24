@@ -569,7 +569,7 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                                     >
                                         <Card className="min-w-[300px] max-w-3xl md:max-h-[90vh] max-h-[50vh] bg-white shadow-lg rounded-md">
                                             <CardHeader className="pb-2">
-                                                <CardTitle>Movimientos del Día</CardTitle>
+                                                <CardTitle>Movimientos</CardTitle>
                                                 <div className="text-sm text-muted-foreground">Detalle de ingresos y egresos</div>
                                             </CardHeader>
                                             <CardContent>
