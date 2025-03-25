@@ -1,29 +1,11 @@
 import { getCorteByID } from "@/actions/CorteDelDiaActions"
-import { getInicioActivo, getIniciosCaja, postInicioCaja } from "@/actions/MovimientosActions"
-import { LoaderModales } from "@/components/LoaderModales"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useToast } from "@/hooks/use-toast"
-import { IPostCorteDelDia } from "@/interfaces/CorteDelDiaInterface"
-import { iGetCorteCajaUsuario } from "@/interfaces/CortesCajaInterface"
-import { iGetInicioActivo, iPostInicioCaja } from "@/interfaces/MovimientosInterface"
 import { formatCurrency } from "@/lib/format"
-import { formatDateTimeFull } from "@/lib/format-date"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format, isSameDay, parseISO } from "date-fns"
+import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { AnimatePresence, motion } from "framer-motion"
 import {
@@ -34,21 +16,19 @@ import {
     ArrowUpRight, Banknote,
     Calculator,
     Calendar,
-    CalendarClock,
     ClipboardList,
     Clock,
-    CreditCard, DollarSign, Eye,
+    CreditCard,
+    Eye,
     Info,
     Mail,
-    RefreshCw, SaveIcon,
+    RefreshCw,
     Scale,
-    X,
+    X
 } from "lucide-react"
 import type React from "react"
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { createPortal } from "react-dom"
-import { useForm, useFormContext } from "react-hook-form"
-import { z } from "zod"
 
 interface Usuario {
     UsuarioID: number
