@@ -170,7 +170,6 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
         if (showMovementsModal === false) {
             try {
                 const resp = await getCorteByID(corte.CorteUsuarioID);
-                console.log("🚀 ~ toggleMovementsModal ~ resp:", resp)
                 setIngresos(resp.historial.DetalleIngresos || []);
                 setEgresos(resp.historial.DetalleEgresos || []);
                 setPagosPoliza(resp.historial.DetallePagosPoliza || []);

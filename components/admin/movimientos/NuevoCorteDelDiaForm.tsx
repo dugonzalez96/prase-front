@@ -1,7 +1,7 @@
 "use client"
 
 import { generarCorteDelDiaByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
-import { getInicioActivo, postInicioCaja } from "@/actions/MovimientosActions";
+import { getInicioActivo, getIniciosCaja, postInicioCaja } from "@/actions/MovimientosActions";
 import { LoaderModales } from "@/components/LoaderModales";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

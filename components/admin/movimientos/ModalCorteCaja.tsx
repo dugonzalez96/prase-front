@@ -1,5 +1,5 @@
 import { cancelarCorteDelDia, editarCorteDelDia, generarCorteDelDiaByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
-import { getInicioActivo, postInicioCaja } from "@/actions/MovimientosActions";
+import { getInicioActivo, getIniciosCaja, postInicioCaja } from "@/actions/MovimientosActions";
 import { LoaderModales } from "@/components/LoaderModales";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -239,19 +239,19 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
         }
         setInicioCajaActivo(null);
 
-        // const iniciosCaja = await getIniciosCaja();
-        // if (!iniciosCaja?.length) {
-        //     setIsLoading(false);
-        //     return
-        // };
+        const iniciosCaja = await getIniciosCaja();
+        if (!iniciosCaja?.length) {
+            setIsLoading(false);
+            return
+        };
 
-        // const hoy = new Date().toDateString();
-        // const inicioCajaHoy = iniciosCaja.find(({ FechaInicio, Usuario }) =>
-        //     new Date(FechaInicio).toDateString() === hoy && Usuario.UsuarioID === usuarioId);
+        const hoy = new Date().toDateString();
+        const inicioCajaHoy = iniciosCaja.find(({ FechaInicio, Usuario }) =>
+            new Date(FechaInicio).toDateString() === hoy && Usuario.UsuarioID === usuarioId);
 
-        // if (inicioCajaHoy) {
-        //     setInicioCajaActivo(inicioCajaHoy);
-        // }
+        if (inicioCajaHoy) {
+            setInicioCajaActivo(inicioCajaHoy);
+        }
 
         setIsLoading(false);
     };
