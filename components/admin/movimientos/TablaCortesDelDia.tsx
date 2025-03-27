@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { ArrowDownCircle, ArrowUpCircle, Calendar, Clock, DollarSign, Eye, Filter, Mail, Scale, X } from "lucide-react"
+import { ArrowDownCircle, ArrowUpCircle, Calendar, Clock, DollarSign, Eye, Filter, Mail, Plus, Scale, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { CorteUsuarioModal } from "./CorteDelDiaModal"
 import { NuevoCorteDelDiaForm } from "./NuevoCorteDelDiaForm"
@@ -59,13 +59,14 @@ interface CorteUsuario {
 }
 
 export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[], usuarios: any }) => {
-    // console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
     const [selectedCorte, setSelectedCorte] = useState<CorteUsuario | null>(null)
     const [filteredCortes, setFilteredCortes] = useState<CorteUsuario[]>(cortes)
     const [selectedUser, setSelectedUser] = useState<string>("")
     const [startDate, setStartDate] = useState<Date | undefined>(undefined)
     const [endDate, setEndDate] = useState<Date | undefined>(undefined)
     const [isFiltering, setIsFiltering] = useState(false)
+
+    const [isNewCorteOpen, setIsNewCorteOpen] = useState(false)
 
     // Get unique users for the filter dropdown
     const uniqueUsers = Array.from(new Set(cortes.map((corte) => corte.usuarioID.NombreUsuario)))
@@ -138,7 +139,11 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
             <div className="container mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                     <div className="flex justify-between w-full gap-2 ">
-                        <NuevoCorteDelDiaForm usuarios={usuarios} />
+                        <Button className="rounded-md" onClick={() => { setIsNewCorteOpen(true) }}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Nuevo corte
+                        </Button>
+                        {isNewCorteOpen && <NuevoCorteDelDiaForm usuarios={usuarios} onClose={() => setIsNewCorteOpen(false)}/>}
                         <div className="flex gap-4">
                             <Button
                                 variant={isFiltering ? "default" : "outline"}

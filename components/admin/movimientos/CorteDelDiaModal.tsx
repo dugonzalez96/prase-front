@@ -229,8 +229,6 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
 
     return (
         <>
-
-
             {createPortal(
                 <AnimatePresence>
                     <motion.div

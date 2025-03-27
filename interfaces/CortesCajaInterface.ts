@@ -18,6 +18,9 @@ export interface iGetCorteCajaUsuario {
     Diferencia: number;
     Observaciones: string;
     Estatus: string;
+    DetalleEgresos?: any;
+    DetalleIngresos?: any;
+    DetallePagosPoliza?: any;
 }
 
 export interface iPostGuardarCorteCaja {

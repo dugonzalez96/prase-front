@@ -105,10 +105,9 @@ export const RegistroPagoPoliza = ({
     const [isPending, startTransition] = useTransition();
 
     const onSubmit = async (datos: TipoPagoForm) => {
-console.log(datos)
+        // console.log(datos)
         startTransition(async () => {
-            console.log(datos)
-            console.info("holi")
+            // console.log(datos)
             await onRegistrarPago({
                 ...datos,
                 ReferenciaPago: datos.ReferenciaPago || "",
