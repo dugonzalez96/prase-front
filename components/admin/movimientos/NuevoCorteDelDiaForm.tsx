@@ -1,11 +1,11 @@
 "use client"
 
-import { generarCorteDelDiaByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
+import { generarCorteDelDiaByID, getCorteByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
 import { getInicioActivo, getIniciosCaja, postInicioCaja } from "@/actions/MovimientosActions";
 import { LoaderModales } from "@/components/LoaderModales";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Dialog,
     DialogContent,
@@ -39,13 +39,15 @@ import { iGetInicioActivo, iPostInicioCaja } from "@/interfaces/MovimientosInter
 import { formatCurrency } from "@/lib/format";
 import { formatDateTimeFull } from "@/lib/format-date";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isSameDay, parseISO } from "date-fns";
-import { ArrowDownCircle, ArrowUpCircle, Banknote, CalendarClock, CreditCard, DollarSign, Info, Plus, SaveIcon } from "lucide-react";
+import { format, isSameDay, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+import { ArrowDownCircle, ArrowDownLeft, ArrowUpCircle, ArrowUpRight, Banknote, CalendarClock, Clock, CreditCard, DollarSign, Eye, Info, Plus, RefreshCw, SaveIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
-
+import { createPortal } from "react-dom"
+import { AnimatePresence, motion } from "framer-motion"
 interface Usuario {
     UsuarioID: number;
     NombreUsuario: string;
@@ -59,6 +61,7 @@ interface Props {
     usuarios: {
         usuarios: Usuario[];
     }
+    onClose: () => void
 }
 
 // Definir el esquema de validación con Zod
@@ -92,25 +95,97 @@ const NuevoInicioCajaSchema = z.object({
 // Componente CustomValue
 const CustomValue: React.FC<{ label: string; value: string; className?: string, type?: String }> = ({ label, value, className, type = "number" }) => {
     const { getValues } = useFormContext();
+    const isTotal = label === "Total";
     return (
-        <div>
-            <FormLabel className="font-semibold">{label}</FormLabel>
+        <div className={`p-2 ${isTotal ? 'bg-muted/30 border border-border/50' : 'bg-muted/50'} rounded-lg`}>
+            <FormLabel className={`${isTotal ? 'font-bold' : 'font-semibold'}`}>{label}</FormLabel>
             {type === "number" ? (
                 value == "Diferencia" ? (
-
-                    <p className={className}>{formatCurrency(Math.abs(getValues(value)))}</p>
+                    <p className={`${isTotal ? 'font-bold' : className}`}>{formatCurrency(Math.abs(getValues(value)))}</p>
                 ) : (
-                    <p className={className}>{formatCurrency(getValues(value))}</p>
+                    <p className={`${isTotal ? 'font-bold' : className}`}>{formatCurrency(getValues(value))}</p>
                 )
             ) : (
-                <p className={className}>{getValues(value)}</p>
+                <p className={`${isTotal ? 'font-bold' : className}`}>{getValues(value)}</p>
             )}
-
         </div>
     );
 };
 
-export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
+const MovimientoItem = ({ movimiento, tipo }: { movimiento: any; tipo: "ingreso" | "egreso" | "pago" }) => {
+    // Determinar el icono según la forma de pago
+    const getIcon = (formaPago: string) => {
+        if (!formaPago) return <Banknote className="h-4 w-4 mr-2" />;
+
+        switch (formaPago.toLowerCase()) {
+            case "efectivo":
+                return <Banknote className="h-4 w-4 mr-2" />
+            case "tarjeta":
+                return <CreditCard className="h-4 w-4 mr-2" />
+            case "transferencia":
+                return <RefreshCw className="h-4 w-4 mr-2" />
+            default:
+                return <Banknote className="h-4 w-4 mr-2" />
+        }
+    }
+
+    return (
+        <div className="p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+            <div className="flex justify-between items-center">
+                <div className="font-medium flex items-center">
+                    {tipo === "pago"
+                        ? getIcon(movimiento.MetodoPago)
+                        : getIcon(movimiento.FormaPago)}
+                    {tipo === "pago"
+                        ? movimiento.MetodoPago
+                        : movimiento.FormaPago}
+                </div>
+                <Badge
+                    variant="outline"
+                    className={
+                        tipo === "ingreso"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : tipo === "pago"
+                                ? "bg-blue-50 text-blue-700 border-blue-200"
+                                : "bg-red-50 text-red-700 border-red-200"
+                    }
+                >
+                    {tipo === "ingreso" ? "Ingreso" : tipo === "pago" ? "Pago" : "Egreso"}
+                </Badge>
+            </div>
+            <div className="flex justify-between items-center mt-2">
+                <div className="flex items-center text-sm text-muted-foreground">
+                    <Clock className="mr-1 h-3 w-3" />
+                    {tipo === "pago"
+                        ? formatDateMovimiento(movimiento.FechaPago)
+                        : formatDateMovimiento(movimiento.Fecha)}
+                </div>
+                <div className={`font-medium ${tipo === "ingreso" ? "text-green-600" : tipo === "pago" ? "text-blue-600" : "text-red-600"}`}>
+                    {tipo === "ingreso" ? "+" : tipo === "pago" ? "+" : "-"}
+                    {tipo === "pago"
+                        ? formatCurrency(Number(movimiento.MontoPagado))
+                        : formatCurrency(Number(movimiento.Monto))
+                    }
+                </div>
+            </div>
+        </div>
+    )
+}
+
+const formatDateMovimiento = (dateString: string) => {
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return "Fecha inválida";
+        }
+        return format(date, "d '/' MM '/' yyyy", { locale: es });
+    } catch (error) {
+        return "Fecha inválida";
+    }
+}
+
+
+export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
     const router = useRouter();
@@ -118,9 +193,17 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1)
     const [selectedUser, setSelectedUser] = useState<string>("");
+    const [selectedUserName, setSelectedUserName] = useState<string>("");
+
     const [inicioCajaActivo, setInicioCajaActivo] = useState<iGetInicioActivo | null>(null);
     const [corteUsuario, setCorteUsuario] = useState<iGetCorteCajaUsuario | null>(null);
     const [btnTerminarDisabled, setBtnTerminarDisabled] = useState(true)
+
+    const [ingresos, setIngresos] = useState<any[]>([]);
+    const [egresos, setEgresos] = useState<any[]>([]);
+    const [pagosPoliza, setPagosPoliza] = useState<any[]>([]);
+
+    const [showMovementsModal, setShowMovementsModal] = useState(false);
 
     const form = useForm<z.infer<typeof CorteDelDiaSchema>>({
         resolver: zodResolver(CorteDelDiaSchema),
@@ -159,8 +242,17 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
     const totalTransferencia = nuevoInicioCajaForm.watch("TotalTransferencia");
     const montoInicial = totalEfectivo + totalTransferencia;
 
+    function obtenerNombreUsuario(usuarios: Usuario[], usuarioID: number) {
+        const usuario = usuarios.find(u => u.UsuarioID === usuarioID);
+        return usuario ? usuario.NombreUsuario : null;
+    }
     const handleUserSelection = async (userId: string) => {
         setSelectedUser(userId);
+        // Aseguramos que usuarios está definido y es un array antes de buscar el nombre
+        const nombreUsuario = Array.isArray(usuarios) ? obtenerNombreUsuario(usuarios, Number(userId)) : null;
+
+        setSelectedUserName(nombreUsuario || "");
+
         setIsLoading(true);
         const respuesta = await getCorteDelDiaByID(Number(userId));
 
@@ -198,19 +290,19 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
         }
         setInicioCajaActivo(null);
 
-        // const iniciosCaja = await getIniciosCaja();
-        // if (!iniciosCaja?.length) {
-        //     setIsLoading(false);
-        //     return
-        // };
+        const iniciosCaja = await getIniciosCaja();
+        if (!iniciosCaja?.length) {
+            setIsLoading(false);
+            return
+        };
 
-        // const hoy = new Date().toDateString();
-        // const inicioCajaHoy = iniciosCaja.find(({ FechaInicio, Usuario }) =>
-        //     new Date(FechaInicio).toDateString() === hoy && Usuario.UsuarioID === Number(selectedUser));
+        const hoy = new Date().toDateString();
+        const inicioCajaHoy = iniciosCaja.find(({ FechaInicio, Usuario }) =>
+            new Date(FechaInicio).toDateString() === hoy && Usuario.UsuarioID === Number(selectedUser));
 
-        // if (inicioCajaHoy) {
-        //     setInicioCajaActivo(inicioCajaHoy);
-        // }
+        if (inicioCajaHoy) {
+            setInicioCajaActivo(inicioCajaHoy);
+        }
 
         setIsLoading(false);
     }
@@ -330,6 +422,18 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
         setBtnTerminarDisabled(false)
     };
 
+    const toggleMovementsModal = () => {
+        if (showMovementsModal === false) {
+            setIngresos(corteUsuario?.DetalleIngresos || []);
+            setEgresos(corteUsuario?.DetalleEgresos || []);
+            setPagosPoliza(corteUsuario?.DetallePagosPoliza || []);
+            setShowMovementsModal(!showMovementsModal);
+
+        } else {
+            setShowMovementsModal(false);
+        }
+    };
+
     useEffect(() => {
         switch (step) {
             case 2:
@@ -355,7 +459,6 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
         form.setValue("Diferencia", difPositiva);
         form.setValue("TotalTarjetaCapturado", form.getValues("TotalPagoConTarjeta"));
         form.setValue("TotalTransferenciaCapturado", form.getValues("TotalTransferencia"));
-        // console log de TotalEfecitvoCapturado y Observaciones
         form.trigger();
     };
 
@@ -371,345 +474,461 @@ export const NuevoCorteDelDiaForm = ({ usuarios }: Props) => {
     };
 
     return (
-        <div className="">
-            <Dialog open={open} onOpenChange={(isOpen) => {
-                setOpen(isOpen);
-                if (!isOpen) {
-                    resetStates();
-                    form.reset();
-                    nuevoInicioCajaForm.reset();
-                }
-            }}>
-                <DialogTrigger asChild>
-                    <Button className="rounded-md">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nuevo corte
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="">
-                    <DialogHeader>
-                        <DialogTitle>Crear nuevo corte</DialogTitle>
-                        <DialogDescription>
-                            Selecciona a un usuario para generar su corte.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <ScrollArea className="max-h-[70vh]">
-                        {/* Seleccion de usuario */}
-                        {step == 1 && (
-                            <div className="grid gap-4 py-4">
-                                <Select value={selectedUser} onValueChange={handleUserSelection}>
-                                    <SelectTrigger >
-                                        <SelectValue placeholder="Seleccionar Usuario" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.isArray(usuarios) ? usuarios.map((usuario) => (
-                                            <SelectItem
-                                                key={usuario.UsuarioID}
-                                                value={usuario.UsuarioID.toString()}
-                                            >
-                                                {usuario.NombreUsuario}
-                                            </SelectItem>
-                                        )) : null}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-
-                        {/* Inicio de caja */}
-                        {step == 2 && (
-                            <div className="">
-                                {inicioCajaActivo ? (
-                                    <Card className="w-full mx-auto rounded-md">
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-xl font-bold">Inicio de Caja #{inicioCajaActivo?.InicioCajaID}</CardTitle>
-                                            <Badge
-                                                variant={inicioCajaActivo.Estatus === "Activo" ? "default" : "secondary"}
-                                                className={inicioCajaActivo.Estatus === "Activo" ? "bg-green-500" : ""}
-                                            >
-                                                {inicioCajaActivo.Estatus}
-                                            </Badge>
-                                        </CardHeader>
-                                        <CardContent className="pt-4">
-                                            <div className="grid gap-4 sm:grid-cols-2">
-                                                <div className="flex items-center space-x-3">
-                                                    <CalendarClock className="h-5 w-5 text-muted-foreground" />
-                                                    <div>
-                                                        <p className="text-sm font-medium leading-none">Fecha de inicio</p>
-                                                        <p className="text-sm text-muted-foreground">{formatDateTimeFull(inicioCajaActivo.FechaInicio)}</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center space-x-3">
-                                                    <CalendarClock className="h-5 w-5 text-muted-foreground" />
-                                                    <div>
-                                                        <p className="text-sm font-medium leading-none">Ultima actualizacion</p>
-                                                        <p className="text-sm text-muted-foreground">{formatDateTimeFull(inicioCajaActivo.FechaActualizacion)}</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center space-x-3">
-                                                    <Banknote className="h-5 w-5 text-muted-foreground" />
-                                                    <div>
-                                                        <p className="text-sm font-medium leading-none">Total efectivo</p>
-                                                        <p className="text-sm text-muted-foreground">{formatCurrency(Number(inicioCajaActivo.TotalEfectivo))}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                                                    <div>
-                                                        <p className="text-sm font-medium leading-none">Total Transferencia</p>
-                                                        <p className="text-sm text-muted-foreground">{formatCurrency(Number(inicioCajaActivo.TotalTransferencia))}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <DollarSign className="h-5 w-5 text-muted-foreground" />
-                                                    <div>
-                                                        <p className="text-sm font-medium leading-none">Total</p>
-                                                        <p className="text-sm font-bold">
-                                                            {formatCurrency(Number(inicioCajaActivo.MontoInicial))}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ) : (
-                                    <Form {...nuevoInicioCajaForm}>
-                                        <form onSubmit={nuevoInicioCajaForm.handleSubmit(manejarCrearInicioCaja)} className="space-y-4">
-                                            <FormItem>
-                                                <FormLabel>Monto Inicial</FormLabel>
-                                                <Input
-                                                    value={formatCurrency(montoInicial)}
-                                                    disabled
-                                                />
-                                            </FormItem>
-
-                                            <FormField
-                                                control={nuevoInicioCajaForm.control}
-                                                name="TotalEfectivo"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Total Efectivo</FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                {...field}
-                                                                value={formatCurrency(field.value)}
-                                                                onChange={(e) => {
-                                                                    const valor = e.target.value.replace(/[^0-9]/g, "");
-                                                                    field.onChange(Number(valor) / 100);
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <FormField
-                                                control={nuevoInicioCajaForm.control}
-                                                name="TotalTransferencia"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Total Transferencia</FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                {...field}
-                                                                value={formatCurrency(field.value)}
-                                                                onChange={(e) => {
-                                                                    const valor = e.target.value.replace(/[^0-9]/g, "");
-                                                                    field.onChange(Number(valor) / 100);
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <div className="flex justify-between gap-2">
-                                                <p className="flex justify-center items-center gap-2 text-sm text-muted-foreground">
-                                                    <Info /> Nota: El total en efectivo y transferencia pueden ser cero.
-                                                </p>
-                                                <Button type="submit" disabled={isLoading}>
-                                                    <SaveIcon className="w-4 h-4 mr-2" />
-                                                    Crear Inicio de Caja
-                                                </Button>
-
-                                            </div>
-                                        </form>
-                                    </Form>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Cortes de caja */}
-                        {step == 3 && (
-                            <div className="">
-                                {corteUsuario && (
-                                    <Form {...form}>
-                                        <form onSubmit={form.handleSubmit(manejarGuardarCorte)} className="space-y-4 container">
-                                            <div className="flex flex-col gap-5 lg:flex-row justify-between">
-                                                <div className="w-full border p-3 rounded-md">
-                                                    <h3 className="text-lg font-semibold mb-2 flex items-center">
-                                                        <ArrowDownCircle className="h-4 w-4 mr-1 text-green-500" />
-                                                        Ingresos
-                                                    </h3>
-                                                    <div className="grid sm:grid-cols-2 gap-4">
-                                                        <CustomValue label="Total en Efectivo" value="TotalIngresosEfectivo" />
-                                                        <CustomValue label="Total con Tarjeta" value="TotalIngresosTarjeta" />
-                                                        <CustomValue label="Total con Transferencia" value="TotalIngresosTransferencia" />
-                                                        <CustomValue label="Total" value="TotalIngresos" />
-                                                    </div>
-                                                </div>
-                                                <div className="w-full border p-3 rounded-md">
-                                                    <h3 className="text-lg font-semibold mb-2 flex items-center">
-                                                        <ArrowUpCircle className="h-4 w-4 mr-1 text-red-500" />
-                                                        Egresos
-                                                    </h3>
-                                                    <div className="grid sm:grid-cols-2 gap-4">
-                                                        <CustomValue label="Total en Efectivo" value="TotalEgresosEfectivo" />
-                                                        <CustomValue label="Total con Tarjeta" value="TotalEgresosTarjeta" />
-                                                        <CustomValue label="Total con Transferencia" value="TotalEgresosTransferencia" />
-                                                        <CustomValue label="Total" value="TotalEgresos" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="border p-3 rounded-md">
-                                                <h3 className="text-lg font-semibold mb-2 flex items-center">
-                                                    <Info className="w-4 h-4 text-primary mr-1" />
-                                                    Resumen General
-                                                </h3>
-                                                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                    <CustomValue label="Total Efectivo" value="TotalEfectivo" />
-                                                    <CustomValue label="Total Tarjeta" value="TotalPagoConTarjeta" />
-                                                    <CustomValue label="Total Transferencia" value="TotalTransferencia" />
-                                                    <CustomValue label="Saldo Esperado" value="SaldoEsperado" />
-                                                    <CustomValue label="Saldo Real" value="SaldoReal" />
-                                                    <CustomValue label="Diferencia" value="Diferencia" />
-                                                </div>
-                                                <h3 className="text-lg font-semibold mb-2 py-3">Totales en este usuario</h3>
-
-                                                {corteUsuario.Estatus === "Cerrado" ? (
-                                                    <div className="grid gap-4 grid-cols-2">
-                                                        <CustomValue label="Saldo Real" value="TotalEfectivoCapturado" />
-                                                        <CustomValue label="Diferencia" type={"string"} value="Observaciones" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="grid gap-4">
-                                                        <FormField
-                                                            name="TotalEfectivoCapturado"
-                                                            control={form.control}
-                                                            render={({ field }) => (
-                                                                <FormItem>
-                                                                    <FormLabel>Efectivo</FormLabel>
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            {...field}
-                                                                            value={formatCurrency(field.value)}
-                                                                            onChange={(e) => {
-                                                                                const valor = e.target.value.replace(/[^0-9]/g, "");
-                                                                                field.onChange(Number(valor) / 100);
-                                                                                calcularTotales();
-                                                                            }}
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                        <FormField
-                                                            name="Observaciones"
-                                                            control={form.control}
-                                                            render={({ field }) => (
-                                                                <FormItem>
-                                                                    <FormLabel>Observaciones</FormLabel>
-                                                                    <FormControl>
-                                                                        <Input {...field} value={field.value} />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                            </div>
-                                            <div className="flex justify-end gap-2 mt-4">
-                                                {corteUsuario.Estatus === "Pendiente" && (
-                                                    <Button
-                                                        type="submit"
-                                                        className="rounded-md w-full"
-                                                        onClick={(e) => {
-                                                            if (e.currentTarget.type !== 'submit') {
-                                                                e.preventDefault();
-                                                            }
-                                                        }}
-                                                    >
-                                                        Guardar Corte.
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </form>
-                                    </Form>
-                                )}
-                            </div>
-                        )}
-
-                    </ScrollArea>
-
-                    <DialogFooter>
-                        <div className="flex flex-row items-center justify-between w-full">
-                            <Button
-                                className="rounded-md"
-                                onClick={() => setStep(step - 1)}
-                                disabled={step == 1}
+        <>
+            {createPortal(
+                <AnimatePresence>
+                    <motion.div
+                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="flex flex-col md:flex-row gap-4 overflow-auto">
+                            {/* Modal principal */}
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             >
-                                Atras
-                            </Button>
-                            <span>{step}/3</span>
-                            {step == 1 && (
-                                <Button
-                                    className="rounded-md"
-                                    onClick={() => setStep(2)}
-                                    type="button"
-                                    disabled={!selectedUser}
-                                >
-                                    Siguiente (2)
-                                </Button>
-                            )}
-                            {step == 2 && (
-                                <Button
-                                    className="rounded-md"
-                                    onClick={() => {
-                                        setStep(3)
-                                    }}
-                                    type="button"
-                                    disabled={inicioCajaActivo ? false : true}
-                                >
-                                    Siguiente (3)
-                                </Button>
-                            )}
-                            {step == 3 && (
-                                <div
-                                >
+                                <Card className={`${showMovementsModal ? 'w-[60vw] max-w-4xl' : 'w-[80vw] max-w-7xl'} md:max-h-[90vh] max-h-[60vh] bg-white shadow-lg rounded-md flex flex-col transition-all duration-300`}>
                                     <Button
-                                        className="rounded-md"
-                                        onClick={() => {
-                                            setOpen(false)
-                                            resetStates()
-                                        }}
-                                        disabled={btnTerminarDisabled}
+                                        className="absolute top-2 right-2 bg-red-400 rounded-sm hover:bg-red-500 active:bg-red-600"
+                                        size={"icon"}
+                                        onClick={onClose}
                                     >
-                                        Terminar (Reset)
+                                        <X className="w-4 h-4 text-white" />
                                     </Button>
-                                </div>
-                            )}
+                                    <CardHeader>
+                                        <div>
+                                            <CardTitle>Crear nuevo corte</CardTitle>
+                                            <CardDescription>
+                                                {selectedUser ? selectedUserName : "Selecciona a un usuario para generar su corte."}
+                                            </CardDescription>
+                                        </div>
+                                    </CardHeader>
+
+                                    <CardContent className="flex-1 overflow-y-auto">
+                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                                            <div className="w-full">
+                                                {step == 1 && (
+                                                    <div className="grid gap-4 py-4 min-w-[400px]">
+                                                        <Select value={selectedUser} onValueChange={handleUserSelection}>
+                                                            <SelectTrigger >
+                                                                <SelectValue placeholder="Seleccionar Usuario" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {Array.isArray(usuarios) ? usuarios.map((usuario) => (
+                                                                    <SelectItem
+                                                                        key={usuario.UsuarioID}
+                                                                        value={usuario.UsuarioID.toString()}
+                                                                    >
+                                                                        {usuario.NombreUsuario}
+                                                                    </SelectItem>
+                                                                )) : null}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                )}
+
+                                                {step == 2 && (
+                                                    <div className="w-full max-w-4xl mx-auto">
+                                                        {inicioCajaActivo ? (
+                                                            <Card className="w-full mx-auto rounded-md">
+                                                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                                    <CardTitle className="text-xl font-bold">Inicio de Caja #{inicioCajaActivo?.InicioCajaID}</CardTitle>
+                                                                    <Badge
+                                                                        variant={inicioCajaActivo.Estatus === "Activo" ? "default" : "secondary"}
+                                                                        className={inicioCajaActivo.Estatus === "Activo" ? "bg-green-500" : ""}
+                                                                    >
+                                                                        {inicioCajaActivo.Estatus}
+                                                                    </Badge>
+                                                                </CardHeader>
+                                                                <CardContent className="pt-4">
+                                                                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                                                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                                                                            <CalendarClock className="h-5 w-5 text-muted-foreground" />
+                                                                            <div>
+                                                                                <p className="text-sm font-medium leading-none">Fecha de inicio</p>
+                                                                                <p className="text-sm text-muted-foreground">{formatDateTimeFull(inicioCajaActivo.FechaInicio)}</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                                                                            <CalendarClock className="h-5 w-5 text-muted-foreground" />
+                                                                            <div>
+                                                                                <p className="text-sm font-medium leading-none">Ultima actualizacion</p>
+                                                                                <p className="text-sm text-muted-foreground">{formatDateTimeFull(inicioCajaActivo.FechaActualizacion)}</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                                                                            <Banknote className="h-5 w-5 text-muted-foreground" />
+                                                                            <div>
+                                                                                <p className="text-sm font-medium leading-none">Total efectivo</p>
+                                                                                <p className="text-sm text-muted-foreground">{formatCurrency(Number(inicioCajaActivo.TotalEfectivo))}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                                                                            <CreditCard className="h-5 w-5 text-muted-foreground" />
+                                                                            <div>
+                                                                                <p className="text-sm font-medium leading-none">Total Transferencia</p>
+                                                                                <p className="text-sm text-muted-foreground">{formatCurrency(Number(inicioCajaActivo.TotalTransferencia))}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                                                                            <DollarSign className="h-5 w-5 text-muted-foreground" />
+                                                                            <div>
+                                                                                <p className="text-sm font-medium leading-none">Total</p>
+                                                                                <p className="text-sm font-bold">
+                                                                                    {formatCurrency(Number(inicioCajaActivo.MontoInicial))}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </CardContent>
+                                                            </Card>
+                                                        ) : (
+                                                            <Form {...nuevoInicioCajaForm}>
+                                                                <form onSubmit={nuevoInicioCajaForm.handleSubmit(manejarCrearInicioCaja)} className="space-y-4">
+                                                                    <div className="grid gap-4 sm:grid-cols-2">
+                                                                        <FormItem>
+                                                                            <FormLabel>Monto Inicial</FormLabel>
+                                                                            <Input
+                                                                                value={formatCurrency(montoInicial)}
+                                                                                disabled
+                                                                            />
+                                                                        </FormItem>
+
+                                                                        <FormField
+                                                                            control={nuevoInicioCajaForm.control}
+                                                                            name="TotalEfectivo"
+                                                                            render={({ field }) => (
+                                                                                <FormItem>
+                                                                                    <FormLabel>Total Efectivo</FormLabel>
+                                                                                    <FormControl>
+                                                                                        <Input
+                                                                                            {...field}
+                                                                                            value={formatCurrency(field.value)}
+                                                                                            onChange={(e) => {
+                                                                                                const valor = e.target.value.replace(/[^0-9]/g, "");
+                                                                                                field.onChange(Number(valor) / 100);
+                                                                                            }}
+                                                                                        />
+                                                                                    </FormControl>
+                                                                                    <FormMessage />
+                                                                                </FormItem>
+                                                                            )}
+                                                                        />
+
+                                                                        <FormField
+                                                                            control={nuevoInicioCajaForm.control}
+                                                                            name="TotalTransferencia"
+                                                                            render={({ field }) => (
+                                                                                <FormItem>
+                                                                                    <FormLabel>Total Transferencia</FormLabel>
+                                                                                    <FormControl>
+                                                                                        <Input
+                                                                                            {...field}
+                                                                                            value={formatCurrency(field.value)}
+                                                                                            onChange={(e) => {
+                                                                                                const valor = e.target.value.replace(/[^0-9]/g, "");
+                                                                                                field.onChange(Number(valor) / 100);
+                                                                                            }}
+                                                                                        />
+                                                                                    </FormControl>
+                                                                                    <FormMessage />
+                                                                                </FormItem>
+                                                                            )}
+                                                                        />
+                                                                    </div>
+
+                                                                    <div className="flex justify-between gap-2">
+                                                                        <p className="flex justify-center items-center gap-2 text-sm text-muted-foreground">
+                                                                            <Info /> Nota: El total en efectivo y transferencia pueden ser cero.
+                                                                        </p>
+                                                                        <Button type="submit" disabled={isLoading}>
+                                                                            <SaveIcon className="w-4 h-4 mr-2" />
+                                                                            Crear Inicio de Caja
+                                                                        </Button>
+                                                                    </div>
+                                                                </form>
+                                                            </Form>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {step == 3 && (
+                                                    <div className="w-full">
+                                                        {corteUsuario && (
+                                                            <Form {...form}>
+                                                                <form onSubmit={form.handleSubmit(manejarGuardarCorte)} className="space-y-2">
+                                                                    <div className="grid gap-2 sm:grid-cols-2">
+                                                                        <div className="border p-2 rounded-lg bg-card">
+                                                                            <h3 className="text-lg font-semibold mb-3 flex items-center">
+                                                                                <ArrowDownCircle className="h-4 w-4 mr-1 text-green-500" />
+                                                                                Ingresos
+                                                                            </h3>
+                                                                            <div className="grid sm:grid-cols-2 gap-3">
+                                                                                <CustomValue label="Total en Efectivo" value="TotalIngresosEfectivo" />
+                                                                                <CustomValue label="Total con Tarjeta" value="TotalIngresosTarjeta" />
+                                                                                <CustomValue label="Total con Transferencia" value="TotalIngresosTransferencia" />
+                                                                                <CustomValue label="Total" value="TotalIngresos" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="border p-2 rounded-lg bg-card">
+                                                                            <h3 className="text-lg font-semibold mb-3 flex items-center">
+                                                                                <ArrowUpCircle className="h-4 w-4 mr-1 text-red-500" />
+                                                                                Egresos
+                                                                            </h3>
+                                                                            <div className="grid sm:grid-cols-2 gap-3">
+                                                                                <CustomValue label="Total en Efectivo" value="TotalEgresosEfectivo" />
+                                                                                <CustomValue label="Total con Tarjeta" value="TotalEgresosTarjeta" />
+                                                                                <CustomValue label="Total con Transferencia" value="TotalEgresosTransferencia" />
+                                                                                <CustomValue label="Total" value="TotalEgresos" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="border p-2 rounded-lg bg-card">
+                                                                        <div className="flex justify-between items-center gap-2 mb-2">
+                                                                            <h3 className="font-semibold">Resumen Financiero</h3>
+                                                                            <Button type="button" className="rounded-full h-8" onClick={toggleMovementsModal}>
+                                                                                <Eye className="w-4 h-4 mr-2" />
+                                                                                {showMovementsModal ? "Ocultar Movimientos" : "Ver Movimientos"}
+                                                                            </Button>
+                                                                        </div>
+                                                                        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                                            <CustomValue label="Total Efectivo" value="TotalEfectivo" />
+                                                                            <CustomValue label="Total Tarjeta" value="TotalPagoConTarjeta" />
+                                                                            <CustomValue label="Total Transferencia" value="TotalTransferencia" />
+                                                                            <CustomValue label="Saldo Esperado" value="SaldoEsperado" />
+                                                                            <CustomValue label="Saldo Real" value="SaldoReal" />
+                                                                            <CustomValue label="Diferencia" value="Diferencia" />
+                                                                        </div>
+
+                                                                        <div className="mt-2">
+                                                                            <h3 className="text-lg font-semibold ">Totales en este usuario</h3>
+
+                                                                            {corteUsuario.Estatus === "Cerrado" ? (
+                                                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                                                    <CustomValue label="Saldo Real" value="TotalEfectivoCapturado" />
+                                                                                    <CustomValue label="Observaciones" type={"string"} value="Observaciones" />
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                                                    <FormField
+                                                                                        name="TotalEfectivoCapturado"
+                                                                                        control={form.control}
+                                                                                        render={({ field }) => (
+                                                                                            <FormItem>
+                                                                                                <FormLabel>Efectivo</FormLabel>
+                                                                                                <FormControl>
+                                                                                                    <Input
+                                                                                                        {...field}
+                                                                                                        value={formatCurrency(field.value)}
+                                                                                                        onChange={(e) => {
+                                                                                                            const valor = e.target.value.replace(/[^0-9]/g, "");
+                                                                                                            field.onChange(Number(valor) / 100);
+                                                                                                            calcularTotales();
+                                                                                                        }}
+                                                                                                    />
+                                                                                                </FormControl>
+                                                                                                <FormMessage />
+                                                                                            </FormItem>
+                                                                                        )}
+                                                                                    />
+                                                                                    <FormField
+                                                                                        name="Observaciones"
+                                                                                        control={form.control}
+                                                                                        render={({ field }) => (
+                                                                                            <FormItem>
+                                                                                                <FormLabel>Observaciones</FormLabel>
+                                                                                                <FormControl>
+                                                                                                    <Input {...field} value={field.value} />
+                                                                                                </FormControl>
+                                                                                                <FormMessage />
+                                                                                            </FormItem>
+                                                                                        )}
+                                                                                    />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="flex justify-end gap-2 mt-4">
+                                                                        {corteUsuario.Estatus === "Pendiente" && (
+                                                                            <Button
+                                                                                type="submit"
+                                                                                className="rounded-md w-full"
+                                                                                onClick={(e) => {
+                                                                                    if (e.currentTarget.type !== 'submit') {
+                                                                                        e.preventDefault();
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                Guardar Corte
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                </form>
+                                                            </Form>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+
+                                    <CardFooter className="flex flex-row items-center justify-between w-full p-5 border-t">
+                                        <Button
+                                            className="rounded-md"
+                                            onClick={() => {
+                                                setStep(step - 1)
+                                                setShowMovementsModal(false)
+                                            }}
+                                            disabled={step == 1}
+                                        >
+                                            Atras
+                                        </Button>
+                                        <span>{step}/3</span>
+                                        {step == 1 && (
+                                            <Button
+                                                className="rounded-md"
+                                                onClick={() => setStep(2)}
+                                                type="button"
+                                                disabled={!selectedUser}
+                                            >
+                                                Siguiente
+                                            </Button>
+                                        )}
+                                        {step == 2 && (
+                                            <Button
+                                                className="rounded-md"
+                                                onClick={() => {
+                                                    setStep(3)
+                                                }}
+                                                type="button"
+                                                disabled={inicioCajaActivo ? false : true}
+                                            >
+                                                Siguiente
+                                            </Button>
+                                        )}
+                                        {step == 3 && (
+                                            <div
+                                            >
+                                                <Button
+                                                    className="rounded-md"
+                                                    onClick={() => {
+                                                        setOpen(false)
+                                                        resetStates()
+                                                    }}
+                                                    disabled={btnTerminarDisabled}
+                                                >
+                                                    Terminar
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </CardFooter>
+
+                                </Card>
+                            </motion.div>
+
+                            {/* Modal de movimientos */}
+                            <AnimatePresence>
+                                {showMovementsModal && (
+                                    <motion.div
+                                        initial={{ x: 50, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        exit={{ x: 50, opacity: 0 }}
+                                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                    >
+                                        <Card className="min-w-[300px] max-w-3xl md:max-h-[90vh] max-h-[50vh] bg-white shadow-lg rounded-md">
+                                            <CardHeader className="pb-2">
+                                                <CardTitle>Movimientos</CardTitle>
+                                                <div className="text-sm text-muted-foreground">Detalle de ingresos y egresos</div>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <ScrollArea className="pr-4">
+                                                    <div className="space-y-6">
+                                                        {/* Ingresos Section */}
+                                                        {ingresos && ingresos.length > 0 && (
+                                                            <div>
+                                                                <h3 className="text-md font-semibold mb-2 flex items-center">
+                                                                    <ArrowUpRight className="h-4 w-4 mr-2 text-green-500" />
+                                                                    Ingresos ({ingresos.length})
+                                                                </h3>
+                                                                <div className="space-y-3">
+                                                                    {ingresos.map((ingreso, index) => (
+                                                                        <MovimientoItem
+                                                                            key={`ingreso-${index}`}
+                                                                            movimiento={ingreso}
+                                                                            tipo="ingreso"
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Egresos Section */}
+                                                        {egresos && egresos.length > 0 && (
+                                                            <div>
+                                                                <h3 className="text-md font-semibold mb-2 flex items-center">
+                                                                    <ArrowDownLeft className="h-4 w-4 mr-2 text-red-500" />
+                                                                    Egresos ({egresos.length})
+                                                                </h3>
+                                                                <div className="space-y-3">
+                                                                    {egresos.map((egreso, index) => (
+                                                                        <MovimientoItem
+                                                                            key={`egreso-${index}`}
+                                                                            movimiento={egreso}
+                                                                            tipo="egreso"
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+
+                                                        {/* Pagos de Poliza Section */}
+                                                        {pagosPoliza && pagosPoliza.length > 0 && (
+                                                            <div>
+                                                                <h3 className="text-md font-semibold mb-2 flex items-center">
+                                                                    <ArrowDownLeft className="h-4 w-4 mr-2 text-red-500" />
+                                                                    Pagos de Poliza ({pagosPoliza.length})
+                                                                </h3>
+                                                                <div className="space-y-3">
+                                                                    {pagosPoliza.map((pago, index) => (
+                                                                        <MovimientoItem
+                                                                            key={`pago-${index}`}
+                                                                            movimiento={pago}
+                                                                            tipo="pago"
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Mensaje si no hay movimientos */}
+                                                        {(!ingresos?.length && !egresos?.length && !pagosPoliza?.length) && (
+                                                            <div className="text-center py-8 text-muted-foreground">
+                                                                No hay movimientos registrados para este corte.
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </CardContent>
+                                        </Card>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                         </div>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
+                    </motion.div >
+                </AnimatePresence >,
+                document.body
+            )}
+        </>
     );
 }
