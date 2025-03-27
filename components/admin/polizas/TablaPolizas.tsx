@@ -218,6 +218,7 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
     };
 
     const registrarPago = async (datos: iPostPagoPoliza) => {
+        // console.log("🚀 ~ registrarPago ~ datos:", datos)
         try {
             const resp = await postPagoPoliza(datos);
 
