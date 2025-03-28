@@ -1,6 +1,7 @@
 "use server";
 
 import { IGetAllCorteDia, IPostCorteDelDia, CorteUsuario } from "@/interfaces/CorteDelDiaInterface";
+import { iGetUsers } from "@/interfaces/SeguridadInterface";
 
 const url = process.env.API_URL;
 
@@ -28,7 +29,6 @@ export const getCortesDelDiaAdmin = async () => {
         if (!resp.ok) return null;
 
         const data: CorteUsuario[] = await resp.json();
-        console.log("🚀 ~ getCortesDelDiaAdmin ~ data:", data)
         return data;
     } catch (error) {
         console.log(`Error al obtener inicios de caja: ${error}`);
@@ -157,3 +157,18 @@ export const editarCorteDelDia = async (id: number, usuario: string, body: objec
         console.log('Error al actualizar corte: ', error);
     }
 };
+
+export const getUsuariosCortes = async () => {
+    try {
+        const resp = await fetch(`${url}/cortes-usuarios/usuarios-sin-corte-hoy`, {
+            cache: 'no-store'
+        });
+
+        if (!resp.ok) return null;
+
+        const data: iGetUsers[] = await resp.json();
+        return data;
+    } catch (error) {
+        console.log('Error al obtener usuarios: ', error);
+    }
+}

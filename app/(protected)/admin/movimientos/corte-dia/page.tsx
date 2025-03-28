@@ -1,4 +1,4 @@
-import { getCortesDelDiaAdmin } from "@/actions/CorteDelDiaActions";
+import { getCortesDelDiaAdmin, getUsuariosCortes } from "@/actions/CorteDelDiaActions";
 import { getUsuarios } from "@/actions/SeguridadActions";
 import { TablaCortesDelDia } from "@/components/admin/movimientos/TablaCortesDelDia";
 import { currentUser } from "@/lib/auth";
@@ -13,7 +13,7 @@ export default async function CortesDelDia() {
         )
     }
 
-    const usuarios = await getUsuarios();
+    const usuarios = await getUsuariosCortes();
 
     const CortesDelDia = await getCortesDelDiaAdmin();
     if (!CortesDelDia) {
