@@ -1,20 +1,11 @@
 "use client"
 
-import { generarCorteDelDiaByID, getCorteByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
+import { generarCorteDelDiaByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
 import { getInicioActivo, getIniciosCaja, postInicioCaja } from "@/actions/MovimientosActions";
 import { LoaderModales } from "@/components/LoaderModales";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 import {
     Form,
     FormControl,
@@ -41,13 +32,13 @@ import { formatDateTimeFull } from "@/lib/format-date";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { ArrowDownCircle, ArrowDownLeft, ArrowUpCircle, ArrowUpRight, Banknote, CalendarClock, Clock, CreditCard, DollarSign, Eye, Info, Plus, RefreshCw, SaveIcon, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowDownCircle, ArrowDownLeft, ArrowUpCircle, ArrowUpRight, Banknote, CalendarClock, Clock, CreditCard, DollarSign, Eye, Info, RefreshCw, SaveIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { createPortal } from "react-dom"
-import { AnimatePresence, motion } from "framer-motion"
 interface Usuario {
     UsuarioID: number;
     NombreUsuario: string;
@@ -416,10 +407,15 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
             title: "Éxito",
             description: "Corte de caja guardado correctamente",
         });
-
+        setShowMovementsModal(false)
         setIsLoading(false);
         setStep(4)
         setBtnTerminarDisabled(false)
+
+        setTimeout(function () {
+            location.reload();
+        }, 2000);
+
     };
 
     const toggleMovementsModal = () => {
