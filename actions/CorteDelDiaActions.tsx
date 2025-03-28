@@ -22,7 +22,7 @@ export const getCortesDelDia = async () => {
 
 export const getCortesDelDiaAdmin = async () => {
     try {
-        const resp = await fetch(`${url}/cortes-usuarios`, {
+        const resp = await fetch(`${url}/cortes-usuarios/del-dia`, {
             cache: 'no-store'
         });
 

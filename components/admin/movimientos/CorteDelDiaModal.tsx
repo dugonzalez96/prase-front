@@ -478,48 +478,53 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                                                             title="Información de Inicio de Caja"
                                                         />
                                                         <div className="bg-muted/10 p-4 rounded-lg">
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <p>
-                                                                        <strong>ID de Inicio:</strong> {corte.InicioCaja.InicioCajaID}
+                                                            <div className="grid grid-cols-1 gap-4">
+                                                                <div className="p-4 bg-white rounded-lg shadow-md">
+                                                                    <p className="text-lg font-semibold">
+                                                                        ID de Inicio: <span className="font-normal">{corte.InicioCaja.InicioCajaID}</span>
                                                                     </p>
-                                                                    <p className="mt-2">
-                                                                        <strong>Fechas:</strong>
-                                                                    </p>
-                                                                    <div className="bg-white p-2 rounded-md mt-1 mb-3">
-                                                                        <p className="flex items-center text-sm mb-1">
-                                                                            <span className="font-medium mr-2">Inicio:</span>
-                                                                            <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
-                                                                            <span>{formatDate(corte.InicioCaja.FechaInicio)}</span>
-                                                                            <Clock className="w-3 h-3 ml-2 mr-1 text-muted-foreground" />
-                                                                            <span>{formatTime(corte.InicioCaja.FechaInicio)}</span>
-                                                                        </p>
-                                                                        <p className="flex items-center text-sm">
-                                                                            <span className="font-medium mr-2">Actualización:</span>
-                                                                            <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
-                                                                            <span>{formatDate(corte.InicioCaja.FechaActualizacion)}</span>
-                                                                            <Clock className="w-3 h-3 ml-2 mr-1 text-muted-foreground" />
-                                                                            <span>{formatTime(corte.InicioCaja.FechaActualizacion)}</span>
-                                                                        </p>
+
+                                                                    <div className="">
+                                                                        <p className="text-lg font-semibold">Fechas:</p>
+                                                                        <div className="bg-gray-100 p-3 rounded-lg mt-2">
+                                                                            <div className="grid grid-cols-1 gap-3 text-sm">
+                                                                                <div className="flex items-center">
+                                                                                    <Calendar className="w-4 h-4 text-muted-foreground mr-2" />
+                                                                                    <span className="font-medium">Inicio:</span>
+                                                                                    <span className="ml-2">{formatDate(corte.InicioCaja.FechaInicio)}</span>
+                                                                                    <Clock className="w-4 h-4 ml-2 text-muted-foreground" />
+                                                                                    <span className="ml-1">{formatTime(corte.InicioCaja.FechaInicio)}</span>
+                                                                                </div>
+                                                                                <div className="flex items-center">
+                                                                                    <Calendar className="w-4 h-4 text-muted-foreground mr-2" />
+                                                                                    <span className="font-medium">Actualización:</span>
+                                                                                    <span className="ml-2">{formatDate(corte.InicioCaja.FechaActualizacion)}</span>
+                                                                                    <Clock className="w-4 h-4 ml-2 text-muted-foreground" />
+                                                                                    <span className="ml-1">{formatTime(corte.InicioCaja.FechaActualizacion)}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
-                                                                    <p>
-                                                                        <strong>Estatus:</strong> {corte.InicioCaja.Estatus}
+
+                                                                    <p className="mt-4 text-lg font-semibold">
+                                                                        Estatus: <span className="font-normal">{corte.InicioCaja.Estatus}</span>
                                                                     </p>
                                                                 </div>
+
                                                                 <div>
                                                                     <p className="mb-2">
                                                                         <strong>Montos:</strong>
                                                                     </p>
-                                                                    <div className="grid grid-cols-1 gap-3">
-                                                                        <div className="bg-white p-3 rounded-md shadow-sm">
+                                                                    <div className="grid grid-cols-1 gap-3 sm:flex w-full">
+                                                                        <div className="bg-white p-3 rounded-md shadow-sm w-full">
                                                                             <p className="text-sm text-muted-foreground">Monto Inicial:</p>
                                                                             <p className="font-medium text-lg">{formatCurrency(corte.InicioCaja.MontoInicial)}</p>
                                                                         </div>
-                                                                        <div className="bg-white p-3 rounded-md shadow-sm">
+                                                                        <div className="bg-white p-3 rounded-md shadow-sm w-full">
                                                                             <p className="text-sm text-muted-foreground">Total Efectivo:</p>
                                                                             <p className="font-medium text-lg">{formatCurrency(corte.InicioCaja.TotalEfectivo)}</p>
                                                                         </div>
-                                                                        <div className="bg-white p-3 rounded-md shadow-sm">
+                                                                        <div className="bg-white p-3 rounded-md shadow-sm w-full">
                                                                             <p className="text-sm text-muted-foreground">Total Transferencia:</p>
                                                                             <p className="font-medium text-lg">{formatCurrency(corte.InicioCaja.TotalTransferencia)}</p>
                                                                         </div>
