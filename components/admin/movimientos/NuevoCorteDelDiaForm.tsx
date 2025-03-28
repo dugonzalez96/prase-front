@@ -488,7 +488,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             >
-                                <Card className={`${showMovementsModal ? 'w-[60vw] max-w-4xl' : 'w-[80vw] max-w-7xl'} md:max-h-[90vh] max-h-[60vh] bg-white shadow-lg rounded-md flex flex-col transition-all duration-300`}>
+                                <Card className={`${showMovementsModal ? '' : 'w-[80vw] max-w-7xl'} md:max-h-[90vh] max-h-[60vh] bg-white shadow-lg rounded-md flex flex-col transition-all duration-300`}>
                                     <Button
                                         className="absolute top-2 right-2 bg-red-400 rounded-sm hover:bg-red-500 active:bg-red-600"
                                         size={"icon"}
