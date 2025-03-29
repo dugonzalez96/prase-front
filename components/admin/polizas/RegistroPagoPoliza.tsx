@@ -36,6 +36,21 @@ import { SyncLoader } from "react-spinners";
 import { LoaderModales } from "@/components/LoaderModales";
 import { useInicioCaja } from "@/context/InicioCajaContext";
 import { MensajeError } from "@/components/ui/MensajeError";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect, useState } from "react";
+import { getUsuarios } from "@/actions/SeguridadActions";
+import { getCuentasBancarias } from "@/actions/ClientesActions";
+
+interface UsuarioValidador {
+    UsuarioID: number;
+    Nombre: string;
+}
+
+interface CuentaBancaria {
+    CuentaBancariaID: number;
+    Nombre: string;
+    NumeroCuenta: string;
+}
 
 const esquemaPagoPoliza = z.object({
     PolizaID: z.number(),
@@ -47,6 +62,17 @@ const esquemaPagoPoliza = z.object({
     IDMetodoPago: z.number(),
     IDEstatusPago: z.number(),
     UsuarioID: z.number(),
+    UsuarioValidoID: z.number().optional(),
+    CuentaBancariaID: z.number().optional(),
+    Validado: z.boolean().optional(),
+}).refine((data) => {
+    if (data.IDMetodoPago !== 3) {
+        return data.UsuarioValidoID !== undefined && data.CuentaBancariaID !== undefined && data.Validado !== undefined;
+    }
+    return true;
+}, {
+    message: "Los campos de validación son requeridos para este método de pago",
+    path: ["UsuarioValidoID", "CuentaBancariaID", "Validado"]
 });
 
 type TipoPagoForm = z.infer<typeof esquemaPagoPoliza>;
@@ -69,8 +95,42 @@ export const RegistroPagoPoliza = ({
     metodosPago,
 }: PropiedadesRegistroPago) => {
     const { inicioCaja } = useInicioCaja();
+    const [usuariosValidadores, setUsuariosValidadores] = useState<UsuarioValidador[]>([]);
+    const [cuentasBancarias, setCuentasBancarias] = useState<CuentaBancaria[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    //TODO: Implementar el modal de visualizar ticket de pago
+    useEffect(() => {
+        const cargarDatos = async () => {
+            try {
+                const [usuariosData, cuentasData] = await Promise.all([
+                    getUsuarios(),
+                    getCuentasBancarias()
+                ]);
+
+                if (usuariosData) {
+                    setUsuariosValidadores(usuariosData.map(usuario => ({
+                        UsuarioID: usuario.UsuarioID,
+                        Nombre: usuario.NombreUsuario
+                    })));
+                }
+
+                if (cuentasData) {
+                    setCuentasBancarias(cuentasData.map(cuenta => ({
+                        CuentaBancariaID: cuenta.CuentaBancariaID,
+                        Nombre: cuenta.NombreBanco,
+                        NumeroCuenta: cuenta.NumeroCuenta
+                    })));
+                }
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        cargarDatos();
+    }, []);
+
     const form = useForm<TipoPagoForm>({
         resolver: zodResolver(esquemaPagoPoliza),
         defaultValues: {
@@ -83,6 +143,9 @@ export const RegistroPagoPoliza = ({
             IDMetodoPago: 3,
             IDEstatusPago: 1,
             UsuarioID: usuarioId,
+            UsuarioValidoID: undefined,
+            CuentaBancariaID: undefined,
+            Validado: false,
         },
     });
 
@@ -104,21 +167,48 @@ export const RegistroPagoPoliza = ({
     const pagosCompletos = montoPorPagar === 0;
     const [isPending, startTransition] = useTransition();
 
-    const onSubmit = async (datos: TipoPagoForm) => {
-        // console.log(datos)
-        startTransition(async () => {
-            // console.log(datos)
-            await onRegistrarPago({
-                ...datos,
-                ReferenciaPago: datos.ReferenciaPago || "",
-                NombreTitular: datos.NombreTitular || "",
-            });
-            form.reset();
-        })
+    const isFormValid = () => {
+        const metodoPago = form.watch("IDMetodoPago");
+        if (metodoPago === 3) return true;
 
+        const usuarioValido = form.watch("UsuarioValidoID");
+        const cuentaBancaria = form.watch("CuentaBancariaID");
+        const validado = form.watch("Validado");
+
+        return usuarioValido !== undefined && 
+               cuentaBancaria !== undefined && 
+               validado === true;
     };
 
-    if (isPending) {
+    const onSubmit = async (datos: TipoPagoForm) => {
+        startTransition(async () => {
+            const datosBase = {
+                PolizaID: datos.PolizaID,
+                FechaPago: datos.FechaPago,
+                MontoPagado: datos.MontoPagado,
+                ReferenciaPago: datos.ReferenciaPago || "",
+                NombreTitular: datos.NombreTitular || "",
+                FechaMovimiento: datos.FechaMovimiento,
+                IDMetodoPago: datos.IDMetodoPago,
+                IDEstatusPago: datos.IDEstatusPago,
+                UsuarioID: datos.UsuarioID,
+            };
+
+            const datosEnviar = datos.IDMetodoPago === 3
+                ? datosBase
+                : {
+                    ...datosBase,
+                    UsuarioValidoID: datos.UsuarioValidoID,
+                    CuentaBancariaID: datos.CuentaBancariaID,
+                    Validado: datos.Validado,
+                };
+
+            await onRegistrarPago(datosEnviar);
+            form.reset();
+        });
+    };
+
+    if (isPending || isLoading) {
         return (
             <LoaderModales />
         );
@@ -319,10 +409,99 @@ export const RegistroPagoPoliza = ({
                                             </FormItem>
                                         )}
                                     />
+
+                                    {form.watch("IDMetodoPago") !== 3 && (
+                                        <>
+                                            <FormField
+                                                control={form.control}
+                                                name="UsuarioValidoID"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Usuario validador</FormLabel>
+                                                        <Select
+                                                            onValueChange={(valor) => field.onChange(Number(valor))}
+                                                            value={field.value?.toString()}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Selecciona usuario validador" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {usuariosValidadores.map((usuario) => (
+                                                                    <SelectItem
+                                                                        key={usuario.UsuarioID}
+                                                                        value={usuario.UsuarioID.toString()}
+                                                                    >
+                                                                        {usuario.Nombre}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="CuentaBancariaID"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Cuenta bancaria</FormLabel>
+                                                        <Select
+                                                            onValueChange={(valor) => field.onChange(Number(valor))}
+                                                            value={field.value?.toString()}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Selecciona cuenta bancaria" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {cuentasBancarias.map((cuenta) => (
+                                                                    <SelectItem
+                                                                        key={cuenta.CuentaBancariaID}
+                                                                        value={cuenta.CuentaBancariaID.toString()}
+                                                                    >
+                                                                        {cuenta.Nombre} <span className="text-gray-500">No. de cuenta: {cuenta.NumeroCuenta}</span>
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="Validado"
+                                                render={({ field }) => (
+                                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value}
+                                                                onCheckedChange={field.onChange}
+                                                            />
+                                                        </FormControl>
+                                                        <div className="space-y-1 leading-none">
+                                                            <FormLabel>
+                                                                Validado
+                                                            </FormLabel>
+                                                        </div>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </>
+                                    )}
                                 </>
                             )}
 
-                            <Button type="submit">
+                            <Button 
+                                type="submit" 
+                                disabled={!isFormValid()}
+                            >
                                 <CheckCircle2 className="w-4 h-4 mr-2" />
                                 Registrar Pago
                             </Button>
