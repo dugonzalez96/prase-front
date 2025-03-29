@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
@@ -93,6 +93,11 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
     const { toast } = useToast();
     const router = useRouter();
     const user = useCurrentUser();
+
+    useEffect(() => {
+        if (!user) location.reload()
+    }, [user])
+
 
     const polizasFiltradas = useMemo(() => {
         return polizas.filter(poliza => {

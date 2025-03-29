@@ -67,7 +67,8 @@ export const GestionPagosPoliza = ({
                             <RegistroPagoPoliza
                                 esquemaPago={esquemaPago}
                                 polizaId={poliza.PolizaID}
-                                usuarioId={user?.usuario.UsuarioID ?? 0}
+                                usuarioId={usuarioId}
+                                // usuarioId={user?.usuario.UsuarioID ?? 0}
                                 statusPago={statusPago}
                                 metodosPago={metodosPago}
                                 onRegistrarPago={onRegistrarPago}
