@@ -29,6 +29,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
+import { MovimientoItem } from "@/components/admin/movimientos/MovimientoItem"
 
 // Tipos para los detalles de movimientos
 interface DetalleMovimiento {
@@ -89,77 +90,86 @@ const CustomValue: React.FC<{ label: string; value: string; className?: string, 
     );
 };
 
-const MovimientoItem = ({ movimiento, tipo }: { movimiento: any; tipo: "ingreso" | "egreso" | "pago" }) => {
-    // Determinar el icono según la forma de pago
-    const getIcon = (formaPago: string) => {
-        if (!formaPago) return <Banknote className="h-4 w-4 mr-2" />;
+// const MovimientoItem = ({ movimiento, tipo }: { movimiento: any; tipo: "ingreso" | "egreso" | "pago" }) => {
+//     console.log("🚀 ~ MovimientoItem ~ movimiento:", movimiento)
+//     // Determinar el icono según la forma de pago
+//     const getIcon = (formaPago: string) => {
+//         if (!formaPago) return <Banknote className="h-4 w-4 mr-2" />;
 
-        switch (formaPago.toLowerCase()) {
-            case "efectivo":
-                return <Banknote className="h-4 w-4 mr-2" />
-            case "tarjeta":
-                return <CreditCard className="h-4 w-4 mr-2" />
-            case "transferencia":
-                return <RefreshCw className="h-4 w-4 mr-2" />
-            default:
-                return <Banknote className="h-4 w-4 mr-2" />
-        }
-    }
+//         switch (formaPago.toLowerCase()) {
+//             case "efectivo":
+//                 return <Banknote className="h-4 w-4 mr-2" />
+//             case "tarjeta":
+//                 return <CreditCard className="h-4 w-4 mr-2" />
+//             case "transferencia":
+//                 return <RefreshCw className="h-4 w-4 mr-2" />
+//             default:
+//                 return <Banknote className="h-4 w-4 mr-2" />
+//         }
+//     }
+//     // TODO: Agregar la desdcripcion de los movimientos
+//     return (
+//         <div className="p-3 border rounded-lg bg-white transition-colors">
+//             <div className="flex justify-between items-center">
+//                 <div className="font-medium flex items-center">
+//                     {tipo === "pago"
+//                         ? getIcon(movimiento.MetodoPago)
+//                         : getIcon(movimiento.FormaPago)}
+//                     {tipo === "pago"
+//                         ? movimiento.MetodoPago
+//                         : movimiento.FormaPago}
+//                 </div>
+//                 <Badge
+//                     variant="outline"
+//                     className={
+//                         tipo === "ingreso"
+//                             ? "bg-green-50 text-green-700 border-green-200"
+//                             : tipo === "pago"
+//                                 ? "bg-blue-50 text-blue-700 border-blue-200"
+//                                 : "bg-red-50 text-red-700 border-red-200"
+//                     }
+//                 >
+//                     {tipo === "ingreso" ? "Ingreso" : tipo === "pago" ? "Pago" : "Egreso"}
+//                 </Badge>
+//             </div>
+//             <div className="flex justify-between items-center mt-2">
+//                 <div className="flex items-center text-sm text-muted-foreground">
+//                     <Clock className="mr-1 h-3 w-3" />
+//                     {tipo === "pago"
+//                         ? formatDateMovimiento(movimiento.FechaPago)
+//                         : formatDateMovimiento(movimiento.Fecha)}
+//                 </div>
+//                 <div className={`font-medium ${tipo === "ingreso" ? "text-green-600" : tipo === "pago" ? "text-blue-600" : "text-red-600"}`}>
+//                     {tipo === "ingreso" ? "+" : tipo === "pago" ? "+" : "-"}
+//                     {tipo === "pago"
+//                         ? formatCurrency(Number(movimiento.MontoPagado))
+//                         : formatCurrency(Number(movimiento.Monto))
+//                     }
+//                 </div>
+//             </div>
+//             <div>
+//                 <p className="text-sm text-muted-foreground">
+//                     {movimiento.Descripcion?.charAt(0).toUpperCase() + movimiento.Descripcion?.slice(1).toLowerCase() || ""}
+//                 </p>
+//                 <p className="text-sm text-muted-foreground">
+//                     Poliza: {movimiento.Poliza?.NumeroPoliza || ""}
+//                 </p>
+//             </div>
+//         </div>
+//     )
+// }
 
-    return (
-        <div className="p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-            <div className="flex justify-between items-center">
-                <div className="font-medium flex items-center">
-                    {tipo === "pago"
-                        ? getIcon(movimiento.MetodoPago)
-                        : getIcon(movimiento.FormaPago)}
-                    {tipo === "pago"
-                        ? movimiento.MetodoPago
-                        : movimiento.FormaPago}
-                </div>
-                <Badge
-                    variant="outline"
-                    className={
-                        tipo === "ingreso"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : tipo === "pago"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-red-50 text-red-700 border-red-200"
-                    }
-                >
-                    {tipo === "ingreso" ? "Ingreso" : tipo === "pago" ? "Pago" : "Egreso"}
-                </Badge>
-            </div>
-            <div className="flex justify-between items-center mt-2">
-                <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="mr-1 h-3 w-3" />
-                    {tipo === "pago"
-                        ? formatDateMovimiento(movimiento.FechaPago)
-                        : formatDateMovimiento(movimiento.Fecha)}
-                </div>
-                <div className={`font-medium ${tipo === "ingreso" ? "text-green-600" : tipo === "pago" ? "text-blue-600" : "text-red-600"}`}>
-                    {tipo === "ingreso" ? "+" : tipo === "pago" ? "+" : "-"}
-                    {tipo === "pago"
-                        ? formatCurrency(Number(movimiento.MontoPagado))
-                        : formatCurrency(Number(movimiento.Monto))
-                    }
-                </div>
-            </div>
-        </div>
-    )
-}
-
-const formatDateMovimiento = (dateString: string) => {
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return "Fecha inválida";
-        }
-        return format(date, "d '/' MM '/' yyyy", { locale: es });
-    } catch (error) {
-        return "Fecha inválida";
-    }
-}
+// const formatDateMovimiento = (dateString: string) => {
+//     try {
+//         const date = new Date(dateString);
+//         if (isNaN(date.getTime())) {
+//             return "Fecha inválida";
+//         }
+//         return format(date, "d '/' MM '/' yyyy", { locale: es });
+//     } catch (error) {
+//         return "Fecha inválida";
+//     }
+// }
 
 interface ModalCorteCajaProps {
     usuarioId: number;
