@@ -97,6 +97,7 @@ interface ModalCorteCajaProps {
 }
 
 export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: ModalCorteCajaProps) => {
+    console.log("🚀 ~ ModalCorteCaja ~ usuarioId:", usuarioId)
     const [inicioCajaActivo, setInicioCajaActivo] = useState<iGetInicioActivo | null>(null);
     const [corteUsuario, setCorteUsuario] = useState<iGetCorteCajaUsuario | null>(null);
     const [isLoading, setIsLoading] = useState(false);
