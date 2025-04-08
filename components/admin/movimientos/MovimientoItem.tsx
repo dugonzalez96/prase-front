@@ -1,9 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { Banknote, Clock, CreditCard, RefreshCw } from "lucide-react";
-import { format } from "date-fns"
 import { formatCurrency } from "@/lib/format";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { spawn } from "child_process";
+import { Banknote, Clock, CreditCard, RefreshCw } from "lucide-react";
 
 const formatDateMovimiento = (dateString: string) => {
     try {

@@ -2,6 +2,7 @@
 
 import { generarCorteDelDiaByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
 import { getInicioActivo, getIniciosCaja, postInicioCaja } from "@/actions/MovimientosActions";
+import { MovimientoItem } from "@/components/admin/movimientos/MovimientoItem";
 import { LoaderModales } from "@/components/LoaderModales";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,16 +31,14 @@ import { iGetInicioActivo, iPostInicioCaja } from "@/interfaces/MovimientosInter
 import { formatCurrency } from "@/lib/format";
 import { formatDateTimeFull } from "@/lib/format-date";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, isSameDay, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
+import { isSameDay, parseISO } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownCircle, ArrowDownLeft, ArrowUpCircle, ArrowUpRight, Banknote, CalendarClock, Clock, CreditCard, DollarSign, Eye, Info, RefreshCw, SaveIcon, X } from "lucide-react";
+import { ArrowDownCircle, ArrowDownLeft, ArrowUpCircle, ArrowUpRight, Banknote, CalendarClock, CreditCard, DollarSign, Eye, Info, SaveIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { MovimientoItem } from "@/components/admin/movimientos/MovimientoItem"
 interface Usuario {
     UsuarioID: number;
     NombreUsuario: string;
@@ -841,14 +840,14 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                         exit={{ x: 50, opacity: 0 }}
                                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                                     >
-                                        <Card className="min-w-[300px] max-w-3xl md:max-h-[90vh] max-h-[50vh] bg-white shadow-lg rounded-md">
+                                        <Card className="flex flex-col  h-[90vh] shadow-lg bg-white">
                                             <CardHeader className="pb-2">
                                                 <CardTitle>Movimientos</CardTitle>
                                                 <div className="text-sm text-muted-foreground">Detalle de ingresos y egresos</div>
                                             </CardHeader>
-                                            <CardContent>
-                                                <ScrollArea className="pr-4">
-                                                    <div className="space-y-6">
+                                            <CardContent className="flex-1 overflow-hidden p-0">
+                                                <ScrollArea className="h-full p-4">
+                                                    <div className="space-y-3">
                                                         {/* Ingresos Section */}
                                                         {ingresos && ingresos.length > 0 && (
                                                             <div>
@@ -867,7 +866,6 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                                                 </div>
                                                             </div>
                                                         )}
-
                                                         {/* Egresos Section */}
                                                         {egresos && egresos.length > 0 && (
                                                             <div>
@@ -886,8 +884,6 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                                                 </div>
                                                             </div>
                                                         )}
-
-
                                                         {/* Pagos de Poliza Section */}
                                                         {pagosPoliza && pagosPoliza.length > 0 && (
                                                             <div>
@@ -906,9 +902,8 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                                                 </div>
                                                             </div>
                                                         )}
-
                                                         {/* Mensaje si no hay movimientos */}
-                                                        {(!ingresos?.length && !egresos?.length && !pagosPoliza?.length) && (
+                                                        {!ingresos?.length && !egresos?.length && !pagosPoliza?.length && (
                                                             <div className="text-center py-8 text-muted-foreground">
                                                                 No hay movimientos registrados para este corte.
                                                             </div>

@@ -1,5 +1,6 @@
 import { cancelarCorteDelDia, editarCorteDelDia, generarCorteDelDiaByID, getCorteDelDiaByID, postCorteDelDia } from "@/actions/CorteDelDiaActions";
 import { getInicioActivo, getIniciosCaja, postInicioCaja } from "@/actions/MovimientosActions";
+import { MovimientoItem } from "@/components/admin/movimientos/MovimientoItem";
 import { LoaderModales } from "@/components/LoaderModales";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,15 +22,13 @@ import { iGetInicioActivo, iPostInicioCaja } from "@/interfaces/MovimientosInter
 import { formatCurrency } from "@/lib/format";
 import { formatDateTimeFull } from "@/lib/format-date";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, isSameDay, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
+import { isSameDay, parseISO } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Banknote, CalendarClock, Clock, CreditCard, DollarSign, Eye, Info, RefreshCw, SaveIcon, X } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Banknote, CalendarClock, CreditCard, DollarSign, Eye, Info, SaveIcon, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { MovimientoItem } from "@/components/admin/movimientos/MovimientoItem"
 
 // Tipos para los detalles de movimientos
 interface DetalleMovimiento {
@@ -89,87 +88,6 @@ const CustomValue: React.FC<{ label: string; value: string; className?: string, 
         </div>
     );
 };
-
-// const MovimientoItem = ({ movimiento, tipo }: { movimiento: any; tipo: "ingreso" | "egreso" | "pago" }) => {
-//     console.log("🚀 ~ MovimientoItem ~ movimiento:", movimiento)
-//     // Determinar el icono según la forma de pago
-//     const getIcon = (formaPago: string) => {
-//         if (!formaPago) return <Banknote className="h-4 w-4 mr-2" />;
-
-//         switch (formaPago.toLowerCase()) {
-//             case "efectivo":
-//                 return <Banknote className="h-4 w-4 mr-2" />
-//             case "tarjeta":
-//                 return <CreditCard className="h-4 w-4 mr-2" />
-//             case "transferencia":
-//                 return <RefreshCw className="h-4 w-4 mr-2" />
-//             default:
-//                 return <Banknote className="h-4 w-4 mr-2" />
-//         }
-//     }
-//     // TODO: Agregar la desdcripcion de los movimientos
-//     return (
-//         <div className="p-3 border rounded-lg bg-white transition-colors">
-//             <div className="flex justify-between items-center">
-//                 <div className="font-medium flex items-center">
-//                     {tipo === "pago"
-//                         ? getIcon(movimiento.MetodoPago)
-//                         : getIcon(movimiento.FormaPago)}
-//                     {tipo === "pago"
-//                         ? movimiento.MetodoPago
-//                         : movimiento.FormaPago}
-//                 </div>
-//                 <Badge
-//                     variant="outline"
-//                     className={
-//                         tipo === "ingreso"
-//                             ? "bg-green-50 text-green-700 border-green-200"
-//                             : tipo === "pago"
-//                                 ? "bg-blue-50 text-blue-700 border-blue-200"
-//                                 : "bg-red-50 text-red-700 border-red-200"
-//                     }
-//                 >
-//                     {tipo === "ingreso" ? "Ingreso" : tipo === "pago" ? "Pago" : "Egreso"}
-//                 </Badge>
-//             </div>
-//             <div className="flex justify-between items-center mt-2">
-//                 <div className="flex items-center text-sm text-muted-foreground">
-//                     <Clock className="mr-1 h-3 w-3" />
-//                     {tipo === "pago"
-//                         ? formatDateMovimiento(movimiento.FechaPago)
-//                         : formatDateMovimiento(movimiento.Fecha)}
-//                 </div>
-//                 <div className={`font-medium ${tipo === "ingreso" ? "text-green-600" : tipo === "pago" ? "text-blue-600" : "text-red-600"}`}>
-//                     {tipo === "ingreso" ? "+" : tipo === "pago" ? "+" : "-"}
-//                     {tipo === "pago"
-//                         ? formatCurrency(Number(movimiento.MontoPagado))
-//                         : formatCurrency(Number(movimiento.Monto))
-//                     }
-//                 </div>
-//             </div>
-//             <div>
-//                 <p className="text-sm text-muted-foreground">
-//                     {movimiento.Descripcion?.charAt(0).toUpperCase() + movimiento.Descripcion?.slice(1).toLowerCase() || ""}
-//                 </p>
-//                 <p className="text-sm text-muted-foreground">
-//                     Poliza: {movimiento.Poliza?.NumeroPoliza || ""}
-//                 </p>
-//             </div>
-//         </div>
-//     )
-// }
-
-// const formatDateMovimiento = (dateString: string) => {
-//     try {
-//         const date = new Date(dateString);
-//         if (isNaN(date.getTime())) {
-//             return "Fecha inválida";
-//         }
-//         return format(date, "d '/' MM '/' yyyy", { locale: es });
-//     } catch (error) {
-//         return "Fecha inválida";
-//     }
-// }
 
 interface ModalCorteCajaProps {
     usuarioId: number;
@@ -508,7 +426,6 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             >
-
                                 <Card className="max-w-3xl md:max-h-[90vh] max-h-[50vh] overflow-y-auto bg-white shadow-lg rounded-md">
                                     <CardHeader>
                                         <CardTitle>
@@ -791,6 +708,7 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                 </Card>
                             </motion.div>
 
+
                             {/* Modal de movimientos */}
                             <AnimatePresence>
                                 {showMovementsModal && (
@@ -800,14 +718,14 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                         exit={{ x: 50, opacity: 0 }}
                                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                                     >
-                                        <Card className="min-w-[300px] max-w-3xl md:max-h-[90vh] max-h-[50vh] bg-white shadow-lg rounded-md">
+                                        <Card className="flex flex-col  h-[90vh] shadow-lg bg-white">
                                             <CardHeader className="pb-2">
                                                 <CardTitle>Movimientos</CardTitle>
                                                 <div className="text-sm text-muted-foreground">Detalle de ingresos y egresos</div>
                                             </CardHeader>
-                                            <CardContent>
-                                                <ScrollArea className="pr-4">
-                                                    <div className="space-y-6">
+                                            <CardContent className="flex-1 overflow-hidden p-0">
+                                                <ScrollArea className="h-full p-4">
+                                                    <div className="space-y-3">
                                                         {/* Ingresos Section */}
                                                         {ingresos && ingresos.length > 0 && (
                                                             <div>
@@ -826,7 +744,6 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                                                 </div>
                                                             </div>
                                                         )}
-
                                                         {/* Egresos Section */}
                                                         {egresos && egresos.length > 0 && (
                                                             <div>
@@ -845,8 +762,6 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                                                 </div>
                                                             </div>
                                                         )}
-
-
                                                         {/* Pagos de Poliza Section */}
                                                         {pagosPoliza && pagosPoliza.length > 0 && (
                                                             <div>
@@ -865,9 +780,8 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                                                 </div>
                                                             </div>
                                                         )}
-
                                                         {/* Mensaje si no hay movimientos */}
-                                                        {(!ingresos?.length && !egresos?.length && !pagosPoliza?.length) && (
+                                                        {!ingresos?.length && !egresos?.length && !pagosPoliza?.length && (
                                                             <div className="text-center py-8 text-muted-foreground">
                                                                 No hay movimientos registrados para este corte.
                                                             </div>
@@ -879,6 +793,8 @@ export const ModalCorteCaja = ({ usuarioId, NombreUsuario, abierto, alCerrar }: 
                                     </motion.div>
                                 )}
                             </AnimatePresence>
+
+
                         </div>
                     </motion.div>
                 </AnimatePresence>,
