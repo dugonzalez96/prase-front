@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { currentUser } from "@/lib/auth";
+import { generarCortePDF } from "@/lib/generarCortePDF"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { AnimatePresence, motion } from "framer-motion"
@@ -84,6 +86,7 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
     const [ingresos, setIngresos] = useState<any[]>([]);
     const [egresos, setEgresos] = useState<any[]>([]);
     const [pagosPoliza, setPagosPoliza] = useState<any[]>([]);
+    const [corteMovimientosInfo, setCorteMovimientosInfo] = useState<any[]>([]);
 
     const [showMovementsModal, setShowMovementsModal] = useState(false);
 
@@ -93,12 +96,14 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
         setPagosPoliza([]);
         if (showMovementsModal === false) {
             try {
+
                 const resp = await getCorteByID(corte.CorteUsuarioID);
+                setCorteMovimientosInfo(resp || []);
                 setIngresos(resp.historial.DetalleIngresos || []);
                 setEgresos(resp.historial.DetalleEgresos || []);
                 setPagosPoliza(resp.historial.DetallePagosPoliza || []);
+
             } catch (e) {
-                console.log("🚀 ~ toggleMovementsModal ~ e:", e)
             } finally {
                 setShowMovementsModal(!showMovementsModal);
             }
@@ -474,12 +479,17 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                                     >
                                         <Card className="flex flex-col  h-[90vh] shadow-lg bg-white">
-                                            <CardHeader className="pb-2">
+                                            <CardHeader className="pb-2 border-b">
                                                 <CardTitle>Movimientos</CardTitle>
                                                 <div className="text-sm text-muted-foreground">Detalle de ingresos y egresos</div>
+                                                <Button
+                                                    className="bg-primary rounded-sm hover:bg-primary/80 active:bg-primary/90"
+                                                    onClick={() => generarCortePDF(corteMovimientosInfo)}>
+                                                    Generar PDF
+                                                </Button>
                                             </CardHeader>
                                             <CardContent className="flex-1 overflow-hidden p-0">
-                                                <ScrollArea className="h-full p-4">
+                                                <ScrollArea className="h-full px-4 pb-4 pt-1">
                                                     <div className="space-y-3">
                                                         {/* Ingresos Section */}
                                                         {ingresos && ingresos.length > 0 && (
