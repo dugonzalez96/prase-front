@@ -1,264 +1,207 @@
 "use server";
 
 import { 
-    iCajaChica, 
-    iMovimientoCajaChica, 
     iPrecuadreCajaChica,
-    iCuadreCajaChica,
-    iResumenCajaChica,
-    iPostGastoCajaChica,
-    iPostPrecuadreCajaChica,
-    iPostCuadreCajaChica
+    iCuadrarCajaChica,
+    iActualizarCapturables,
+    iCancelarCajaChica,
+    iCodigoCancelacion,
+    iCajaChicaPorEstatus
 } from "@/interfaces/CajaChicaInterface";
 
-// Mock data para caja chica activa
-const mockCajaChicaActiva: iCajaChica = {
-    CajaChicaID: 1,
-    Fecha: new Date("2025-10-26"),
-    SaldoInicial: 5000,
-    SaldoActual: 2650,
-    LimiteMaximo: 5000,
-    Estado: 'ACTIVA',
-    UsuarioResponsableID: 5,
-    UsuarioResponsable: {
-        UsuarioID: 5,
-        NombreUsuario: "Juan Pérez"
-    },
-    SucursalID: 1
-};
+/**
+ * Obtener precuadre de caja chica
+ * GET /caja-chica/precuadre
+ */
 
-// Mock data para movimientos de caja chica
-const mockMovimientosCajaChica: iMovimientoCajaChica[] = [
-    {
-        MovimientoCajaChicaID: 1,
-        CajaChicaID: 1,
-        TipoMovimiento: 'GASTO',
-        Monto: "500.00",
-        Concepto: "Compra de material de papelería",
-        Categoria: "Papelería",
-        Comprobante: "TICKET-001.pdf",
-        FechaMovimiento: new Date("2025-10-26T10:30:00"),
-        UsuarioRegistroID: 5,
-        UsuarioRegistro: {
-            UsuarioID: 5,
-            NombreUsuario: "Juan Pérez"
+const url = process.env.API_URL;
+
+export const getPrecuadreCajaChica = async () => {
+    try {
+        const resp = await fetch(`${url}/caja-chica/precuadre`, {
+            cache: 'no-store'
+        });
+
+        if (!resp.ok) {
+            const error = await resp.json();
+            return { error: error.message || 'Error al obtener precuadre' };
         }
-    },
-    {
-        MovimientoCajaChicaID: 2,
-        CajaChicaID: 1,
-        TipoMovimiento: 'GASTO',
-        Monto: "850.00",
-        Concepto: "Productos de limpieza y mantenimiento",
-        Categoria: "Limpieza",
-        Comprobante: "TICKET-002.pdf",
-        FechaMovimiento: new Date("2025-10-26T12:45:00"),
-        UsuarioRegistroID: 5,
-        UsuarioRegistro: {
-            UsuarioID: 5,
-            NombreUsuario: "Juan Pérez"
+
+        const data: iPrecuadreCajaChica = await resp.json();
+        return data;
+    } catch (error) {
+        console.log('Error al obtener precuadre de caja chica:', error);
+        return { error: 'Error al conectar con el servidor' };
+    }
+}
+
+/**
+ * Cuadrar corte de caja chica
+ * POST /caja-chica/cuadrar/{id}
+ */
+export const cuadrarCajaChica = async (id: number, body: iCuadrarCajaChica) => {
+    try {
+        const resp = await fetch(`${url}/caja-chica/cuadrar/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+            return { 
+                success: false, 
+                message: data.message || data.error || 'Error al cuadrar corte' 
+            };
         }
-    },
-    {
-        MovimientoCajaChicaID: 3,
-        CajaChicaID: 1,
-        TipoMovimiento: 'GASTO',
-        Monto: "1000.00",
-        Concepto: "Transporte de documentos urgentes",
-        Categoria: "Transporte",
-        FechaMovimiento: new Date("2025-10-26T15:20:00"),
-        UsuarioRegistroID: 5,
-        UsuarioRegistro: {
-            UsuarioID: 5,
-            NombreUsuario: "Juan Pérez"
+
+        return {
+            success: true,
+            message: data.message || 'Corte cuadrado correctamente',
+            data
+        };
+    } catch (error) {
+        console.log('Error al cuadrar caja chica:', error);
+        return {
+            success: false,
+            message: 'Error al conectar con el servidor'
+        };
+    }
+}
+
+/**
+ * Actualizar campos capturables antes del cierre
+ * PATCH /caja-chica/{id}/capturables
+ */
+export const actualizarCapturables = async (id: number, body: iActualizarCapturables) => {
+    try {
+        const resp = await fetch(`${url}/caja-chica/${id}/capturables`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+            return { 
+                success: false, 
+                message: data.message || data.error || 'Error al actualizar campos' 
+            };
         }
-    }
-];
 
-// Mock data para historial
-const mockHistorialCajaChica: iCajaChica[] = [
-    {
-        CajaChicaID: 2,
-        Fecha: new Date("2025-10-25"),
-        SaldoInicial: 5000,
-        SaldoActual: 0,
-        LimiteMaximo: 5000,
-        Estado: 'CERRADA',
-        UsuarioResponsableID: 5,
-        UsuarioResponsable: {
-            UsuarioID: 5,
-            NombreUsuario: "Juan Pérez"
-        },
-        SucursalID: 1
-    },
-    {
-        CajaChicaID: 3,
-        Fecha: new Date("2025-10-24"),
-        SaldoInicial: 5000,
-        SaldoActual: 0,
-        LimiteMaximo: 5000,
-        Estado: 'CERRADA',
-        UsuarioResponsableID: 5,
-        UsuarioResponsable: {
-            UsuarioID: 5,
-            NombreUsuario: "Juan Pérez"
-        },
-        SucursalID: 1
-    }
-];
-
-export const getCajaChicaActiva = async (usuarioId: number) => {
-    try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        return mockCajaChicaActiva;
-    } catch (error) {
-        console.log('Error al obtener caja chica activa: ', error);
-        return null;
-    }
-}
-
-export const getMovimientosCajaChica = async (cajaChicaId: number) => {
-    try {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        return mockMovimientosCajaChica;
-    } catch (error) {
-        console.log('Error al obtener movimientos de caja chica: ', error);
-        return null;
-    }
-}
-
-export const getResumenCajaChica = async (cajaChicaId: number) => {
-    try {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        const resumen: iResumenCajaChica = {
-            SaldoInicial: 5000,
-            TotalGastos: 2350,
-            TotalReposiciones: 0,
-            SaldoActual: 2650,
-            CantidadGastos: 3,
-            Estado: 'ACTIVA'
-        };
-        
-        return resumen;
-    } catch (error) {
-        console.log('Error al obtener resumen de caja chica: ', error);
-        return null;
-    }
-}
-
-export const registrarGasto = async (body: iPostGastoCajaChica) => {
-    try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        console.log('Registrando gasto:', body);
-        
         return {
             success: true,
-            message: 'Gasto registrado correctamente',
-            data: {
-                MovimientoCajaChicaID: Math.floor(Math.random() * 1000),
-                ...body,
-                FechaMovimiento: new Date()
-            }
+            message: data.message || 'Campos actualizados correctamente',
+            data
         };
     } catch (error) {
-        console.log('Error al registrar gasto: ', error);
+        console.log('Error al actualizar capturables:', error);
         return {
             success: false,
-            message: 'Error al registrar el gasto'
+            message: 'Error al conectar con el servidor'
         };
     }
 }
 
-export const crearPrecuadreCajaChica = async (body: iPostPrecuadreCajaChica) => {
+/**
+ * Cancelar caja chica
+ * PATCH /caja-chica/{id}/cancelar
+ */
+export const cancelarCajaChica = async (id: number, body: iCancelarCajaChica) => {
     try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const saldoEsperado = 2650;
-        const diferencia = saldoEsperado - body.EfectivoContado;
-        
-        console.log('Creando precuadre:', body);
-        
+        const resp = await fetch(`${url}/caja-chica/${id}/cancelar`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+            return { 
+                success: false, 
+                message: data.message || data.error || 'Error al cancelar caja chica' 
+            };
+        }
+
         return {
             success: true,
-            message: 'Precuadre creado correctamente',
-            data: {
-                PrecuadreID: Math.floor(Math.random() * 1000),
-                SaldoEsperado: saldoEsperado,
-                Diferencia: diferencia,
-                ...body,
-                FechaPrecuadre: new Date()
-            }
+            message: data.message || 'Caja chica cancelada correctamente',
+            data
         };
     } catch (error) {
-        console.log('Error al crear precuadre: ', error);
+        console.log('Error al cancelar caja chica:', error);
         return {
             success: false,
-            message: 'Error al crear el precuadre'
+            message: 'Error al conectar con el servidor'
         };
     }
 }
 
-export const crearCuadreCajaChica = async (body: iPostCuadreCajaChica) => {
+/**
+ * Generar código de cancelación
+ * GET /caja-chica/{id}/codigo
+ */
+export const generarCodigoCancelacion = async (id: number) => {
     try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        console.log('Creando cuadre:', body);
-        
-        return {
-            success: true,
-            message: 'Cuadre realizado correctamente',
-            data: {
-                CuadreID: Math.floor(Math.random() * 1000),
-                DiferenciaFinal: 0,
-                EstadoFinal: 'CUADRADA',
-                MontoTransferidoCajaGeneral: body.SaldoFinal,
-                ...body,
-                FechaCuadre: new Date()
-            }
-        };
+        const resp = await fetch(`${url}/caja-chica/${id}/codigo`, {
+            cache: 'no-store'
+        });
+
+        if (!resp.ok) {
+            const error = await resp.json();
+            return { error: error.message || 'Error al generar código' };
+        }
+
+        const data: iCodigoCancelacion = await resp.json();
+        return data;
     } catch (error) {
-        console.log('Error al crear cuadre: ', error);
-        return {
-            success: false,
-            message: 'Error al realizar el cuadre'
-        };
+        console.log('Error al generar código de cancelación:', error);
+        return { error: 'Error al conectar con el servidor' };
     }
 }
 
-export const getHistorialCajaChica = async (fechaInicio?: Date, fechaFin?: Date) => {
+/**
+ * Obtener cajas chicas por estatus
+ * GET /caja-chica/estatus/{estatus}?desde={YYYY-MM-DD}&hasta={YYYY-MM-DD}
+ */
+export const getCajasChicasPorEstatus = async (
+    estatus: string, 
+    desde?: string, 
+    hasta?: string
+) => {
     try {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        let urlQuery = `${url}/caja-chica/estatus/${estatus}`;
+        const params = new URLSearchParams();
         
-        return mockHistorialCajaChica;
-    } catch (error) {
-        console.log('Error al obtener historial: ', error);
-        return null;
-    }
-}
+        if (desde) params.append('desde', desde);
+        if (hasta) params.append('hasta', hasta);
+        
+        if (params.toString()) {
+            urlQuery += `?${params.toString()}`;
+        }
 
-export const solicitarReposicion = async (cajaChicaId: number, monto: number, justificacion: string, usuarioId: number, gerenteId: number) => {
-    try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        return {
-            success: true,
-            message: 'Reposición solicitada correctamente',
-            data: {
-                MovimientoCajaChicaID: Math.floor(Math.random() * 1000),
-                TipoMovimiento: 'REPOSICION',
-                Monto: monto,
-                FechaSolicitud: new Date()
-            }
-        };
+        const resp = await fetch(urlQuery, {
+            cache: 'no-store'
+        });
+
+        if (!resp.ok) {
+            const error = await resp.json();
+            return { error: error.message || 'Error al obtener cajas chicas' };
+        }
+
+        const data: iCajaChicaPorEstatus[] = await resp.json();
+        return data;
     } catch (error) {
-        console.log('Error al solicitar reposición: ', error);
-        return {
-            success: false,
-            message: 'Error al solicitar la reposición'
-        };
+        console.log('Error al obtener cajas chicas por estatus:', error);
+        return { error: 'Error al conectar con el servidor' };
     }
 }

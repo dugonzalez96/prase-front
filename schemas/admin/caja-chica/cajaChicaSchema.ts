@@ -68,3 +68,84 @@ export const solicitarReposicionSchema = z.object({
     UsuarioSolicitaID: z.number().min(1, "El usuario es requerido"),
     GerenteAutorizaID: z.number().min(1, "El gerente autorizador es requerido")
 });
+
+// === NUEVOS SCHEMAS PARA REFACTOR ===
+
+/**
+ * Schema para cuadrar caja chica
+ * POST /caja-chica/cuadrar/{id}
+ */
+export const cuadrarCajaChicaSchema = z.object({
+    SaldoReal: z.number({
+        required_error: "El saldo real es requerido",
+        invalid_type_error: "El saldo real debe ser un número"
+    }).min(0, "El saldo real no puede ser negativo"),
+    
+    TotalEfectivoCapturado: z.number({
+        required_error: "El total de efectivo es requerido",
+        invalid_type_error: "El total de efectivo debe ser un número"
+    }).min(0, "El total de efectivo no puede ser negativo"),
+    
+    TotalTarjetaCapturado: z.number({
+        required_error: "El total de tarjeta es requerido",
+        invalid_type_error: "El total de tarjeta debe ser un número"
+    }).min(0, "El total de tarjeta no puede ser negativo"),
+    
+    TotalTransferenciaCapturado: z.number({
+        required_error: "El total de transferencia es requerido",
+        invalid_type_error: "El total de transferencia debe ser un número"
+    }).min(0, "El total de transferencia no puede ser negativo"),
+    
+    Observaciones: z.string().optional()
+}).refine((data) => {
+    // Validar que la suma de los totales sea igual al saldo real
+    const suma = data.TotalEfectivoCapturado + data.TotalTarjetaCapturado + data.TotalTransferenciaCapturado;
+    return Math.abs(suma - data.SaldoReal) < 0.01; // Tolerancia de 1 centavo por redondeo
+}, {
+    message: "La suma de efectivo, tarjeta y transferencia debe ser igual al saldo real",
+    path: ["SaldoReal"]
+});
+
+/**
+ * Schema para actualizar campos capturables antes del cierre
+ * PATCH /caja-chica/{id}/capturables
+ */
+export const actualizarCapturablesSchema = z.object({
+    Observaciones: z.string().optional(),
+    SaldoReal: z.number().min(0, "El saldo real no puede ser negativo").optional(),
+    TotalEfectivoCapturado: z.number().min(0, "El total de efectivo no puede ser negativo").optional(),
+    TotalTarjetaCapturado: z.number().min(0, "El total de tarjeta no puede ser negativo").optional(),
+    TotalTransferenciaCapturado: z.number().min(0, "El total de transferencia no puede ser negativo").optional()
+}).refine((data) => {
+    // Al menos un campo debe estar presente
+    const hasCampos = data.Observaciones !== undefined || 
+                      data.SaldoReal !== undefined || 
+                      data.TotalEfectivoCapturado !== undefined ||
+                      data.TotalTarjetaCapturado !== undefined ||
+                      data.TotalTransferenciaCapturado !== undefined;
+    return hasCampos;
+}, {
+    message: "Debe actualizar al menos un campo",
+    path: ["Observaciones"]
+});
+
+/**
+ * Schema para cancelar caja chica
+ * PATCH /caja-chica/{id}/cancelar
+ */
+export const cancelarCajaChicaSchema = z.object({
+    usuario: z.string({
+        required_error: "El nombre de usuario es requerido",
+        invalid_type_error: "El nombre de usuario debe ser texto"
+    }).min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
+    
+    codigo: z.string({
+        required_error: "El código de cancelación es requerido",
+        invalid_type_error: "El código de cancelación debe ser texto"
+    }).min(6, "El código debe tener al menos 6 caracteres").max(10, "El código no puede exceder 10 caracteres"),
+    
+    motivo: z.string({
+        required_error: "El motivo de cancelación es requerido",
+        invalid_type_error: "El motivo debe ser texto"
+    }).min(10, "El motivo debe tener al menos 10 caracteres").max(500, "El motivo no puede exceder 500 caracteres")
+});
