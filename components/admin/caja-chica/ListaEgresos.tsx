@@ -55,7 +55,7 @@ export function ListaEgresos({
     onEditar,
     readonly = false
 }: ListaEgresosProps) {
-    
+
     // ✅ FUNCIONA: Cálculo de total
     const totalEgresos = egresos.reduce((sum, egreso) => sum + egreso.Monto, 0);
 
@@ -100,12 +100,12 @@ export function ListaEgresos({
                             Gastos realizados desde esta caja
                         </CardDescription>
                     </div>
-                    {!readonly && (
+                    {/* {!readonly && (
                         <Button onClick={handleAgregarClick} size="sm">
                             <Plus className="mr-2 h-4 w-4" />
                             Agregar Egreso
                         </Button>
-                    )}
+                    )} */}
                 </div>
             </CardHeader>
             <CardContent>
@@ -127,7 +127,7 @@ export function ListaEgresos({
                                     <TableHead className="w-[80px]">ID</TableHead>
                                     <TableHead>Concepto</TableHead>
                                     <TableHead className="text-right w-[150px]">Monto</TableHead>
-                                    {!readonly && <TableHead className="w-[100px]">Acciones</TableHead>}
+                                    {/* {!readonly && <TableHead className="w-[100px]">Acciones</TableHead>} */}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -140,10 +140,11 @@ export function ListaEgresos({
                                         <TableCell className="text-right font-semibold">
                                             {formatCurrency(egreso.Monto)}
                                         </TableCell>
-                                        {!readonly && (
+                                        {/* ❌ FALTA: Implementar handler editar */}
+                                        {/* ❌ FALTA: Implementar handler eliminar con confirmación */}
+                                        {/* {!readonly && (
                                             <TableCell>
                                                 <div className="flex gap-1">
-                                                    {/* ❌ FALTA: Implementar handler editar */}
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
@@ -152,7 +153,6 @@ export function ListaEgresos({
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
-                                                    {/* ❌ FALTA: Implementar handler eliminar con confirmación */}
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
@@ -164,7 +164,8 @@ export function ListaEgresos({
                                                     </Button>
                                                 </div>
                                             </TableCell>
-                                        )}
+                                        )} */}
+
                                     </TableRow>
                                 ))}
                             </TableBody>

@@ -26,35 +26,45 @@
  * 5. WebSocket/polling para actualizaciones en tiempo real de cortes de usuarios
  */
 
-import { useState, useEffect, useRef } from "react";
+import { actualizarCapturables as actualizarCapturablesAction, cancelarCajaChica as cancelarCajaChicaAction, cuadrarCajaChica as cuadrarCajaChicaAction, getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
+import { getIniciosCaja, getMovimientos } from "@/actions/MovimientosActions";
+import { LoaderModales } from "@/components/LoaderModales";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { iPrecuadreCajaChica, iUsuarioPendiente } from "@/interfaces/CajaChicaInterface";
-import { getPrecuadreCajaChica, cuadrarCajaChica as cuadrarCajaChicaAction, actualizarCapturables as actualizarCapturablesAction, cancelarCajaChica as cancelarCajaChicaAction } from "@/actions/CajaChicaActions";
-import { EncabezadoCajaChica } from "./EncabezadoCajaChica";
-import { TotalesPorMetodo } from "./TotalesPorMetodo";
-import { ListaEgresos } from "./ListaEgresos";
+import { iGetIniciosCaja, iGetMovimientos } from "@/interfaces/MovimientosInterface";
+import { AlertCircle, Ban, Calculator, Eye, Plus, Save, TrendingDown, TrendingUp, Users, Wallet, XCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { CalculosAutomaticos } from "./CalculosAutomaticos";
-import { TablaDetalleUsuarios } from "./TablaDetalleUsuarios";
-import { ModalPrevisualizar } from "./ModalPrevisualizar";
-import { HistorialCajaChica } from "./HistorialCajaChica";
-import { FormCuadrarCajaChica } from "./FormCuadrarCajaChica";
+import { EncabezadoCajaChica } from "./EncabezadoCajaChica";
 import { FormActualizarCapturables } from "./FormActualizarCapturables";
+import { FormAgregarMovimiento } from "./FormAgregarMovimiento";
 import { FormCancelarCajaChica } from "./FormCancelarCajaChica";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Wallet, AlertCircle, CheckCircle2, XCircle, Calculator, Save, Ban, Eye } from "lucide-react";
-import { LoaderModales } from "@/components/LoaderModales";
+import { FormCuadrarCajaChica } from "./FormCuadrarCajaChica";
+import { HistorialCajaChica } from "./HistorialCajaChica";
+import { ListaEgresos } from "./ListaEgresos";
+import { ModalPrevisualizar } from "./ModalPrevisualizar";
+import { TablaDetalleUsuarios } from "./TablaDetalleUsuarios";
+import { TablaEgresos } from "./TablaEgresos";
+import { TablaIniciosCajaChica } from "./TablaIniciosCajaChica";
+import { TablaIngresos } from "./TablaIngresos";
+import { TotalesPorMetodo } from "./TotalesPorMetodo";
 
 interface CajaChicaClientProps {
     precuadreInicial?: iPrecuadreCajaChica;
+    usuarioId: number;
+    usuarios: any[];
+    cuentasBancarias: any[];
 }
 
-export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
+export function CajaChicaClient({ precuadreInicial, usuarioId, usuarios, cuentasBancarias }: CajaChicaClientProps) {
     const { toast } = useToast();
     const [precuadre, setPrecuadre] = useState<iPrecuadreCajaChica | null>(precuadreInicial || null);
+    const [movimientos, setMovimientos] = useState<iGetMovimientos[]>([]);
+    const [iniciosCaja, setIniciosCaja] = useState<iGetIniciosCaja[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const isMounted = useRef(true);
@@ -64,12 +74,45 @@ export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
     const [isModalActualizarOpen, setIsModalActualizarOpen] = useState(false);
     const [isModalCancelarOpen, setIsModalCancelarOpen] = useState(false);
     const [isModalPrevisualizarOpen, setIsModalPrevisualizarOpen] = useState(false);
+    const [isModalAgregarMovimientoOpen, setIsModalAgregarMovimientoOpen] = useState(false);
+    const [tipoMovimientoModal, setTipoMovimientoModal] = useState<"Ingreso" | "Egreso">("Egreso");
+
+    // Fetch movimientos
+    const fetchMovimientos = async () => {
+        try {
+            const result = await getMovimientos();
+            if (!isMounted.current) return;
+            if (result) {
+                setMovimientos(result);
+            }
+        } catch (err) {
+            console.error("Error al obtener movimientos:", err);
+        }
+    };
+
+    // Fetch inicios de caja
+    const fetchIniciosCaja = async () => {
+        try {
+            const result = await getIniciosCaja();
+            if (!isMounted.current) return;
+            if (result) {
+                setIniciosCaja(result);
+            }
+        } catch (err) {
+            console.error("Error al obtener inicios de caja:", err);
+        }
+    };
 
     // Cleanup al desmontar
     useEffect(() => {
+        // Cargar datos iniciales
+        fetchMovimientos();
+        fetchIniciosCaja();
+
         return () => {
             isMounted.current = false;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Fetch precuadre - solo se ejecuta manualmente o al montar si no hay datos iniciales
@@ -339,8 +382,10 @@ export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
                 </Button>
             </div>
 
-            {renderMensajes()}
-            {renderUsuariosPendientes()}
+            <div className="flex flex-co gap-2 mb-6">
+                <div className="flex w-full">{renderMensajes()}</div>
+                <div className="flex w-full">{renderUsuariosPendientes()}</div>
+            </div>
 
             <Tabs defaultValue="dashboard" className="space-y-4">
                 <TabsList>
@@ -365,56 +410,84 @@ export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
                         depositoVentanilla={precuadre.TotalesPorMetodo?.TotalDepositoVentanilla || 0}
                     />
 
-                    {/* 3. Otros Movimientos: Egresos + Cálculos */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* ❌ FALTA: Handlers de agregar/editar/eliminar egresos */}
-                        <ListaEgresos
-                            egresos={precuadre.Egresos}
-                            onAgregar={() => {
-                                toast({
-                                    title: "⚠️ No implementado",
-                                    description: "Falta crear FormAgregarEgreso y endpoint POST /egresos",
-                                    variant: "default"
-                                });
-                            }}
-                            onEliminar={(egresoId) => {
-                                console.log("⚠️ Eliminar egreso", egresoId);
-                                toast({
-                                    title: "⚠️ No implementado",
-                                    description: "Falta endpoint DELETE /caja-chica/egresos/" + egresoId
-                                });
-                            }}
-                            onEditar={(egreso) => {
-                                console.log("⚠️ Editar egreso", egreso);
-                                toast({
-                                    title: "⚠️ No implementado",
-                                    description: "Falta FormEditarEgreso y PATCH /egresos"
-                                });
-                            }}
-                        />
-
-                        {/* ❌ FALTA: onDepositoChange debe guardar en backend */}
-                        <CalculosAutomaticos
-                            saldoInicial={precuadre.Calculos?.SaldoInicial || 0}
-                            totalIngresos={precuadre.Calculos?.TotalIngresos || 0}
-                            totalEgresos={precuadre.Calculos?.TotalEgresos || 0}
-                            fondoFijo={precuadre.Info?.FondoFijo || 0}
-                            onDepositoChange={(monto: number) => {
-                                console.log("⚠️ Depositos banco cambió a:", monto);
-                                toast({
-                                    title: "⚠️ No guardado",
-                                    description: "Falta endpoint PATCH /caja-chica/{id}/depositos-banco"
-                                });
-                            }}
-                        />
+                    {/* 3. Ingresos - Catálogo de Movimientos */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <TrendingUp className="h-5 w-5 text-green-500" />
+                                Ingresos del Catálogo
+                            </h3>
+                            <Button
+                                size="sm"
+                                onClick={() => {
+                                    setTipoMovimientoModal("Ingreso");
+                                    setIsModalAgregarMovimientoOpen(true);
+                                }}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Agregar Ingreso
+                            </Button>
+                        </div>
+                        <TablaIngresos movimientos={movimientos} />
                     </div>
 
-                    {/* 4. Detalle de Cortes por Usuario */}
+                    {/* 4. Egresos - Catálogo de Movimientos */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <TrendingDown className="h-5 w-5 text-red-500" />
+                                Egresos del Catálogo
+                            </h3>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                    setTipoMovimientoModal("Egreso");
+                                    setIsModalAgregarMovimientoOpen(true);
+                                }}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Agregar Egreso
+                            </Button>
+                        </div>
+                        <TablaEgresos movimientos={movimientos} />
+                    </div>
+
+                    {/* 5. Inicios de Caja Activos */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <Users className="h-5 w-5 text-blue-500" />
+                                Inicios de Caja Activos
+                            </h3>
+                        </div>
+                        <TablaIniciosCajaChica inicios={iniciosCaja} />
+                        <Alert>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                <strong>Nota:</strong> Los inicios de caja activos representan fondos
+                                entregados a usuarios que afectan el saldo de Caja General.
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+
+                    {/* 6. Cálculos Automáticos */}
+                    <CalculosAutomaticos
+                        saldoInicial={precuadre.Calculos?.SaldoInicial || 0}
+                        totalIngresos={precuadre.Calculos?.TotalIngresos || 0}
+                        totalEgresos={precuadre.Calculos?.TotalEgresos || 0}
+                        fondoFijo={precuadre.Info?.FondoFijo || 0}
+                        onDepositoChange={(monto: number) => {
+                            console.log("⚠️ Depositos banco cambió a:", monto);
+                        }}
+                    />
+
+                    {/* 7. Detalle de Cortes por Usuario */}
                     <TablaDetalleUsuarios
                         cortes={precuadre.CortesUsuarios || []}
                     />
 
-                    {/* 5. Alertas y Badges */}
+                    {/* 8. Alertas y Badges */}
                     {precuadre.PendientesDeCorte > 0 && (
                         <Alert>
                             <AlertCircle className="h-4 w-4" />
@@ -428,15 +501,15 @@ export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
                         <Alert variant="default" className="border-orange-500 bg-orange-50">
                             <AlertCircle className="h-4 w-4 text-orange-600" />
                             <AlertDescription className="text-orange-800">
-                                <strong>⚠️ Diferencias detectadas</strong> en algunos cortes. 
+                                <strong>⚠️ Diferencias detectadas</strong> en algunos cortes.
                                 Revisa la tabla de detalle antes de cerrar.
                             </AlertDescription>
                         </Alert>
                     )}
 
-                    {/* 6. Botones de Acción */}
+                    {/* 9. Botones de Acción */}
                     <div className="flex gap-3 flex-wrap justify-end border-t pt-6">
-                        <Button 
+                        <Button
                             onClick={() => setIsModalActualizarOpen(true)}
                             variant="outline"
                             disabled={isLoading}
@@ -445,7 +518,7 @@ export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
                             Guardar Avance
                         </Button>
                         {/* ❌ FALTA: Modal Previsualizar */}
-                        <Button 
+                        <Button
                             onClick={() => setIsModalPrevisualizarOpen(true)}
                             variant="outline"
                             disabled={isLoading}
@@ -453,14 +526,14 @@ export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
                             <Eye className="h-4 w-4 mr-2" />
                             Previsualizar
                         </Button>
-                        <Button 
+                        <Button
                             onClick={() => setIsModalCuadrarOpen(true)}
                             disabled={isLoading || precuadre.PendientesDeCorte > 0}
                         >
                             <Calculator className="h-4 w-4 mr-2" />
                             Cerrar Corte
                         </Button>
-                        <Button 
+                        <Button
                             onClick={() => setIsModalCancelarOpen(true)}
                             variant="destructive"
                             disabled={isLoading}
@@ -471,10 +544,46 @@ export function CajaChicaClient({ precuadreInicial }: CajaChicaClientProps) {
                     </div>
                 </TabsContent>
 
+
+
                 <TabsContent value="historial">
                     <HistorialCajaChica />
                 </TabsContent>
             </Tabs>
+
+            {/* Modal Agregar Movimiento (Ingreso/Egreso) */}
+            <Dialog open={isModalAgregarMovimientoOpen} onOpenChange={setIsModalAgregarMovimientoOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            {tipoMovimientoModal === "Ingreso" ? (
+                                <TrendingUp className="h-5 w-5 text-green-500" />
+                            ) : (
+                                <TrendingDown className="h-5 w-5 text-red-500" />
+                            )}
+                            Agregar {tipoMovimientoModal}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Complete los datos para registrar el {tipoMovimientoModal.toLowerCase()}
+                            en el catálogo de movimientos
+                        </DialogDescription>
+                    </DialogHeader>
+                    <FormAgregarMovimiento
+                        usuarioId={usuarioId}
+                        usuarios={usuarios}
+                        cuentasBancarias={cuentasBancarias}
+                        tipoDefault={tipoMovimientoModal}
+                        onSuccess={() => {
+                            setIsModalAgregarMovimientoOpen(false);
+                            fetchMovimientos();
+                            toast({
+                                title: "Éxito",
+                                description: `${tipoMovimientoModal} registrado correctamente`
+                            });
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
 
             {/* Modal Cuadrar Caja Chica */}
             <Dialog open={isModalCuadrarOpen} onOpenChange={setIsModalCuadrarOpen}>

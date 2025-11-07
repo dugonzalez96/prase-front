@@ -1,4 +1,6 @@
 import { getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
+import { getCuentasBancarias } from "@/actions/ClientesActions";
+import { getUsuarios } from "@/actions/SeguridadActions";
 import { CajaChicaClient } from "@/components/admin/caja-chica/CajaChicaClient";
 import { currentUser } from "@/lib/auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,15 +22,18 @@ export default async function CajaChicaPage() {
         );
     }
 
-    // Obtener precuadre inicial
+    // Obtener datos necesarios para el componente
     const precuadre = await getPrecuadreCajaChica();
+    const usuarios = await getUsuarios() || [];
+    const cuentasBancarias = await getCuentasBancarias() || [];
 
-    // Si hay error, el componente cliente lo manejará
-    // Pasamos el precuadre inicial (si existe) al componente cliente
     return (
         <div className="container mx-auto py-8">
             <CajaChicaClient 
                 precuadreInicial={'error' in precuadre ? undefined : precuadre}
+                usuarioId={user.usuario.UsuarioID}
+                usuarios={usuarios}
+                cuentasBancarias={cuentasBancarias}
             />
         </div>
     );
