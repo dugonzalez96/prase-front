@@ -1,41 +1,34 @@
-import { getCajaChicaActiva, getMovimientosCajaChica, getResumenCajaChica } from "@/actions/CajaChicaActions";
+import { getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
 import { CajaChicaClient } from "@/components/admin/caja-chica/CajaChicaClient";
 import { currentUser } from "@/lib/auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default async function CajaChicaPage() {
     const user = await currentUser();
 
-    console.log("🚀 ~ CajaChicaPage ~ user:", user)
     if (!user) {
-
         return (
             <div className="container mx-auto py-8">
-                <h4 className="text-red-500">Error al obtener información del usuario actual</h4>
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                        Error al obtener información del usuario actual
+                    </AlertDescription>
+                </Alert>
             </div>
         );
     }
 
-    const [cajaChica, movimientos, resumen] = await Promise.all([
-        getCajaChicaActiva(user.usuario.UsuarioID),
-        getMovimientosCajaChica(1), // ID de caja chica mock
-        getResumenCajaChica(1)
-    ]);
+    // Obtener precuadre inicial
+    const precuadre = await getPrecuadreCajaChica();
 
-    if (!cajaChica || !movimientos || !resumen) {
-        return (
-            <div className="container mx-auto py-8">
-                <h4 className="text-red-500">Error al obtener datos de caja chica</h4>
-            </div>
-        );
-    }
-
+    // Si hay error, el componente cliente lo manejará
+    // Pasamos el precuadre inicial (si existe) al componente cliente
     return (
         <div className="container mx-auto py-8">
             <CajaChicaClient 
-                cajaChica={cajaChica}
-                movimientosIniciales={movimientos}
-                resumenInicial={resumen}
-                usuarioId={user.usuario.UsuarioID}
+                precuadreInicial={'error' in precuadre ? undefined : precuadre}
             />
         </div>
     );
