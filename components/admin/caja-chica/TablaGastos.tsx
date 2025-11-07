@@ -1,6 +1,6 @@
 "use client";
 
-import { iMovimientoCajaChica } from "@/interfaces/CajaChicaInterface";
+import { iEgresoCajaChica } from "@/interfaces/CajaChicaInterface";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,31 +12,22 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/format";
-import { formatDateTimeFull } from "@/lib/format-date";
-import { FileCheck, FileX, TrendingDown, TrendingUp } from "lucide-react";
+import { TrendingDown } from "lucide-react";
 
 interface TablaGastosProps {
-    movimientos: iMovimientoCajaChica[];
+    movimientos: iEgresoCajaChica[];
 }
 
 export function TablaGastos({ movimientos }: TablaGastosProps) {
-    const getTipoIcon = (tipo: string) => {
-        return tipo === 'GASTO' ? (
-            <TrendingDown className="h-4 w-4 text-red-500" />
-        ) : (
-            <TrendingUp className="h-4 w-4 text-green-500" />
-        );
-    };
-
     if (!movimientos || movimientos.length === 0) {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Movimientos del Día</CardTitle>
+                    <CardTitle>Gastos del Día</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-center text-muted-foreground py-8">
-                        No hay movimientos registrados
+                        No hay gastos registrados
                     </p>
                 </CardContent>
             </Card>
@@ -46,53 +37,38 @@ export function TablaGastos({ movimientos }: TablaGastosProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Movimientos del Día</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-red-500" />
+                    Gastos del Día
+                </CardTitle>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Hora</TableHead>
-                            <TableHead>Tipo</TableHead>
+                            <TableHead>Fecha</TableHead>
                             <TableHead>Concepto</TableHead>
-                            <TableHead>Categoría</TableHead>
                             <TableHead>Monto</TableHead>
-                            <TableHead>Comprobante</TableHead>
+                            <TableHead>Usuario</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {movimientos.map((movimiento) => (
-                            <TableRow key={movimiento.MovimientoCajaChicaID}>
+                            <TableRow key={movimiento.EgresoID}>
                                 <TableCell className="text-sm">
-                                    {formatDateTimeFull(movimiento.FechaMovimiento)}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        {getTipoIcon(movimiento.TipoMovimiento)}
-                                        <span className="text-sm">
-                                            {movimiento.TipoMovimiento}
-                                        </span>
-                                    </div>
+                                    {movimiento.Fecha instanceof Date 
+                                        ? movimiento.Fecha.toLocaleDateString('es-MX')
+                                        : new Date(movimiento.Fecha).toLocaleDateString('es-MX')
+                                    }
                                 </TableCell>
                                 <TableCell>{movimiento.Concepto}</TableCell>
-                                <TableCell>
-                                    <Badge variant="secondary">{movimiento.Categoria}</Badge>
-                                </TableCell>
-                                <TableCell className="font-semibold">
-                                    {formatCurrency(parseFloat(movimiento.Monto))}
+                                <TableCell className="font-semibold text-red-600">
+                                    -{formatCurrency(movimiento.Monto)}
                                 </TableCell>
                                 <TableCell>
-                                    {movimiento.Comprobante ? (
-                                        <Badge variant="outline" className="bg-green-50 text-green-700">
-                                            <FileCheck className="h-3 w-3 mr-1" />
-                                            Sí
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="outline" className="bg-red-50 text-red-700">
-                                            <FileX className="h-3 w-3 mr-1" />
-                                            No
-                                        </Badge>
-                                    )}
+                                    <Badge variant="secondary">
+                                        {movimiento.Usuario || 'Sistema'}
+                                    </Badge>
                                 </TableCell>
                             </TableRow>
                         ))}

@@ -6,6 +6,7 @@ import { currentUser } from "@/lib/auth";
 import { ProtectedRouteWrapper } from "@/components/auth/ProtectedWrapper";
 import { cn } from "@/lib/utils";
 import { InicioCajaProvider } from "@/context/InicioCajaContext";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "PRASE",
