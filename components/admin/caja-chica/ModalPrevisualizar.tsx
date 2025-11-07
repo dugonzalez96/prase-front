@@ -126,12 +126,13 @@ export function ModalPrevisualizar({
         mensajes: []
     };
 
-    const data = precuadre || mockPrecuadre;
+    // Si precuadre está vacío o no tiene la estructura correcta, usar mock
+    const data = (precuadre && precuadre.CortesUsuarios) ? precuadre : mockPrecuadre;
 
-    // ✅ FUNCIONA: Validación de usuarios pendientes
-    const hayPendientes = data.CortesUsuarios.some(c => c.Estado !== "VALIDADO");
-    const hayDiferencias = data.CortesUsuarios.some(c => Math.abs(c.Diferencia) > 0);
-    const diferenciaTotal = data.CortesUsuarios.reduce((sum, c) => sum + c.Diferencia, 0);
+    // ✅ FUNCIONA: Validación de usuarios pendientes (con protección undefined)
+    const hayPendientes = data.CortesUsuarios?.some(c => c.Estado !== "VALIDADO") ?? false;
+    const hayDiferencias = data.CortesUsuarios?.some(c => Math.abs(c.Diferencia) > 0) ?? false;
+    const diferenciaTotal = data.CortesUsuarios?.reduce((sum, c) => sum + c.Diferencia, 0) ?? 0;
 
     // ❌ FALTA: Handler real que ejecute cuadrarCajaChica
     const handleCerrarDefinitivo = () => {
