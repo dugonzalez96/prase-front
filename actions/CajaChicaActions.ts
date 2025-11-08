@@ -1,7 +1,7 @@
 "use server";
 
 import { 
-    iPrecuadreCajaChica,
+    iPrecuadreCajaChicaBackend,
     iCuadrarCajaChica,
     iActualizarCapturables,
     iCancelarCajaChica,
@@ -27,7 +27,7 @@ export const getPrecuadreCajaChica = async () => {
             return { error: error.message || 'Error al obtener precuadre' };
         }
 
-        const data: iPrecuadreCajaChica = await resp.json();
+        const data: iPrecuadreCajaChicaBackend = await resp.json();
         return data;
     } catch (error) {
         console.log('Error al obtener precuadre de caja chica:', error);

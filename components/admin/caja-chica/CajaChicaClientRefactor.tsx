@@ -43,19 +43,16 @@ import { LoaderModales } from "@/components/LoaderModales";
 
 interface CajaChicaClientProps {
     usuarioId: number;
-    precuadreInicial?: iPrecuadreCajaChicaBackend;
-    movimientosInicial?: iGetMovimientos[];
 }
 
-export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicial }: CajaChicaClientProps) {
+export function CajaChicaClient({ usuarioId }: CajaChicaClientProps) {
     const { toast } = useToast();
-    const [precuadre, setPrecuadre] = useState<iPrecuadreCajaChicaBackend | null>(precuadreInicial || null);
-    const [movimientos, setMovimientos] = useState<iGetMovimientos[]>(movimientosInicial || []);
-    const [isLoading, setIsLoading] = useState(!precuadreInicial);
+    const [precuadre, setPrecuadre] = useState<iPrecuadreCajaChicaBackend | null>(null);
+    const [movimientos, setMovimientos] = useState<iGetMovimientos[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isLoadingCorte, setIsLoadingCorte] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isModalCuadreOpen, setIsModalCuadreOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
     const isMounted = useRef(true);
 
     // Estado del formulario de cuadre
@@ -76,7 +73,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 getPrecuadreCajaChica(),
                 getMovimientos(),
             ]);
-            console.log("🚀 ~ fetchData ~ precuadreResult, movimientosResult:", precuadreResult, movimientosResult)
 
             if (!isMounted.current) return;
 
@@ -88,7 +84,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     description: precuadreResult.error,
                     variant: "destructive",
                 });
-                setIsLoading(false);
                 return;
             }
             setPrecuadre(precuadreResult);
@@ -107,8 +102,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     });
                 });
             }
-
-            setIsLoading(false);
         } catch (err) {
             if (!isMounted.current) return;
             const errorMsg = err instanceof Error ? err.message : "Error al cargar datos";
@@ -118,21 +111,19 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 description: errorMsg,
                 variant: "destructive",
             });
-            setIsLoading(false);
         } finally {
-            setIsLoading(false);
+            if (isMounted.current) {
+                setIsLoading(false);
+            }
         }
     };
 
     useEffect(() => {
-        // Solo cargar datos si no vinieron desde props
-        if (!precuadreInicial) {
-            fetchData();
-        }
+        fetchData();
         return () => {
             isMounted.current = false;
         };
-    }, [precuadreInicial]);
+    }, []);
 
     // Manejador de cuadre
     const handleCuadre = async () => {
@@ -246,39 +237,32 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     </Button>
                 </div>
 
-                {/* ALERTAS */}
-                <div className="flex gap-2">
-                    {/* Mensajes del backend */}
-                    <div className="w-full">
-                        {precuadre.mensajes && precuadre.mensajes.length > 0 && (
-                            <div className="space-y-2 ">
-                                {precuadre.mensajes.map((msg, idx) => (
-                                    <Alert key={idx}>
-                                        <AlertCircle className="h-4 w-4" />
-                                        <AlertDescription>{msg}</AlertDescription>
-                                    </Alert>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Usuarios pendientes */}
-                    <div className="w-full">
-                        {precuadre.UsuariosPendientes && precuadre.UsuariosPendientes.length > 0 && (
-                            <Alert variant="destructive">
+                {/* Mensajes del backend */}
+                {precuadre.mensajes && precuadre.mensajes.length > 0 && (
+                    <div className="space-y-2">
+                        {precuadre.mensajes.map((msg, idx) => (
+                            <Alert key={idx}>
                                 <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>
-                                    <strong>⚠️ Usuarios con cortes pendientes:</strong>
-                                    <ul className="list-disc ml-6 mt-2">
-                                        {precuadre.UsuariosPendientes.map((usuario) => (
-                                            <li key={usuario.UsuarioID}>{usuario.Nombre}</li>
-                                        ))}
-                                    </ul>
-                                </AlertDescription>
+                                <AlertDescription>{msg}</AlertDescription>
                             </Alert>
-                        )}
+                        ))}
                     </div>
-                </div>
+                )}
+
+                {/* Usuarios pendientes */}
+                {precuadre.UsuariosPendientes && precuadre.UsuariosPendientes.length > 0 && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                            <strong>⚠️ Usuarios con cortes pendientes:</strong>
+                            <ul className="list-disc ml-6 mt-2">
+                                {precuadre.UsuariosPendientes.map((usuario) => (
+                                    <li key={usuario.UsuarioID}>{usuario.Nombre}</li>
+                                ))}
+                            </ul>
+                        </AlertDescription>
+                    </Alert>
+                )}
 
                 {/* ENCABEZADO - MOCK */}
                 <Card>
@@ -359,129 +343,57 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                             Ingresos y egresos registrados
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent>
                         {movimientos.length === 0 ? (
                             <p className="text-center text-muted-foreground py-8">
                                 No hay movimientos registrados
                             </p>
                         ) : (
-                            <>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead>Tipo</TableHead>
-                                            <TableHead>Forma de Pago</TableHead>
-                                            <TableHead>Usuario</TableHead>
-                                            <TableHead className="text-right">Monto</TableHead>
-                                            <TableHead>Estado</TableHead>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Fecha</TableHead>
+                                        <TableHead>Tipo</TableHead>
+                                        <TableHead>Forma de Pago</TableHead>
+                                        <TableHead>Usuario</TableHead>
+                                        <TableHead className="text-right">Monto</TableHead>
+                                        <TableHead>Estado</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {movimientos.map((mov) => (
+                                        <TableRow key={mov.TransaccionID}>
+                                            <TableCell className="text-sm">
+                                                {formatDateTimeFull(mov.FechaTransaccion)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline">
+                                                    {mov.TipoTransaccion}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>{mov.FormaPago}</TableCell>
+                                            <TableCell>{mov.UsuarioCreo.NombreUsuario}</TableCell>
+                                            <TableCell className="text-right font-semibold">
+                                                {mov.TipoTransaccion === "Ingreso" ? "+" : "-"}
+                                                {formatCurrency(Number(mov.Monto))}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={
+                                                        mov.Validado === 1
+                                                            ? "default"
+                                                            : "secondary"
+                                                    }
+                                                >
+                                                    {mov.Validado === 1
+                                                        ? "Validado"
+                                                        : "Pendiente"}
+                                                </Badge>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {(() => {
-                                            const itemsPerPage = 10;
-                                            const start = (currentPage - 1) * itemsPerPage;
-                                            const end = start + itemsPerPage;
-                                            const paginatedMovimientos = movimientos.slice(start, end);
-                                            return paginatedMovimientos.map((mov) => (
-                                                <TableRow key={mov.TransaccionID}>
-                                                    <TableCell className="text-sm">
-                                                        {formatDateTimeFull(mov.FechaTransaccion)}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            className={
-                                                                mov.TipoTransaccion === "Ingreso"
-                                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                                                    : "bg-red-100 text-red-800 hover:bg-red-200"
-                                                            }
-                                                        >
-                                                            {mov.TipoTransaccion}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell>{mov.FormaPago}</TableCell>
-                                                    <TableCell>{mov.UsuarioCreo.NombreUsuario}</TableCell>
-                                                    <TableCell
-                                                        className={`text-right font-semibold ${mov.TipoTransaccion === "Ingreso"
-                                                            ? "text-green-600"
-                                                            : "text-red-600"
-                                                            }`}
-                                                    >
-                                                        {mov.TipoTransaccion === "Ingreso" ? "+" : "-"}
-                                                        {formatCurrency(Number(mov.Monto))}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant={
-                                                                mov.Validado === 1
-                                                                    ? "default"
-                                                                    : "secondary"
-                                                            }
-                                                        >
-                                                            {mov.Validado === 1
-                                                                ? "Validado"
-                                                                : "Pendiente"}
-                                                        </Badge>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ));
-                                        })()}
-                                    </TableBody>
-                                </Table>
-
-                                {/* Paginación */}
-                                {movimientos.length > 10 && (
-                                    <div className="flex items-center justify-between pt-4 border-t">
-                                        <span className="text-sm text-muted-foreground">
-                                            Mostrando {Math.min((currentPage - 1) * 10 + 1, movimientos.length)} a{" "}
-                                            {Math.min(currentPage * 10, movimientos.length)} de {movimientos.length} movimientos
-                                        </span>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                                disabled={currentPage === 1}
-                                            >
-                                                Anterior
-                                            </Button>
-                                            <div className="flex items-center gap-1">
-                                                {Array.from({
-                                                    length: Math.ceil(movimientos.length / 10),
-                                                }).map((_, i) => (
-                                                    <Button
-                                                        key={i + 1}
-                                                        variant={currentPage === i + 1 ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => setCurrentPage(i + 1)}
-                                                        className="w-8"
-                                                    >
-                                                        {i + 1}
-                                                    </Button>
-                                                ))}
-                                            </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    setCurrentPage((p) =>
-                                                        Math.min(
-                                                            Math.ceil(movimientos.length / 10),
-                                                            p + 1
-                                                        )
-                                                    )
-                                                }
-                                                disabled={
-                                                    currentPage ===
-                                                    Math.ceil(movimientos.length / 10)
-                                                }
-                                            >
-                                                Siguiente
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         )}
 
                         {/* Totales de movimientos */}
@@ -565,9 +477,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                             <AlertDescription>
                                 Esta sección está vacía. Se necesita especificar el origen de los datos:
                                 ¿De un endpoint separado? ¿De los movimientos? ¿De los inicios de caja?
-                                <p>
-                                    | Usuario | Efectivo | Tarjeta | Transferencia | Depósito | Egresos | Teórico | Diferencia | Estado |
-                                </p>
                             </AlertDescription>
                         </Alert>
                     </CardContent>
@@ -575,16 +484,10 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
 
                 {/* BOTÓN - CUADRAR */}
                 <div className="flex justify-end">
-                    {precuadre.PendientesDeCorte > 0 &&
-                        <p className="text-sm text-red-600 mr-4 self-center">
-                            Bloqueado porque hay usuarios con cortes pendientes
-                        </p>
-                    }
-
                     <Button
                         size="lg"
                         onClick={() => setIsModalCuadreOpen(true)}
-                        // disabled={precuadre.PendientesDeCorte > 0}
+                        disabled={precuadre.PendientesDeCorte > 0}
                     >
                         <Calculator className="h-4 w-4 mr-2" />
                         Cuadrar Caja Chica

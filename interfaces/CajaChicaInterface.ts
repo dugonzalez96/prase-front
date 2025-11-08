@@ -1,5 +1,51 @@
 // Interfaces para el módulo de Caja Chica
 
+// === Inicio de Caja ===
+export interface iInicioCaja {
+    InicioCajaID: number;
+    UsuarioID: number;
+    Usuario: string;
+    AutorizoID: number;
+    Autorizo: string;
+    FechaInicio: Date;
+    MontoInicial: number;
+    Estatus: string;
+}
+
+// === Usuario Pendiente ===
+export interface iUsuarioMovimiento {
+    UsuarioID: number;
+    Nombre: string;
+}
+
+// === Precuadre (respuesta del backend) ===
+export interface iPrecuadreCajaChicaBackend {
+    FechaDesde: Date | null;
+    FechaHasta: Date;
+    FondoInicial: number;
+    Totales: {
+        TotalIngresos: number;
+        TotalEgresos: number;
+        TotalEfectivo: number;
+        TotalPagoConTarjeta: number;
+        TotalTransferencia: number;
+    };
+    SaldoEsperado: number;
+    SaldoReal: number;
+    TotalEfectivoCapturado: number;
+    TotalTarjetaCapturado: number;
+    TotalTransferenciaCapturado: number;
+    Diferencia: number;
+    IniciosActivos: iInicioCaja[];
+    CortesPendientes: number;
+    UsuariosConMovimientosSinCorte: iUsuarioMovimiento[];
+    PendientesDeCorte: number;
+    UsuariosPendientes: iUsuarioMovimiento[];
+    mensajes: string[];
+    CajaEnCeroSoloTrasCuadre: boolean;
+    DebeCuadrarseHoy: boolean;
+}
+
 // === Datos de Encabezado ===
 export interface iInfoCajaChica {
     CajaChicaID: number;
@@ -110,25 +156,12 @@ export interface iPrecuadreCajaChicaLegacy {
     mensajes: string[];
 }
 
-// === Cuadrar Caja Chica (con entrega a general) ===
+// === Cuadrar Caja Chica ===
 export interface iCuadrarCajaChica {
-    // Montos capturados
-    TotalEfectivo: number;
-    TotalTarjeta: number;
-    TotalTransferencia: number;
-    TotalDepositoVentanilla: number;
-    
-    // Egresos del día
-    TotalEgresos: number;
-    
-    // Depósitos a banco
-    TotalDepositosBanco: number;
-    
-    // Entrega a Caja General (calculado)
-    EntregaAGeneral: number;
-    
-    // Control
-    SaldoFinal: number;
+    SaldoReal: number;
+    TotalEfectivoCapturado: number;
+    TotalTarjetaCapturado: number;
+    TotalTransferenciaCapturado: number;
     Observaciones?: string;
 }
 
