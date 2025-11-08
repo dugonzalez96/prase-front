@@ -76,6 +76,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 getPrecuadreCajaChica(),
                 getMovimientos(),
             ]);
+            console.log("🚀 ~ fetchData ~ precuadreResult, movimientosResult:", precuadreResult, movimientosResult)
 
             if (!isMounted.current) return;
 
@@ -87,6 +88,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     description: precuadreResult.error,
                     variant: "destructive",
                 });
+                setIsLoading(false);
                 return;
             }
             setPrecuadre(precuadreResult);
@@ -105,6 +107,8 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     });
                 });
             }
+
+            setIsLoading(false);
         } catch (err) {
             if (!isMounted.current) return;
             const errorMsg = err instanceof Error ? err.message : "Error al cargar datos";
@@ -114,10 +118,9 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 description: errorMsg,
                 variant: "destructive",
             });
+            setIsLoading(false);
         } finally {
-            if (isMounted.current) {
-                setIsLoading(false);
-            }
+            setIsLoading(false);
         }
     };
 
@@ -581,7 +584,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     <Button
                         size="lg"
                         onClick={() => setIsModalCuadreOpen(true)}
-                        disabled={precuadre.PendientesDeCorte > 0}
+                        // disabled={precuadre.PendientesDeCorte > 0}
                     >
                         <Calculator className="h-4 w-4 mr-2" />
                         Cuadrar Caja Chica
