@@ -1,11 +1,11 @@
 import { getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
 import { getMovimientos } from "@/actions/MovimientosActions";
-import { CajaChicaClient } from "@/components/admin/caja-chica/CajaChicaClient";
+import { CajaChicaPage } from "@/components/admin/caja-chica/CajaChicaPage";
 import { currentUser } from "@/lib/auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-export default async function CajaChicaPage() {
+export default async function CajaChicaPageServer() {
     const user = await currentUser();
 
     if (!user) {
@@ -33,7 +33,7 @@ export default async function CajaChicaPage() {
 
     return (
         <div className="container mx-auto py-8">
-            <CajaChicaClient 
+            <CajaChicaPage 
                 usuarioId={user.usuario.UsuarioID}
                 precuadreInicial={precuadre}
                 movimientosInicial={movimientos}
