@@ -37,6 +37,7 @@ export default async function CajaChicaPage() {
                 usuarioId={user.usuario.UsuarioID}
                 precuadreInicial={precuadre}
                 movimientosInicial={movimientos}
+                sucursal={user.Sucursal}
             />
         </div>
     );

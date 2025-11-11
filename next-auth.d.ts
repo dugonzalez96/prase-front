@@ -37,12 +37,22 @@ export interface GrupoLogin {
   descripcion: string;
 }
 
+export interface SucursalLogin {
+  SucursalID: number;
+  NombreSucursal: string;
+  Direccion: string;
+  Ciudad: string;
+  Estado: string;
+  Activa: number;
+}
+
 export interface CustomUser extends DefaultUser {
   jwt: string;
   aplicaciones: Aplicaciones[];
   usuario: UsuarioLogin;
   empleado: EmpleadoLogin;
   grupo: GrupoLogin;
+  Sucursal: SucursalLogin;
 }
 
 declare module "next-auth" {
@@ -60,5 +70,6 @@ declare module "next-auth/jwt" {
     usuario: UsuarioLogin,
     empleado: EmpleadoLogin,
     grupo: GrupoLogin,
+    Sucursal: SucursalLogin,
   }
 }
