@@ -11,11 +11,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 interface ValidacionMovimientosClientProps {
     movimientosIniciales: iMovimientoPendiente[];
     usuarioId: number;
+    onDataActualizada?: () => void;
 }
 
 export function ValidacionMovimientosClient({
     movimientosIniciales,
-    usuarioId
+    usuarioId,
+    onDataActualizada
 }: ValidacionMovimientosClientProps) {
     const [movimientos, setMovimientos] = useState(movimientosIniciales);
     const [movimientoAValidar, setMovimientoAValidar] = useState<number | null>(null);
@@ -48,6 +50,12 @@ export function ValidacionMovimientosClient({
 
             const nuevosMovimientos = await getMovimientosPendientes();
             setMovimientos(nuevosMovimientos);
+            setMovimientoAValidar(null);
+
+            // Notificar al padre que se actualizaron los datos
+            if (onDataActualizada) {
+                onDataActualizada();
+            }
 
             router.refresh();
         } else {

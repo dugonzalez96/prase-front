@@ -38,6 +38,7 @@ import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
 import { AlertCircle, Calculator, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { ClipLoader } from "react-spinners";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/format";
 import { formatDateTimeFull } from "@/lib/format-date";
 import { LoaderModales } from "@/components/LoaderModales";
@@ -51,6 +52,7 @@ interface CajaChicaClientProps {
 
 export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicial, sucursal }: CajaChicaClientProps) {
     const { toast } = useToast();
+    const router = useRouter();
     const [precuadre, setPrecuadre] = useState<iPrecuadreCajaChicaBackend | null>(precuadreInicial || null);
     const [movimientos, setMovimientos] = useState<iGetMovimientos[]>(movimientosInicial || []);
     const [isLoading, setIsLoading] = useState(!precuadreInicial);
@@ -139,34 +141,45 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
     const handleCuadre = async () => {
         setIsLoadingCorte(true);
         try {
-            const result = await cuadrarCajaChicaAction(1, formDataCuadre);
+            // Calcular el saldo real antes de enviar
+            const saldoReal = 
+                formDataCuadre.TotalEfectivoCapturado + 
+                formDataCuadre.TotalTarjetaCapturado + 
+                formDataCuadre.TotalTransferenciaCapturado;
+
+            const dataToSend = {
+                ...formDataCuadre,
+                SaldoReal: saldoReal
+            };
+
+            const result = await cuadrarCajaChicaAction(usuarioId, dataToSend);
+            console.log("🚀 ~ handleCuadre ~ result:", result)
 
             if (!isMounted.current) return;
 
             if (result.success) {
                 toast({
-                    title: "Éxito",
-                    description: result.message,
+                    title: "✅ Cuadre Exitoso",
+                    description: `Folio: ${result.data?.cuadre?.FolioCierre || 'N/A'}`,
+                    variant: "default"
                 });
-                // Reset formulario
-                setFormDataCuadre({
-                    SucursalID: sucursal.SucursalID,
-                    SaldoReal: 0,
-                    TotalEfectivoCapturado: 0,
-                    TotalTarjetaCapturado: 0,
-                    TotalTransferenciaCapturado: 0,
-                    Observaciones: "",
-                });
-                // Refresh de página
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+
+                // Esperar un momento corto antes de navegar
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                if (isMounted.current) {
+                    // Navegar a la lista de cajas chicas
+                    router.push('/admin/caja-chica');
+                }
             } else {
-                toast({
-                    title: "Error",
-                    description: result.message,
-                    variant: "destructive",
-                });
+                if (isMounted.current) {
+                    toast({
+                        title: "Error",
+                        description: result.message,
+                        variant: "destructive",
+                    });
+                    setIsLoadingCorte(false);
+                }
             }
         } catch (err) {
             if (!isMounted.current) return;
@@ -176,10 +189,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 description: errorMsg,
                 variant: "destructive",
             });
-        } finally {
-            if (isMounted.current) {
-                setIsLoadingCorte(false);
-            }
+            setIsLoadingCorte(false);
         }
     };
 

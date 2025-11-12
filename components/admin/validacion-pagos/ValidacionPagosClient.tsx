@@ -7,15 +7,18 @@ import { validarPago } from "@/actions/PagosPolizaActions";
 import { TablaPagosPendientes } from "./TablaPagosPendientes";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { getPagosPendientes } from "@/actions/PagosPolizaActions";
 
 interface ValidacionPagosClientProps {
     pagosIniciales: iPagoPendiente[];
     usuarioId: number;
+    onDataActualizada?: () => void;
 }
 
 export function ValidacionPagosClient({ 
     pagosIniciales,
-    usuarioId
+    usuarioId,
+    onDataActualizada
 }: ValidacionPagosClientProps) {
     const [pagos, setPagos] = useState(pagosIniciales);
     const [pagoAValidar, setPagoAValidar] = useState<number | null>(null);
@@ -47,13 +50,13 @@ export function ValidacionPagosClient({
             });
 
             // Actualizar la lista de pagos
-            setPagos(prev => 
-                prev.map(p => 
-                    p.PagoID === pagoAValidar 
-                        ? { ...p, Validado: 1 }
-                        : p
-                )
-            );
+            const nuevosPagos = await getPagosPendientes();
+            setPagos(nuevosPagos || pagos);
+
+            // Notificar al padre que se actualizaron los datos
+            if (onDataActualizada) {
+                onDataActualizada();
+            }
 
             router.refresh();
         } else {

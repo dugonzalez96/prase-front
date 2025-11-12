@@ -47,6 +47,21 @@ export function ValidacionConsolidada({
         }
     };
 
+    const handleDataActualizada = async () => {
+        // Cuando se valida un movimiento o pago, recargamos los datos
+        try {
+            const [nuevosMov, nuevosPagos] = await Promise.all([
+                getMovimientosPendientes(),
+                getPagosPendientes()
+            ]);
+
+            if (nuevosMov) setMovimientosActuales(nuevosMov);
+            if (nuevosPagos) setPagosActuales(nuevosPagos);
+        } catch (error) {
+            console.error('Error al actualizar datos:', error);
+        }
+    };
+
     return (
         <div className="w-full">
             <div className="flex items-center justify-between mb-6">
@@ -97,6 +112,7 @@ export function ValidacionConsolidada({
                     <ValidacionMovimientosClient 
                         movimientosIniciales={movimientosActuales}
                         usuarioId={usuarioId}
+                        onDataActualizada={handleDataActualizada}
                     />
                 </TabsContent>
 
@@ -104,6 +120,7 @@ export function ValidacionConsolidada({
                     <ValidacionPagosClient 
                         pagosIniciales={pagosActuales}
                         usuarioId={usuarioId}
+                        onDataActualizada={handleDataActualizada}
                     />
                 </TabsContent>
             </Tabs>
