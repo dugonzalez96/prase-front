@@ -61,6 +61,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
 
     // Estado del formulario de cuadre
     const [formDataCuadre, setFormDataCuadre] = useState({
+        SucursalID: sucursal.SucursalID,
         SaldoReal: 0,
         TotalEfectivoCapturado: 0,
         TotalTarjetaCapturado: 0,
@@ -149,6 +150,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 });
                 // Reset formulario
                 setFormDataCuadre({
+                    SucursalID: sucursal.SucursalID,
                     SaldoReal: 0,
                     TotalEfectivoCapturado: 0,
                     TotalTarjetaCapturado: 0,

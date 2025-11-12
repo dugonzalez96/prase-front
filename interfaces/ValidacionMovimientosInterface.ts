@@ -6,16 +6,28 @@ export interface iMovimientoPendiente {
     FormaPago: string;
     Monto: string;
     Validado: number;
-    FechaTransaccion: Date;
+    FechaTransaccion: Date | string;
+    FechaActualizacion?: Date | string;
     Descripcion: string;
+    InicioCaja?: any;
     UsuarioCreo: {
         UsuarioID: number;
         NombreUsuario: string;
+        EmpleadoID?: number;
+        SucursalID?: number | null;
     };
-    CuentaBancaria: {
+    UsuarioValido?: {
+        UsuarioID: number;
+        NombreUsuario: string;
+        EmpleadoID?: number;
+        SucursalID?: number | null;
+    };
+    CuentaBancaria?: {
         CuentaBancariaID: number;
         NombreBanco: string;
         NumeroCuenta: string;
+        ClabeInterbancaria?: string;
+        Activa?: number;
     } | null;
 }
 

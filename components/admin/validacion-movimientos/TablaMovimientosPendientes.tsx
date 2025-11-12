@@ -21,14 +21,13 @@ import { DetalleMovimientoModal } from "./DetalleMovimientoModal";
 interface TablaMovimientosPendientesProps {
     movimientos: iMovimientoPendiente[];
     onValidar: (movimientoId: number) => void;
-    onRechazar: (movimientoId: number) => void;
 }
 
 export function TablaMovimientosPendientes({
     movimientos,
-    onValidar,
-    onRechazar
+    onValidar
 }: TablaMovimientosPendientesProps) {
+    console.log("🚀 ~ TablaMovimientosPendientes ~ movimientos:", movimientos)
     const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<iMovimientoPendiente | null>(null);
     const [modalAbierto, setModalAbierto] = useState(false);
 
@@ -43,8 +42,6 @@ export function TablaMovimientosPendientes({
                 return <Badge variant="outline" className="bg-yellow-50">Pendiente</Badge>;
             case 1:
                 return <Badge variant="outline" className="bg-green-50 text-green-700">Validado</Badge>;
-            case 2:
-                return <Badge variant="outline" className="bg-red-50 text-red-700">Rechazado</Badge>;
             default:
                 return <Badge variant="outline">Desconocido</Badge>;
         }
@@ -117,7 +114,7 @@ export function TablaMovimientosPendientes({
                                         {formatCurrency(parseFloat(movimiento.Monto))}
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
-                                        {formatDateTimeFull(movimiento.FechaTransaccion)}
+                                        {formatDateTimeFull(new Date(movimiento.FechaTransaccion))}
                                     </TableCell>
                                     <TableCell>{getEstadoBadge(movimiento.Validado)}</TableCell>
                                     <TableCell className="text-right">
@@ -141,14 +138,6 @@ export function TablaMovimientosPendientes({
                                                         <CheckCircle className="h-4 w-4 mr-1" />
                                                         Validar
                                                     </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        onClick={() => onRechazar(movimiento.TransaccionID)}
-                                                    >
-                                                        <XCircle className="h-4 w-4 mr-1" />
-                                                        Rechazar
-                                                    </Button>
                                                 </>
                                             )}
                                         </div>
@@ -169,7 +158,6 @@ export function TablaMovimientosPendientes({
                         setMovimientoSeleccionado(null);
                     }}
                     onValidar={onValidar}
-                    onRechazar={onRechazar}
                 />
             )}
         </>
