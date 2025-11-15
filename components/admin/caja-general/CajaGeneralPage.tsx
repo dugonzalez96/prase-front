@@ -4,23 +4,26 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, AlertCircle } from "lucide-react";
-import { CajaChicaClient } from "./CajaChicaClient";
-import { iPrecuadreCajaChicaBackend } from "@/interfaces/CajaChicaInterface";
+import { Plus, AlertCircle, Landmark } from "lucide-react";
+import { CajaGeneralFormClient } from "./CajaGeneralFormClient";
+import { iCajaGeneral, iResumenCajaGeneral, iCorteUsuarioResumen } from "@/interfaces/CajaGeneralInterface";
 import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
 
-interface CajaChicaPageProps {
+interface CajaGeneralPageProps {
+    cajaGeneral: iCajaGeneral;
+    resumenInicial: iResumenCajaGeneral;
+    cortesUsuarios: iCorteUsuarioResumen[];
+    movimientosIniciales: iGetMovimientos[];
     usuarioId: number;
-    precuadreInicial?: iPrecuadreCajaChicaBackend;
-    movimientosInicial?: iGetMovimientos[];
-    sucursal?: any;
 }
 
-export function CajaChicaPage({
-    usuarioId,
-    precuadreInicial,
-    sucursal,
-}: CajaChicaPageProps) {
+export function CajaGeneralPage({
+    cajaGeneral,
+    resumenInicial,
+    cortesUsuarios,
+    movimientosIniciales,
+    usuarioId
+}: CajaGeneralPageProps) {
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
     return (
@@ -30,36 +33,30 @@ export function CajaChicaPage({
                     {/* ENCABEZADO - LISTADO */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="text-3xl font-bold">Cuadres de Caja Chica</h2>
+                            <h2 className="text-3xl font-bold flex items-center gap-2">
+                                <Landmark className="h-8 w-8" />
+                                Cuadres de Caja General
+                            </h2>
                             <p className="text-muted-foreground mt-2">
-                                Gestiona los cuadres de caja chica de tu sucursal
+                                Gestiona los cuadres de caja general
                             </p>
                         </div>
-
-                        <Button
-                            size="lg"
+                        <Button 
+                            size="lg" 
                             onClick={() => setMostrarFormulario(true)}
-                            disabled={precuadreInicial ? !precuadreInicial.DebeCuadrarseHoy : false}
+                            disabled={resumenInicial ? !resumenInicial.DebeCuadrarseHoy : false}
                         >
                             <Plus className="h-4 w-4 mr-2" />
                             Crear Cuadre
                         </Button>
                     </div>
-                    {/* ALERTA - SI NO PUEDE CUADRARSE HOY */}
-                    {precuadreInicial && !precuadreInicial.DebeCuadrarseHoy && (
-                        <Alert className="bg-yellow-50 border-yellow-200">
-                            <AlertCircle className="h-4 w-4 text-yellow-600" />
-                            <AlertDescription className="text-yellow-800">
-                                <strong>ℹ️ No es posible crear cuadre hoy.</strong> El cuadre debe realizarse según el período establecido.
-                            </AlertDescription>
-                        </Alert>
-                    )}
+
                     {/* LISTADO - PLACEHOLDER */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Historial de Cuadres</CardTitle>
                             <CardDescription>
-                                Cuadres realizados anteriormente
+                                Cuadres de caja general realizados
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -72,16 +69,24 @@ export function CajaChicaPage({
                         </CardContent>
                     </Card>
 
-
+                    {/* ALERTA - SI NO PUEDE CUADRARSE HOY */}
+                    {resumenInicial && !resumenInicial.DebeCuadrarseHoy && (
+                        <Alert className="bg-yellow-50 border-yellow-200">
+                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                            <AlertDescription className="text-yellow-800">
+                                <strong>ℹ️ No es posible crear cuadre hoy.</strong> El cuadre debe realizarse según el período establecido.
+                            </AlertDescription>
+                        </Alert>
+                    )}
                 </>
             ) : (
                 <>
                     {/* ENCABEZADO - FORMULARIO */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="text-3xl font-bold">Nuevo Cuadre de Caja Chica</h2>
+                            <h2 className="text-3xl font-bold">Nuevo Cuadre de Caja General</h2>
                             <p className="text-muted-foreground mt-2">
-                                Completa el cuadre de tu caja chica
+                                Completa el cuadre de caja general
                             </p>
                         </div>
                         <Button
@@ -94,10 +99,12 @@ export function CajaChicaPage({
                     </div>
 
                     {/* FORMULARIO - CUADRE */}
-                    <CajaChicaClient
+                    <CajaGeneralFormClient
+                        cajaGeneral={cajaGeneral}
+                        resumenInicial={resumenInicial}
+                        cortesUsuarios={cortesUsuarios}
+                        movimientosIniciales={movimientosIniciales}
                         usuarioId={usuarioId}
-                        precuadreInicial={precuadreInicial}
-                        sucursal={sucursal}
                     />
                 </>
             )}

@@ -22,21 +22,18 @@ export default async function CajaChicaPageServer() {
     }
 
     // Cargar datos iniciales server-side
-    const [precuadreResult, movimientosResult] = await Promise.all([
+    const [precuadreResult] = await Promise.all([
         getPrecuadreCajaChica(),
-        getMovimientos(),
     ]);
 
     // Validar precuadre
     const precuadre = "error" in precuadreResult ? undefined : precuadreResult;
-    const movimientos = movimientosResult || [];
 
     return (
         <div className="container mx-auto py-8">
-            <CajaChicaPage 
+            <CajaChicaPage
                 usuarioId={user.usuario.UsuarioID}
                 precuadreInicial={precuadre}
-                movimientosInicial={movimientos}
                 sucursal={user.Sucursal}
             />
         </div>

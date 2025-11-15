@@ -11,6 +11,7 @@ export const getPagosPendientes = async () => {
             headers: {
                 'Content-Type': 'application/json',
             },
+            cache: 'no-store'
         });
 
         if (!response.ok) {
@@ -36,6 +37,7 @@ export const validarPago = async (pagoID: number, body: iValidarPagoPendiente) =
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(body),
+            cache: 'no-store'
         });
 
         if (!response.ok) {

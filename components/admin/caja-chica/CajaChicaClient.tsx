@@ -17,48 +17,35 @@
  */
 
 import { getPrecuadreCajaChica, cuadrarCajaChica as cuadrarCajaChicaAction } from "@/actions/CajaChicaActions";
-import { getMovimientos } from "@/actions/MovimientosActions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { iPrecuadreCajaChicaBackend } from "@/interfaces/CajaChicaInterface";
-import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
 import { AlertCircle, Calculator, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { ClipLoader } from "react-spinners";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/format";
-import { formatDateTimeFull } from "@/lib/format-date";
 import { LoaderModales } from "@/components/LoaderModales";
 
 interface CajaChicaClientProps {
     usuarioId: number;
     precuadreInicial?: iPrecuadreCajaChicaBackend;
-    movimientosInicial?: iGetMovimientos[];
     sucursal?: any;
 }
 
-export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicial, sucursal }: CajaChicaClientProps) {
+export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaChicaClientProps) {
     const { toast } = useToast();
     const router = useRouter();
     const [precuadre, setPrecuadre] = useState<iPrecuadreCajaChicaBackend | null>(precuadreInicial || null);
-    const [movimientos, setMovimientos] = useState<iGetMovimientos[]>(movimientosInicial || []);
     const [isLoading, setIsLoading] = useState(!precuadreInicial);
     const [isLoadingCorte, setIsLoadingCorte] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
     const isMounted = useRef(true);
 
     // Estado del formulario de cuadre
@@ -76,10 +63,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
         setIsLoading(true);
         setError(null);
         try {
-            const [precuadreResult, movimientosResult] = await Promise.all([
-                getPrecuadreCajaChica(),
-                getMovimientos(),
-            ]);
+            const precuadreResult = await getPrecuadreCajaChica();
 
             if (!isMounted.current) return;
 
@@ -96,14 +80,9 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
             }
             setPrecuadre(precuadreResult);
 
-            // Movimientos
-            if (movimientosResult) {
-                setMovimientos(movimientosResult);
-            }
-
             // Mostrar mensajes
             if (precuadreResult.mensajes && precuadreResult.mensajes.length > 0) {
-                precuadreResult.mensajes.forEach((msg) => {
+                precuadreResult.mensajes.forEach((msg: string) => {
                     toast({
                         title: "Información",
                         description: msg,
@@ -170,6 +149,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 if (isMounted.current) {
                     // Navegar a la lista de cajas chicas
                     router.push('/admin/caja-chica');
+                    setIsLoadingCorte(false);
                 }
             } else {
                 if (isMounted.current) {
@@ -218,18 +198,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
             </div>
         );
     }
-
-    // Calcular totales de movimientos
-    const ingresos = movimientos.filter((m) => m.TipoTransaccion === "Ingreso");
-    const egresos = movimientos.filter((m) => m.TipoTransaccion === "Egreso");
-
-    // Cálculos simples
-    const saldoDisponible =
-        precuadre.FondoInicial +
-        precuadre.Totales.TotalIngresos -
-        precuadre.Totales.TotalEgresos;
-    const entregaAGeneral = Math.max(0, saldoDisponible - precuadre.FondoInicial);
-    const saldoFinal = saldoDisponible - entregaAGeneral;
 
     return (
         <>
@@ -477,9 +445,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
 
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* SALDO ESPERADO */}
-
-
                         {/* CAMPOS DE CAPTURA */}
                         <div className="space-y-4">
                             <div className="grid grid-cols-3 gap-4">

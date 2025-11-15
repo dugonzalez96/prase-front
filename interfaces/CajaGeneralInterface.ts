@@ -138,6 +138,7 @@ export interface iResumenCajaGeneral {
     CortesValidados: number;
     CortesPendientes: number;
     Estado: string;
+    DebeCuadrarseHoy?: boolean;
 }
 
 export interface iCorteUsuarioResumen {

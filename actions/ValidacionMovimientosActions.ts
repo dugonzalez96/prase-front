@@ -179,6 +179,7 @@ export const getMovimientosPendientes = async (
       headers: {
         "Content-Type": "application/json",
       },
+      cache: 'no-store'
     });
 
     if (!response.ok) {
@@ -209,7 +210,14 @@ export const getMovimientoByID = async (id: number) => {
 };
 
 export const validarMovimiento = async (body: iPostValidarMovimiento) => {
-  console.log("🚀 ~ validarMovimiento ~ body:", body)
+console.log("🚀 ~ validarMovimiento ~ body:", body)
+
+  const payload = {
+    Validado: 1,
+    UsuarioValidoID: body.UsuarioValidoID,
+  };
+  console.log("🚀 ~ validarMovimiento ~ payload:", payload)
+
   try {
     const url = `${process.env.API_URL}/transacciones/${body.TransaccionID}/usuario`;
 
@@ -218,10 +226,8 @@ export const validarMovimiento = async (body: iPostValidarMovimiento) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        Validado: 1,
-        UsuarioValidoID: body.UsuarioValidoID,
-      }),
+      body: JSON.stringify(payload),
+      cache: 'no-store'
     });
 
     if (!response.ok) {
