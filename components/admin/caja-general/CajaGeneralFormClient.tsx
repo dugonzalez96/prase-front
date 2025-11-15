@@ -127,25 +127,18 @@ export function CajaGeneralFormClient({
                             </div>
                             <div>
                                 <CardTitle className="text-sm text-muted-foreground mb-2">
-                                    Caja General
+                                    Sucursal
                                 </CardTitle>
                                 <Select value={selectedCaja} onValueChange={setSelectedCaja}>
                                     <SelectTrigger className="bg-white">
-                                        <SelectValue placeholder="Selecciona una caja" />
+                                        <SelectValue placeholder="Selecciona una sucursal" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="caja1">Caja General #1</SelectItem>
-                                        <SelectItem value="caja2">Caja General #2</SelectItem>
-                                        <SelectItem value="caja3">Caja General #3</SelectItem>
+                                        <SelectItem value="sucursal1">Sucursal #1</SelectItem>
+                                        <SelectItem value="sucursal2">Sucursal #2</SelectItem>
+                                        <SelectItem value="sucursal3">Sucursal #3</SelectItem>
                                     </SelectContent>
                                 </Select>
-                            </div>
-                            <div>
-                                <CardTitle className="text-sm text-muted-foreground mb-2">
-                                    Fondo Mínimo
-                                </CardTitle>
-                                <p className="text-xl font-bold text-blue-900">{formatCurrency(parseFloat(fondoMinimo))}</p>
-                                <p className="text-xs text-muted-foreground">Mock data (servicio pendiente)</p>
                             </div>
                         </div>
                     </CardHeader>
@@ -154,9 +147,9 @@ export function CajaGeneralFormClient({
                 {/* TABLA - ENTRADAS DEL DÍA */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Entradas del Día</CardTitle>
+                        <CardTitle>Entradas del Día por Sucursal</CardTitle>
                         <CardDescription>
-                            Movimientos de efectivo registrados
+                            Movimientos de efectivo registrados por sucursal
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -211,7 +204,7 @@ export function CajaGeneralFormClient({
                             <div>
                                 <CardTitle className="flex items-center gap-2">
                                     <TrendingUp className="h-5 w-5 text-green-600" />
-                                    Ingresos
+                                    Ingresos por sucursal
                                 </CardTitle>
                                 <CardDescription>
                                     Total: {formatCurrency(totalIngresos)}
@@ -287,7 +280,7 @@ export function CajaGeneralFormClient({
                             <div>
                                 <CardTitle className="flex items-center gap-2">
                                     <TrendingDown className="h-5 w-5 text-red-600" />
-                                    Egresos
+                                    Egresos por sucursal
                                 </CardTitle>
                                 <CardDescription>
                                     Total: {formatCurrency(totalEgresos)}
@@ -381,8 +374,8 @@ export function CajaGeneralFormClient({
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Diferencia</label>
                                 <p className={`text-lg font-semibold p-2 rounded border ${Math.abs(totalIngresos - totalEgresos - parseFloat(efectivoContado)) > 0
-                                        ? "bg-orange-100 border-orange-300"
-                                        : "bg-green-100 border-green-300"
+                                    ? "bg-orange-100 border-orange-300"
+                                    : "bg-green-100 border-green-300"
                                     }`}>
                                     {formatCurrency(totalIngresos - totalEgresos - parseFloat(efectivoContado))}
                                 </p>
@@ -451,8 +444,8 @@ export function CajaGeneralFormClient({
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Diferencia:</span>
                             <span className={`font-semibold ${Math.abs(totalIngresos - totalEgresos - parseFloat(efectivoContado)) > 0
-                                    ? "text-orange-600"
-                                    : "text-green-600"
+                                ? "text-orange-600"
+                                : "text-green-600"
                                 }`}>
                                 {formatCurrency(totalIngresos - totalEgresos - parseFloat(efectivoContado))}
                             </span>

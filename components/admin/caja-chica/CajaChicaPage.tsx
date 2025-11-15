@@ -8,6 +8,7 @@ import { Plus, AlertCircle } from "lucide-react";
 import { CajaChicaClient } from "./CajaChicaClient";
 import { iPrecuadreCajaChicaBackend } from "@/interfaces/CajaChicaInterface";
 import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
+import { formatCurrency } from "@/lib/format";
 
 interface CajaChicaPageProps {
     usuarioId: number;
@@ -22,9 +23,10 @@ export function CajaChicaPage({
     sucursal,
 }: CajaChicaPageProps) {
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
+    const [precuadre] = useState(precuadreInicial)
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6" >
             {!mostrarFormulario ? (
                 <>
                     {/* ENCABEZADO - LISTADO */}
@@ -39,7 +41,7 @@ export function CajaChicaPage({
                         <Button
                             size="lg"
                             onClick={() => setMostrarFormulario(true)}
-                            disabled={precuadreInicial ? !precuadreInicial.DebeCuadrarseHoy : false}
+                        // disabled={precuadreInicial ? !precuadreInicial.DebeCuadrarseHoy : false}
                         >
                             <Plus className="h-4 w-4 mr-2" />
                             Crear Cuadre
@@ -48,12 +50,53 @@ export function CajaChicaPage({
                     {/* ALERTA - SI NO PUEDE CUADRARSE HOY */}
                     {precuadreInicial && !precuadreInicial.DebeCuadrarseHoy && (
                         <Alert className="bg-yellow-50 border-yellow-200">
-                            <AlertCircle className="h-4 w-4 text-yellow-600" />
-                            <AlertDescription className="text-yellow-800">
-                                <strong>ℹ️ No es posible crear cuadre hoy.</strong> El cuadre debe realizarse según el período establecido.
+                            <AlertDescription className="text-yellow-800 flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                <strong> No es posible crear cuadre.</strong> Ya hay un corte de caja chica hoy.
                             </AlertDescription>
                         </Alert>
                     )}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Información de Caja</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Sucursal</p>
+                                <p className="font-semibold">{sucursal?.NombreSucursal || "No disponible"}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Ciudad</p>
+                                <p className="font-semibold">{sucursal?.Ciudad || "No disponible"}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Fondo Fijo</p>
+                                <p className="font-semibold">{precuadre ? formatCurrency(precuadre.FondoInicial) : formatCurrency(0)}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Fecha</p>
+                                <p className="font-semibold">
+                                    {new Date().toLocaleDateString("es-MX")}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Desde</p>
+                                <p className="font-semibold">
+                                    {precuadre?.FechaDesde
+                                        ? new Date(precuadre.FechaDesde).toLocaleDateString("es-MX")
+                                        : "No especificada"}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Hasta</p>
+                                <p className="font-semibold">
+                                    {precuadre?.FechaHasta
+                                        ? new Date(precuadre.FechaHasta).toLocaleDateString("es-MX")
+                                        : "No especificada"}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
                     {/* LISTADO - PLACEHOLDER */}
                     <Card>
                         <CardHeader>
@@ -101,6 +144,6 @@ export function CajaChicaPage({
                     />
                 </>
             )}
-        </div>
+        </div >
     );
 }

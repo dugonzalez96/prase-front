@@ -44,7 +44,7 @@ export function CajaGeneralPage({
                         <Button 
                             size="lg" 
                             onClick={() => setMostrarFormulario(true)}
-                            disabled={resumenInicial ? !resumenInicial.DebeCuadrarseHoy : false}
+                            // disabled={resumenInicial ? !resumenInicial.DebeCuadrarseHoy : false}
                         >
                             <Plus className="h-4 w-4 mr-2" />
                             Crear Cuadre

@@ -259,7 +259,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                     </div>
                 </div>
 
-                {/* ENCABEZADO - MOCK */}
+                {/* ENCABEZADO */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Información de Caja</CardTitle>
