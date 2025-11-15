@@ -1,5 +1,5 @@
 import { getCuentasBancarias } from "@/actions/ClientesActions";
-import { getMovimientosByID } from "@/actions/MovimientosActions"
+import { getMovimientos, getMovimientosByID } from "@/actions/MovimientosActions"
 import { getUsuarios } from "@/actions/SeguridadActions";
 import { NuevoMovimientoForm } from "@/components/admin/movimientos/NuevoMovimientoForm";
 import { TablaMovimientos } from "@/components/admin/movimientos/TablaMovimientos";
@@ -8,18 +8,24 @@ import { currentUser } from "@/lib/auth";
 import { ClienteGenerarCodigo } from "@/components/admin/movimientos/ClienteGenerarCodigo";
 
 export default async function MovimientosPage() {
-    const [movimientos, cuentasBancarias, usuarios, user] = await Promise.all([
-        getMovimientosByID(),
-        getCuentasBancarias(),
-        getUsuarios(),
-        currentUser()
-    ]);
+    const user = await currentUser();
+    // console.log("🚀 ~ MovimientosPage ~ user:", user)
     
     if (!user) {
         return (
             <h4 className="text-red-500">Error al obtener información del usuario actual, intente nuevamente.</h4>
         )
     }
+
+    // Detectar si es administrador
+    const esAdmin = user.grupo?.nombre === "Administrador";
+
+    // si es admin, cargar todos los movimientos, sino solo los del usuario
+    const [movimientos, cuentasBancarias, usuarios] = await Promise.all([
+        esAdmin ? getMovimientos() : getMovimientosByID(),
+        getCuentasBancarias(),
+        getUsuarios()
+    ]);
 
     if (!cuentasBancarias || !usuarios) {
         return (

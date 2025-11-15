@@ -1,13 +1,13 @@
 import { 
     getCajaGeneralActiva, 
     getResumenCajaGeneral, 
-    getCortesUsuarios,
-    getMovimientosCajaGeneral 
+    getCortesUsuarios
 } from "@/actions/CajaGeneralActions";
-import { CajaGeneralClient } from "@/components/admin/caja-general/CajaGeneralClient";
+import { getMovimientos } from "@/actions/MovimientosActions";
+import { CajaGeneralPage } from "@/components/admin/caja-general/CajaGeneralPage";
 import { currentUser } from "@/lib/auth";
 
-export default async function CajaGeneralPage() {
+export default async function CajaGeneralPageServer() {
     const user = await currentUser();
 
     if (!user) {
@@ -20,12 +20,12 @@ export default async function CajaGeneralPage() {
 
     const [cajaGeneral, resumen, cortes, movimientos] = await Promise.all([
         getCajaGeneralActiva(),
-        getResumenCajaGeneral(1), // ID mock
+        getResumenCajaGeneral(1),
         getCortesUsuarios(),
-        getMovimientosCajaGeneral(1) // ID mock
+        getMovimientos()
     ]);
 
-    if (!cajaGeneral || !resumen || !cortes || !movimientos) {
+    if (!cajaGeneral || !resumen || !cortes) {
         return (
             <div className="container mx-auto py-8">
                 <h4 className="text-red-500">Error al obtener datos de caja general</h4>
@@ -35,11 +35,11 @@ export default async function CajaGeneralPage() {
 
     return (
         <div className="container mx-auto py-8">
-            <CajaGeneralClient 
+            <CajaGeneralPage 
                 cajaGeneral={cajaGeneral}
                 resumenInicial={resumen}
                 cortesUsuarios={cortes}
-                movimientosIniciales={movimientos}
+                movimientosIniciales={movimientos || []}
                 usuarioId={user.usuario.UsuarioID}
             />
         </div>

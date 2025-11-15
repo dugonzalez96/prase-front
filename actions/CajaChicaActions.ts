@@ -50,6 +50,7 @@ export const cuadrarCajaChica = async (id: number, body: iCuadrarCajaChica) => {
         });
 
         const data = await resp.json();
+        console.log("🚀 ~ cuadrarCajaChica ~ data:", data)
 
         if (!resp.ok) {
             return { 
@@ -69,7 +70,7 @@ export const cuadrarCajaChica = async (id: number, body: iCuadrarCajaChica) => {
             success: false,
             message: 'Error al conectar con el servidor'
         };
-    }
+    } 
 }
 
 /**

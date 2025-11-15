@@ -17,49 +17,40 @@
  */
 
 import { getPrecuadreCajaChica, cuadrarCajaChica as cuadrarCajaChicaAction } from "@/actions/CajaChicaActions";
-import { getMovimientos } from "@/actions/MovimientosActions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { iPrecuadreCajaChicaBackend } from "@/interfaces/CajaChicaInterface";
-import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
 import { AlertCircle, Calculator, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { ClipLoader } from "react-spinners";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/format";
-import { formatDateTimeFull } from "@/lib/format-date";
 import { LoaderModales } from "@/components/LoaderModales";
 
 interface CajaChicaClientProps {
     usuarioId: number;
     precuadreInicial?: iPrecuadreCajaChicaBackend;
-    movimientosInicial?: iGetMovimientos[];
+    sucursal?: any;
 }
 
-export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicial }: CajaChicaClientProps) {
+export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaChicaClientProps) {
     const { toast } = useToast();
+    const router = useRouter();
     const [precuadre, setPrecuadre] = useState<iPrecuadreCajaChicaBackend | null>(precuadreInicial || null);
-    const [movimientos, setMovimientos] = useState<iGetMovimientos[]>(movimientosInicial || []);
     const [isLoading, setIsLoading] = useState(!precuadreInicial);
     const [isLoadingCorte, setIsLoadingCorte] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [isModalCuadreOpen, setIsModalCuadreOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
     const isMounted = useRef(true);
 
     // Estado del formulario de cuadre
     const [formDataCuadre, setFormDataCuadre] = useState({
+        SucursalID: sucursal.SucursalID,
         SaldoReal: 0,
         TotalEfectivoCapturado: 0,
         TotalTarjetaCapturado: 0,
@@ -72,11 +63,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
         setIsLoading(true);
         setError(null);
         try {
-            const [precuadreResult, movimientosResult] = await Promise.all([
-                getPrecuadreCajaChica(),
-                getMovimientos(),
-            ]);
-            console.log("🚀 ~ fetchData ~ precuadreResult, movimientosResult:", precuadreResult, movimientosResult)
+            const precuadreResult = await getPrecuadreCajaChica();
 
             if (!isMounted.current) return;
 
@@ -93,14 +80,9 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
             }
             setPrecuadre(precuadreResult);
 
-            // Movimientos
-            if (movimientosResult) {
-                setMovimientos(movimientosResult);
-            }
-
             // Mostrar mensajes
             if (precuadreResult.mensajes && precuadreResult.mensajes.length > 0) {
-                precuadreResult.mensajes.forEach((msg) => {
+                precuadreResult.mensajes.forEach((msg: string) => {
                     toast({
                         title: "Información",
                         description: msg,
@@ -138,34 +120,46 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
     const handleCuadre = async () => {
         setIsLoadingCorte(true);
         try {
-            const result = await cuadrarCajaChicaAction(1, formDataCuadre);
+            // Calcular el saldo real antes de enviar
+            const saldoReal = 
+                formDataCuadre.TotalEfectivoCapturado + 
+                formDataCuadre.TotalTarjetaCapturado + 
+                formDataCuadre.TotalTransferenciaCapturado;
+
+            const dataToSend = {
+                ...formDataCuadre,
+                SaldoReal: saldoReal
+            };
+
+            const result = await cuadrarCajaChicaAction(usuarioId, dataToSend);
+            console.log("🚀 ~ handleCuadre ~ result:", result)
 
             if (!isMounted.current) return;
 
             if (result.success) {
                 toast({
-                    title: "Éxito",
-                    description: result.message,
+                    title: "✅ Cuadre Exitoso",
+                    description: `Folio: ${result.data?.cuadre?.FolioCierre || 'N/A'}`,
+                    variant: "default"
                 });
-                setIsModalCuadreOpen(false);
-                // Reset formulario
-                setFormDataCuadre({
-                    SaldoReal: 0,
-                    TotalEfectivoCapturado: 0,
-                    TotalTarjetaCapturado: 0,
-                    TotalTransferenciaCapturado: 0,
-                    Observaciones: "",
-                });
-                // Refresh de página
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+
+                // Esperar un momento corto antes de navegar
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                if (isMounted.current) {
+                    // Navegar a la lista de cajas chicas
+                    router.push('/admin/caja-chica');
+                    setIsLoadingCorte(false);
+                }
             } else {
-                toast({
-                    title: "Error",
-                    description: result.message,
-                    variant: "destructive",
-                });
+                if (isMounted.current) {
+                    toast({
+                        title: "Error",
+                        description: result.message,
+                        variant: "destructive",
+                    });
+                    setIsLoadingCorte(false);
+                }
             }
         } catch (err) {
             if (!isMounted.current) return;
@@ -175,10 +169,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                 description: errorMsg,
                 variant: "destructive",
             });
-        } finally {
-            if (isMounted.current) {
-                setIsLoadingCorte(false);
-            }
+            setIsLoadingCorte(false);
         }
     };
 
@@ -207,18 +198,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
             </div>
         );
     }
-
-    // Calcular totales de movimientos
-    const ingresos = movimientos.filter((m) => m.TipoTransaccion === "Ingreso");
-    const egresos = movimientos.filter((m) => m.TipoTransaccion === "Egreso");
-
-    // Cálculos simples
-    const saldoDisponible =
-        precuadre.FondoInicial +
-        precuadre.Totales.TotalIngresos -
-        precuadre.Totales.TotalEgresos;
-    const entregaAGeneral = Math.max(0, saldoDisponible - precuadre.FondoInicial);
-    const saldoFinal = saldoDisponible - entregaAGeneral;
 
     return (
         <>
@@ -253,9 +232,9 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                         {precuadre.mensajes && precuadre.mensajes.length > 0 && (
                             <div className="space-y-2 ">
                                 {precuadre.mensajes.map((msg, idx) => (
-                                    <Alert key={idx}>
-                                        <AlertCircle className="h-4 w-4" />
-                                        <AlertDescription>{msg}</AlertDescription>
+                                    <Alert key={idx} className="bg-blue-50 border-blue-200">
+                                        <AlertCircle className="h-4 w-4 text-blue-600" />
+                                        <AlertDescription className="text-blue-800">{msg}</AlertDescription>
                                     </Alert>
                                 ))}
                             </div>
@@ -265,10 +244,10 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     {/* Usuarios pendientes */}
                     <div className="w-full">
                         {precuadre.UsuariosPendientes && precuadre.UsuariosPendientes.length > 0 && (
-                            <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>
-                                    <strong>⚠️ Usuarios con cortes pendientes:</strong>
+                            <Alert className="bg-blue-50 border-blue-200">
+                                <AlertCircle className="h-4 w-4 text-blue-600" />
+                                <AlertDescription className="text-blue-800">
+                                    <strong>ℹ️ Usuarios con cortes pendientes:</strong>
                                     <ul className="list-disc ml-6 mt-2">
                                         {precuadre.UsuariosPendientes.map((usuario) => (
                                             <li key={usuario.UsuarioID}>{usuario.Nombre}</li>
@@ -280,7 +259,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     </div>
                 </div>
 
-                {/* ENCABEZADO - MOCK */}
+                {/* ENCABEZADO */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Información de Caja</CardTitle>
@@ -288,11 +267,11 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                     <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <p className="text-sm text-muted-foreground">Sucursal</p>
-                            <p className="font-semibold">Centro</p>
+                            <p className="font-semibold">{sucursal?.NombreSucursal || "No disponible"}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Caja</p>
-                            <p className="font-semibold">Mostrador #10</p>
+                            <p className="text-sm text-muted-foreground">Ciudad</p>
+                            <p className="font-semibold">{sucursal?.Ciudad || "No disponible"}</p>
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Fondo Fijo</p>
@@ -304,11 +283,27 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                                 {new Date().toLocaleDateString("es-MX")}
                             </p>
                         </div>
+                        <div>
+                            <p className="text-sm text-muted-foreground">Desde</p>
+                            <p className="font-semibold">
+                                {precuadre.FechaDesde
+                                    ? new Date(precuadre.FechaDesde).toLocaleDateString("es-MX")
+                                    : "No especificada"}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-muted-foreground">Hasta</p>
+                            <p className="font-semibold">
+                                {precuadre.FechaHasta
+                                    ? new Date(precuadre.FechaHasta).toLocaleDateString("es-MX")
+                                    : "No especificada"}
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
 
                 {/* TARJETAS - TOTALES POR MÉTODO */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -349,403 +344,257 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, movimientosInicia
                             </p>
                         </CardContent>
                     </Card>
-                </div>
 
-                {/* TABLA - OTROS MOVIMIENTOS */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Movimientos del Día</CardTitle>
-                        <CardDescription>
-                            Ingresos y egresos registrados
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {movimientos.length === 0 ? (
-                            <p className="text-center text-muted-foreground py-8">
-                                No hay movimientos registrados
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4 text-blue-500" />
+                                Total Ingresos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-blue-600">
+                                {formatCurrency(precuadre.Totales.TotalIngresos)}
                             </p>
-                        ) : (
-                            <>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead>Tipo</TableHead>
-                                            <TableHead>Forma de Pago</TableHead>
-                                            <TableHead>Usuario</TableHead>
-                                            <TableHead className="text-right">Monto</TableHead>
-                                            <TableHead>Estado</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {(() => {
-                                            const itemsPerPage = 10;
-                                            const start = (currentPage - 1) * itemsPerPage;
-                                            const end = start + itemsPerPage;
-                                            const paginatedMovimientos = movimientos.slice(start, end);
-                                            return paginatedMovimientos.map((mov) => (
-                                                <TableRow key={mov.TransaccionID}>
-                                                    <TableCell className="text-sm">
-                                                        {formatDateTimeFull(mov.FechaTransaccion)}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            className={
-                                                                mov.TipoTransaccion === "Ingreso"
-                                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                                                    : "bg-red-100 text-red-800 hover:bg-red-200"
-                                                            }
-                                                        >
-                                                            {mov.TipoTransaccion}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell>{mov.FormaPago}</TableCell>
-                                                    <TableCell>{mov.UsuarioCreo.NombreUsuario}</TableCell>
-                                                    <TableCell
-                                                        className={`text-right font-semibold ${mov.TipoTransaccion === "Ingreso"
-                                                            ? "text-green-600"
-                                                            : "text-red-600"
-                                                            }`}
-                                                    >
-                                                        {mov.TipoTransaccion === "Ingreso" ? "+" : "-"}
-                                                        {formatCurrency(Number(mov.Monto))}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant={
-                                                                mov.Validado === 1
-                                                                    ? "default"
-                                                                    : "secondary"
-                                                            }
-                                                        >
-                                                            {mov.Validado === 1
-                                                                ? "Validado"
-                                                                : "Pendiente"}
-                                                        </Badge>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ));
-                                        })()}
-                                    </TableBody>
-                                </Table>
+                        </CardContent>
+                    </Card>
 
-                                {/* Paginación */}
-                                {movimientos.length > 10 && (
-                                    <div className="flex items-center justify-between pt-4 border-t">
-                                        <span className="text-sm text-muted-foreground">
-                                            Mostrando {Math.min((currentPage - 1) * 10 + 1, movimientos.length)} a{" "}
-                                            {Math.min(currentPage * 10, movimientos.length)} de {movimientos.length} movimientos
-                                        </span>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                                disabled={currentPage === 1}
-                                            >
-                                                Anterior
-                                            </Button>
-                                            <div className="flex items-center gap-1">
-                                                {Array.from({
-                                                    length: Math.ceil(movimientos.length / 10),
-                                                }).map((_, i) => (
-                                                    <Button
-                                                        key={i + 1}
-                                                        variant={currentPage === i + 1 ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => setCurrentPage(i + 1)}
-                                                        className="w-8"
-                                                    >
-                                                        {i + 1}
-                                                    </Button>
-                                                ))}
-                                            </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    setCurrentPage((p) =>
-                                                        Math.min(
-                                                            Math.ceil(movimientos.length / 10),
-                                                            p + 1
-                                                        )
-                                                    )
-                                                }
-                                                disabled={
-                                                    currentPage ===
-                                                    Math.ceil(movimientos.length / 10)
-                                                }
-                                            >
-                                                Siguiente
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {/* Totales de movimientos */}
-                        <div className="mt-4 pt-4 border-t flex justify-end gap-8">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Ingresos</p>
-                                <p className="text-lg font-bold text-green-600">
-                                    {formatCurrency(precuadre.Totales.TotalIngresos)}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Egresos</p>
-                                <p className="text-lg font-bold text-red-600">
-                                    {formatCurrency(precuadre.Totales.TotalEgresos)}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* TABLA - CÁLCULOS */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Cálculos</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell className="font-medium">Saldo Inicial</TableCell>
-                                    <TableCell className="text-right">
-                                        {formatCurrency(precuadre.FondoInicial)}
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell className="font-medium">+ Ingresos Usuarios</TableCell>
-                                    <TableCell className="text-right text-green-600 font-semibold">
-                                        +{formatCurrency(precuadre.Totales.TotalIngresos)}
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell className="font-medium">- Egresos</TableCell>
-                                    <TableCell className="text-right text-red-600 font-semibold">
-                                        -{formatCurrency(precuadre.Totales.TotalEgresos)}
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow className="border-t-2">
-                                    <TableCell className="font-bold">= Saldo Disponible</TableCell>
-                                    <TableCell className="text-right font-bold">
-                                        {formatCurrency(saldoDisponible)}
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell className="font-medium">- Entrega a General</TableCell>
-                                    <TableCell className="text-right">
-                                        {formatCurrency(entregaAGeneral)}
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow className="border-t-2 bg-slate-50">
-                                    <TableCell className="font-bold">= Saldo Final</TableCell>
-                                    <TableCell className="text-right font-bold">
-                                        {formatCurrency(saldoFinal)}
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium flex items-center gap-2">
+                                <TrendingDown className="h-4 w-4 text-orange-500" />
+                                Total Egresos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-orange-600">
+                                {formatCurrency(precuadre.Totales.TotalEgresos)}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
 
                 {/* TABLA - DETALLE USUARIOS */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Detalle de Cortes por Usuario</CardTitle>
+                        <CardTitle>Inicios de Caja Activos</CardTitle>
                         <CardDescription>
-                            ⚠️ Preguntar de dónde se obtiene esta información (backend no la proporciona en precuadre)
+                            Usuarios con cajas activas en el período
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Alert>
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                                Esta sección está vacía. Se necesita especificar el origen de los datos:
-                                ¿De un endpoint separado? ¿De los movimientos? ¿De los inicios de caja?
-                                <p>
-                                    | Usuario | Efectivo | Tarjeta | Transferencia | Depósito | Egresos | Teórico | Diferencia | Estado |
-                                </p>
-                            </AlertDescription>
-                        </Alert>
+                        {precuadre.IniciosActivos && precuadre.IniciosActivos.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Usuario</TableHead>
+                                        <TableHead>Autorizado Por</TableHead>
+                                        <TableHead>Fecha Inicio</TableHead>
+                                        <TableHead className="text-right">Monto Inicial</TableHead>
+                                        <TableHead>Estatus</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {precuadre.IniciosActivos.map((inicio) => (
+                                        <TableRow key={inicio.InicioCajaID}>
+                                            <TableCell className="font-medium">{inicio.Usuario}</TableCell>
+                                            <TableCell>{inicio.Autorizo}</TableCell>
+                                            <TableCell>
+                                                {new Date(inicio.FechaInicio).toLocaleDateString("es-MX")}
+                                            </TableCell>
+                                            <TableCell className="text-right font-semibold">
+                                                {formatCurrency(inicio.MontoInicial)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                                                    {inicio.Estatus}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <Alert className="bg-blue-50 border-blue-200">
+                                <AlertCircle className="h-4 w-4 text-blue-600" />
+                                <AlertDescription className="text-blue-800">
+                                    No hay inicios de caja activos
+                                </AlertDescription>
+                            </Alert>
+                        )}
                     </CardContent>
                 </Card>
 
-                {/* BOTÓN - CUADRAR */}
-                <div className="flex justify-end">
-                    {precuadre.PendientesDeCorte > 0 &&
-                        <p className="text-sm text-red-600 mr-4 self-center">
-                            Bloqueado porque hay usuarios con cortes pendientes
-                        </p>
-                    }
+                {/* FORMULARIO - CUADRE DIRECTO */}
+                <Card>
+                    <CardHeader>
+                        <div className="flex justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div>
+                                <CardTitle>Cuadre de Caja Chica</CardTitle>
+                                <CardDescription>
+                                    Completa los datos para finalizar el cuadre
+                                </CardDescription>
+                            </div>
+                            <div>
+                                <CardTitle className=" text-blue-700">
+                                    {formatCurrency(precuadre.SaldoEsperado)}
+                                </CardTitle>
+                                <CardDescription className=" text-blue-600">Saldo Esperado</CardDescription>
+                            </div>
+                        </div>
 
-                    <Button
-                        size="lg"
-                        onClick={() => setIsModalCuadreOpen(true)}
-                        // disabled={precuadre.PendientesDeCorte > 0}
-                    >
-                        <Calculator className="h-4 w-4 mr-2" />
-                        Cuadrar Caja Chica
-                    </Button>
-                </div>
-
-                {/* MODAL - CUADRE */}
-                <Dialog open={isModalCuadreOpen} onOpenChange={setIsModalCuadreOpen}>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>Cuadrar Caja Chica</DialogTitle>
-                            <DialogDescription>
-                                Revisa el resumen y completa los datos para finalizar el cuadre
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="space-y-6">
-                            {/* RESUMEN */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-base">Resumen del Cuadre</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Saldo Inicial:</span>
-                                        <span className="font-semibold">
-                                            {formatCurrency(precuadre.FondoInicial)}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-green-600">
-                                        <span className="text-muted-foreground">+ Ingresos:</span>
-                                        <span className="font-semibold">
-                                            +{formatCurrency(precuadre.Totales.TotalIngresos)}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-red-600">
-                                        <span className="text-muted-foreground">- Egresos:</span>
-                                        <span className="font-semibold">
-                                            -{formatCurrency(precuadre.Totales.TotalEgresos)}
-                                        </span>
-                                    </div>
-                                    <div className="border-t pt-3 flex justify-between font-bold">
-                                        <span>Saldo Disponible:</span>
-                                        <span>{formatCurrency(saldoDisponible)}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* FORMULARIO */}
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-medium">
-                                            Saldo Real Contado
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={formDataCuadre.SaldoReal}
-                                            onChange={(e) =>
-                                                setFormDataCuadre({
-                                                    ...formDataCuadre,
-                                                    SaldoReal: parseFloat(e.target.value) || 0,
-                                                })
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">
-                                            Efec. Capturado
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={formDataCuadre.TotalEfectivoCapturado}
-                                            onChange={(e) =>
-                                                setFormDataCuadre({
-                                                    ...formDataCuadre,
-                                                    TotalEfectivoCapturado:
-                                                        parseFloat(e.target.value) || 0,
-                                                })
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">
-                                            Tarjeta Capturada
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={formDataCuadre.TotalTarjetaCapturado}
-                                            onChange={(e) =>
-                                                setFormDataCuadre({
-                                                    ...formDataCuadre,
-                                                    TotalTarjetaCapturado:
-                                                        parseFloat(e.target.value) || 0,
-                                                })
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">
-                                            Transfer. Capturada
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={
-                                                formDataCuadre.TotalTransferenciaCapturado
-                                            }
-                                            onChange={(e) =>
-                                                setFormDataCuadre({
-                                                    ...formDataCuadre,
-                                                    TotalTransferenciaCapturado:
-                                                        parseFloat(e.target.value) || 0,
-                                                })
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                </div>
-
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* CAMPOS DE CAPTURA */}
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium">Observaciones</label>
-                                    <Textarea
-                                        value={formDataCuadre.Observaciones}
-                                        onChange={(e) =>
+                                    <label className="text-sm font-medium">
+                                        Efec. Capturado
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        value={formDataCuadre.TotalEfectivoCapturado}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/[^0-9.]/g, "");
                                             setFormDataCuadre({
                                                 ...formDataCuadre,
-                                                Observaciones: e.target.value,
-                                            })
+                                                TotalEfectivoCapturado:
+                                                    value === "" ? 0 : parseFloat(value) || 0,
+                                            });
+                                        }}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Tarjeta Capturada
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        value={formDataCuadre.TotalTarjetaCapturado}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/[^0-9.]/g, "");
+                                            setFormDataCuadre({
+                                                ...formDataCuadre,
+                                                TotalTarjetaCapturado:
+                                                    value === "" ? 0 : parseFloat(value) || 0,
+                                            });
+                                        }}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Transfer. Capturada
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        value={
+                                            formDataCuadre.TotalTransferenciaCapturado
                                         }
-                                        placeholder="Agrega observaciones si es necesario..."
-                                        rows={3}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/[^0-9.]/g, "");
+                                            setFormDataCuadre({
+                                                ...formDataCuadre,
+                                                TotalTransferenciaCapturado:
+                                                    value === "" ? 0 : parseFloat(value) || 0,
+                                            });
+                                        }}
+                                        placeholder="0.00"
                                     />
                                 </div>
                             </div>
 
-                            {/* BOTONES */}
-                            <div className="flex justify-end gap-3">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsModalCuadreOpen(false)}
-                                    disabled={isLoadingCorte}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    onClick={handleCuadre}
-                                    disabled={isLoadingCorte}
-                                >
-                                    {isLoadingCorte ? "Procesando..." : "Confirmar Cuadre"}
-                                </Button>
+                            <div className="flex gap-5 w-full">
+                                {/* SALDO REAL AUTOMÁTICO */}
+                                <div className="w-full">
+                                    <label className="text-sm font-medium">Saldo Real Contado</label>
+                                    <p className="text-lg font-semibold p-2 bg-gray-100 rounded border border-gray-300">
+                                        {formatCurrency(
+                                            formDataCuadre.TotalEfectivoCapturado +
+                                            formDataCuadre.TotalTarjetaCapturado +
+                                            formDataCuadre.TotalTransferenciaCapturado
+                                        )}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Se calcula automáticamente
+                                    </p>
+                                </div>
+                                {/* DIFERENCIA AUTOMÁTICA */}
+                                <div className="w-full">
+                                    <label className="text-sm font-medium">Diferencia</label>
+                                    <p className={`text-lg font-semibold p-2 rounded border ${precuadre.SaldoEsperado -
+                                        (formDataCuadre.TotalEfectivoCapturado +
+                                            formDataCuadre.TotalTarjetaCapturado +
+                                            formDataCuadre.TotalTransferenciaCapturado) !==
+                                        0
+                                        ? "bg-orange-100 border-orange-300"
+                                        : "bg-green-100 border-green-300"
+                                        }`}>
+                                        {formatCurrency(
+                                            precuadre.SaldoEsperado -
+                                            (formDataCuadre.TotalEfectivoCapturado +
+                                                formDataCuadre.TotalTarjetaCapturado +
+                                                formDataCuadre.TotalTransferenciaCapturado)
+                                        )}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Saldo Esperado - Saldo Real
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="w-full">
+                                <label className="text-sm font-medium">Observaciones</label>
+                                <Textarea
+                                    value={formDataCuadre.Observaciones}
+                                    onChange={(e) =>
+                                        setFormDataCuadre({
+                                            ...formDataCuadre,
+                                            Observaciones: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Agrega observaciones si es necesario..."
+                                    rows={3}
+                                />
                             </div>
                         </div>
-                    </DialogContent>
-                </Dialog>
+
+                        {/* BOTÓN - CUADRAR */}
+                        <div className="flex justify-end">
+                            {precuadre.UsuariosConMovimientosSinCorte &&
+                                precuadre.UsuariosConMovimientosSinCorte.length > 0 && (
+                                    <p className="text-sm text-red-600 mr-4 self-center">
+                                        Bloqueado: {precuadre.UsuariosConMovimientosSinCorte.length}{" "}
+                                        usuario(s) con movimientos sin corte
+                                    </p>
+                                )}
+
+                            <Button
+                                size="lg"
+                                onClick={handleCuadre}
+                                disabled={
+                                    isLoadingCorte ||
+                                    (precuadre.UsuariosConMovimientosSinCorte &&
+                                        precuadre.UsuariosConMovimientosSinCorte.length > 0)
+                                }
+                            >
+                                {isLoadingCorte ? (
+                                    <>
+                                        <ClipLoader size={16} color="#fff" className="mr-2" />
+                                        Procesando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Calculator className="h-4 w-4 mr-2" />
+                                        Cuadrar Caja Chica
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </>
     );

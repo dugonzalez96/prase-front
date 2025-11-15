@@ -1,10 +1,12 @@
 import { getMovimientosPendientes } from "@/actions/ValidacionMovimientosActions";
-import { ValidacionMovimientosClient } from "@/components/admin/validacion-movimientos/ValidacionMovimientosClient";
+import { getPagosPendientes } from "@/actions/PagosPolizaActions";
+import { ValidacionConsolidada } from "@/components/admin/validacion-consolidada/ValidacionConsolidada";
 import { currentUser } from "@/lib/auth";
 
 export default async function ValidacionMovimientosPage() {
-    const [movimientos, user] = await Promise.all([
+    const [movimientos, pagos, user] = await Promise.all([
         getMovimientosPendientes(),
+        getPagosPendientes(),
         currentUser()
     ]);
 
@@ -16,18 +18,19 @@ export default async function ValidacionMovimientosPage() {
         );
     }
 
-    if (!movimientos) {
+    if (!movimientos && !pagos) {
         return (
             <div className="container mx-auto py-8">
-                <h4 className="text-red-500">Error al obtener movimientos pendientes</h4>
+                <h4 className="text-red-500">Error al obtener datos pendientes de validación</h4>
             </div>
         );
     }
 
     return (
         <div className="container mx-auto py-8">
-            <ValidacionMovimientosClient 
-                movimientosIniciales={movimientos}
+            <ValidacionConsolidada 
+                movimientos={movimientos || []}
+                pagos={pagos || []}
                 usuarioId={user.usuario.UsuarioID}
             />
         </div>
