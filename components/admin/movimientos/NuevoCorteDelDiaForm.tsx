@@ -445,7 +445,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                                                         key={usuario.UsuarioID}
                                                                         value={usuario.UsuarioID.toString()}
                                                                     >
-                                                                        {usuario.NombreUsuario}
+                                                                        {usuario.Nombre}
                                                                     </SelectItem>
                                                                 )) : null}
                                                             </SelectContent>
