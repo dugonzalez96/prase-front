@@ -676,9 +676,22 @@ export function CajaGeneralPage({
                                 size="lg"
                                 onClick={() => setIsModalCuadreOpen(true)}
                                 disabled={!preCuadre.puedeCuadrarHoy}
+                                title={!preCuadre.puedeCuadrarHoy && preCuadre.motivosBloqueo.length > 0 ? preCuadre.motivosBloqueo[0] : ''}
                             >
-                                {preCuadre.yaCuadradoHoy ? 'Ya Cuadrado Hoy' : 'Proceder al Cuadre'}
+                                {preCuadre.yaCuadradoHoy ? 'Ya Cuadrado Hoy' : preCuadre.puedeCuadrarHoy ? 'Proceder al Cuadre' : 'No se puede cuadrar'}
                             </Button>
+
+                            {!preCuadre.puedeCuadrarHoy && preCuadre.motivosBloqueo.length > 0 && (
+                                <div className="p-3 bg-amber-50 border-l-4 border-l-amber-500 rounded">
+                                    <p className="text-xs font-semibold text-amber-900 flex items-center gap-2">
+                                        <AlertCircle className="h-4 w-4" />
+                                        Motivo del bloqueo:
+                                    </p>
+                                    <p className="text-xs text-amber-800 mt-1">
+                                        {preCuadre.motivosBloqueo[0]}
+                                    </p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </>
