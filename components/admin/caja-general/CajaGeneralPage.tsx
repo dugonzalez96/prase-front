@@ -554,6 +554,11 @@ export function CajaGeneralPage({
             <ModalNuevoMovimientoCajaGeneral
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                onSuccess={() => {
+                    // Recargar datos después de registrar movimiento
+                    handleBuscar();
+                    cargarPreCuadre();
+                }}
                 usuarioId={usuarioId}
                 cuentasBancarias={cuentasBancarias}
                 usuarios={usuarios}
