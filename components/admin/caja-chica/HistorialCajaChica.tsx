@@ -209,7 +209,6 @@ export function HistorialCajaChica() {
                                     <TableRow>
                                         <TableHead>ID</TableHead>
                                         <TableHead>Fecha</TableHead>
-                                        <TableHead>Fondo Inicial</TableHead>
                                         <TableHead>Saldo Esperado</TableHead>
                                         <TableHead>Saldo Real</TableHead>
                                         <TableHead>Diferencia</TableHead>
@@ -230,15 +229,14 @@ export function HistorialCajaChica() {
                                                     day: 'numeric'
                                                 })}
                                             </TableCell>
-                                            <TableCell>{formatCurrency(caja.FondoInicial)}</TableCell>
                                             <TableCell className="text-blue-600 font-semibold">
-                                                {formatCurrency(caja.SaldoEsperado)}
+                                                {formatCurrency(Number(caja.SaldoEsperado))}
                                             </TableCell>
-                                            <TableCell>{formatCurrency(caja.SaldoReal)}</TableCell>
-                                            <TableCell className={getDiferenciaColor(caja.Diferencia)}>
-                                                {formatCurrency(Math.abs(caja.Diferencia))}
-                                                {caja.Diferencia > 0.01 && " ↓"}
-                                                {caja.Diferencia < -0.01 && " ↑"}
+                                            <TableCell>{formatCurrency(Number(caja.SaldoReal))}</TableCell>
+                                            <TableCell className={getDiferenciaColor(Number(caja.Diferencia))}>
+                                                {formatCurrency(Math.abs(Number(caja.Diferencia)))}
+                                                {Number(caja.Diferencia) > 0.01 && " ↓"}
+                                                {Number(caja.Diferencia) < -0.01 && " ↑"}
                                             </TableCell>
                                             <TableCell>
                                                 {getEstatusBadge(caja.Estatus)}

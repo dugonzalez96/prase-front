@@ -152,8 +152,8 @@ export const RegistroPagoPoliza = ({
     const calcularPagoSugerido = (esquema: iGetEsquemaPago): number => {
         for (const pago of esquema.esquemaPagos) {
             const totalPagado = pago.pagosRealizados.reduce((suma, p) => suma + p.montoPagado, 0);
-            if (totalPagado < pago.montoPorPagar) {
-                return pago.montoPorPagar - totalPagado;
+            if (totalPagado < pago.montoObjetivo) {
+                return pago.montoObjetivo - totalPagado;
             }
         }
         return 0;
