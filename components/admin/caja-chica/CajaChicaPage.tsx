@@ -12,7 +12,7 @@ import { CajaChicaGenerarCodigo } from "./CajaChicaGenerarCodigo";
 import { iPrecuadreCajaChicaBackend, iCajaChicaPorEstatus } from "@/interfaces/CajaChicaInterface";
 import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
 import { formatCurrency } from "@/lib/format";
-import { getCajasChicasPorEstatus } from "@/actions/CajaChicaActions";
+import { getCajasChicasPorEstatus, getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
     Select,
@@ -26,7 +26,7 @@ interface CajaChicaPageProps {
     usuarioId: number;
     precuadreInicial?: iPrecuadreCajaChicaBackend;
     movimientosInicial?: iGetMovimientos[];
-    sucursal?: any;
+    sucursal: any;
 }
 
 export function CajaChicaPage({
@@ -36,7 +36,7 @@ export function CajaChicaPage({
 }: CajaChicaPageProps) {
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
-    const [precuadre] = useState(precuadreInicial);
+    const [precuadre, setPrecuadre] = useState(precuadreInicial);
     const [historial, setHistorial] = useState<iCajaChicaPorEstatus[]>([]);
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
@@ -80,6 +80,18 @@ export function CajaChicaPage({
         }
     };
 
+    const recargarPrecuadre = async () => {
+        try {
+            const precuadreActualizado = await getPrecuadreCajaChica();
+            if (precuadreActualizado && !("error" in precuadreActualizado)) {
+                setPrecuadre(precuadreActualizado);
+                cargarHistorial();
+            }
+        } catch (error) {
+            console.error("Error al recargar precuadre:", error);
+        }
+    };
+
     // Calcular paginación
     const totalPaginas = Math.ceil(historial.length / elementosPorPagina);
     const indiceInicio = (paginaActual - 1) * elementosPorPagina;
@@ -109,14 +121,14 @@ export function CajaChicaPage({
                         <Button
                             size="lg"
                             onClick={() => setMostrarFormulario(true)}
-                            disabled={precuadreInicial ? !precuadreInicial.DebeCuadrarseHoy : false}
+                            disabled={precuadre ? !precuadre.DebeCuadrarseHoy : false}
                         >
                             <Plus className="h-4 w-4 mr-2" />
                             Crear Cuadre
                         </Button>
                     </div>
                     {/* ALERTA - SI NO PUEDE CUADRARSE HOY */}
-                    {precuadreInicial && !precuadreInicial.DebeCuadrarseHoy && (
+                    {precuadre && !precuadre.DebeCuadrarseHoy && (
                         <Alert className="bg-yellow-50 border-yellow-200">
                             <AlertDescription className="text-yellow-800 flex items-center gap-2">
                                 <AlertCircle className="h-4 w-4 text-yellow-600" />
@@ -238,6 +250,7 @@ export function CajaChicaPage({
                                             <thead>
                                                 <tr className="border-b">
                                                     <th className="text-left py-2 px-2 font-medium">ID</th>
+                                                    <th className="text-left py-2 px-2 font-medium">Folio</th>
                                                     <th className="text-left py-2 px-2 font-medium">Fecha</th>
                                                     <th className="text-right py-2 px-2 font-medium">Total Ingresos</th>
                                                     <th className="text-right py-2 px-2 font-medium">Saldo Esperado</th>
@@ -252,6 +265,9 @@ export function CajaChicaPage({
                                                     <tr key={cuadre.CajaChicaID} className="border-b hover:bg-muted/50">
                                                         <td className="py-2 px-2">
                                                             {cuadre.CajaChicaID}
+                                                        </td>
+                                                        <td className="py-2 px-2">
+                                                            {cuadre.FolioCierre}
                                                         </td>
                                                         <td className="py-2 px-2">
                                                             {new Date(cuadre.Fecha).toLocaleDateString("es-MX")}
@@ -370,6 +386,10 @@ export function CajaChicaPage({
                     cuadreId={cuadreSeleccionado}
                     onCancelarExitoso={() => {
                         cargarHistorial();
+                        recargarPrecuadre();
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     }}
                 />
             )}

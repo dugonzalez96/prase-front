@@ -53,7 +53,6 @@ export function CajaGeneralPage({
     cuentasBancarias,
     fechaActual
 }: CajaGeneralPageProps) {
-    console.log("🚀 ~ CajaGeneralPage ~ preCuadreInicial:", preCuadreInicial)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalCuadreOpen, setIsModalCuadreOpen] = useState(false);
 
@@ -715,6 +714,7 @@ export function CajaGeneralPage({
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Fecha</TableHead>
+                                            {/* <TableHead>Folio</TableHead> */}
                                             <TableHead>Sucursal</TableHead>
                                             <TableHead className="text-right">Saldo Inicial</TableHead>
                                             <TableHead className="text-right">Entradas</TableHead>
@@ -731,6 +731,7 @@ export function CajaGeneralPage({
                                             return (
                                                 <TableRow key={idx}>
                                                     <TableCell>{fechaFormato}</TableCell>
+                                                    {/* <TableCell>{cuadre.f}</TableCell> */}
                                                     <TableCell>{cuadre.nombreSucursal || '-'}</TableCell>
                                                     <TableCell className="text-right">
                                                         $ {formatNumber(cuadre.saldoInicial)}
