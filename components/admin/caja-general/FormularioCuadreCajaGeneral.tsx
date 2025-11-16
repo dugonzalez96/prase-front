@@ -32,6 +32,7 @@ import { useTransition } from "react";
 
 interface FormularioCuadreCajaGeneralProps {
     usuarioId: number;
+    sucursalUsuarioId: number;
     sucursales: iGetSucursales[];
     onSuccess?: () => void;
     onCancel?: () => void;
@@ -49,6 +50,7 @@ const formularioCuadreSchema = z.object({
 
 export function FormularioCuadreCajaGeneral({
     usuarioId,
+    sucursalUsuarioId,
     sucursales,
     onSuccess,
     onCancel,
@@ -61,7 +63,7 @@ export function FormularioCuadreCajaGeneral({
     const form = useForm<z.infer<typeof formularioCuadreSchema>>({
         resolver: zodResolver(formularioCuadreSchema),
         defaultValues: {
-            sucursalId: 0,
+            sucursalId: sucursalUsuarioId,
             totalEfectivoCapturado: 0,
             totalTarjetaCapturado: 0,
             totalTransferenciaCapturado: 0,
@@ -81,7 +83,7 @@ export function FormularioCuadreCajaGeneral({
             try {
                 const respuesta = await cuadrarCajaGeneral({
                     fecha: fechaActual,
-                    sucursalId: valores.sucursalId,
+                    sucursalId: sucursalUsuarioId,
                     usuarioCuadreId: usuarioId,
                     observaciones: valores.observaciones || "",
                     saldoReal: saldoReal,
@@ -120,36 +122,6 @@ export function FormularioCuadreCajaGeneral({
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="sucursalId"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Sucursal</FormLabel>
-                            <Select
-                                onValueChange={(value) => field.onChange(Number(value))}
-                                value={field.value?.toString() || ""}
-                            >
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona sucursal" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {sucursales.map((sucursal) => (
-                                        <SelectItem
-                                            key={sucursal.SucursalID}
-                                            value={sucursal.SucursalID.toString()}
-                                        >
-                                            {sucursal.NombreSucursal}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
 
                 <FormField
                     control={form.control}

@@ -36,6 +36,7 @@ export default async function CajaGeneralPageServer() {
         <div className="container mx-auto py-8">
             <CajaGeneralPage 
                 usuarioId={user.usuario.UsuarioID}
+                sucursalUsuarioId={user.Sucursal.SucursalID}
                 sucursales={sucursales || []}
                 dashboardInicial={dashboardInicial || null}
                 preCuadreInicial={preCuadreInicial || null}
