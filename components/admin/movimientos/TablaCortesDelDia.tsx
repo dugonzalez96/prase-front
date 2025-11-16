@@ -143,7 +143,7 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                             <Plus className="w-4 h-4 mr-2" />
                             Nuevo corte
                         </Button>
-                        {isNewCorteOpen && <NuevoCorteDelDiaForm usuarios={usuarios} onClose={() => setIsNewCorteOpen(false)}/>}
+                        {isNewCorteOpen && <NuevoCorteDelDiaForm usuarios={usuarios} onClose={() => setIsNewCorteOpen(false)} />}
                         <div className="flex gap-4">
                             <Button
                                 variant={isFiltering ? "default" : "outline"}

@@ -202,6 +202,45 @@ const mockMovimientosCajaGeneral: iMovimientoCajaGeneral[] = [
     }
 ];
 
+import { iCajaGeneralDashboard } from "@/interfaces/CajaGeneralDashboardInterface";
+
+/**
+ * Obtiene los datos del dashboard de caja general para una fecha específica
+ * GET /caja-general/dashboard?fecha=2025-11-15
+ * GET /caja-general/dashboard?fecha=2025-11-15&sucursalId=1
+ */
+export async function getCajaGeneralDashboard(fecha: string, sucursalId?: number): Promise<iCajaGeneralDashboard> {
+    try {
+        let url = `${process.env.API_URL}/caja-general/dashboard?fecha=${fecha}`;
+        if (sucursalId) {
+            url += `&sucursalId=${sucursalId}`;
+        }
+        
+        const response = await fetch(
+            url,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                cache: 'no-store',
+            }
+        );
+        console.log("🚀 ~ getCajaGeneralDashboard ~ response:", response)
+
+        if (!response.ok) {
+            throw new Error(`Error al obtener datos del dashboard: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error en getCajaGeneralDashboard:', error);
+        throw error;
+    }
+}
+
+
 export const getCajaGeneralActiva = async (sucursalId?: number) => {
     try {
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -418,5 +457,117 @@ export const getHistorialCajaGeneral = async (fechaInicio?: Date, fechaFin?: Dat
     } catch (error) {
         console.log('Error al obtener historial: ', error);
         return null;
+    }
+}
+
+/**
+ * Obtiene el pre-cuadre de caja general para una fecha específica
+ * GET /caja-general/pre-cuadre?fecha=2025-11-15
+ * GET /caja-general/pre-cuadre?fecha=2025-11-15&sucursalId=1
+ */
+export async function getPreCuadreCajaGeneral(fecha: string, sucursalId?: number) {
+    try {
+        let url = `${process.env.API_URL}/caja-general/pre-cuadre?fecha=${fecha}`;
+        if (sucursalId) {
+            url += `&sucursalId=${sucursalId}`;
+        }
+        
+        const response = await fetch(
+            url,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                cache: 'no-store',
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error al obtener pre-cuadre: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error en getPreCuadreCajaGeneral:', error);
+        throw error;
+    }
+}
+
+/**
+ * Registra un movimiento en caja general
+ * POST /caja-general/movimientos
+ */
+export async function registrarMovimientoCajaGeneral(body: {
+    tipoTransaccion: string;
+    formaPago: string;
+    monto: number;
+    descripcion: string;
+    usuarioCreoId: number;
+    cuentaBancariaId: number | null;
+    fechaTransaccion: string;
+}) {
+    try {
+        const response = await fetch(
+            `${process.env.API_URL}/caja-general/movimientos`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+                cache: 'no-store',
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error al registrar movimiento: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error en registrarMovimientoCajaGeneral:', error);
+        throw error;
+    }
+}
+
+/**
+ * Cuadra la caja general
+ * POST /caja-general/cuadrar
+ */
+export async function cuadrarCajaGeneral(body: {
+    fecha: string;
+    sucursalId: number;
+    usuarioCuadreId: number;
+    observaciones: string;
+    saldoReal: number;
+    totalEfectivoCapturado: number;
+    totalTarjetaCapturado: number;
+    totalTransferenciaCapturado: number;
+}) {
+    try {
+        const response = await fetch(
+            `${process.env.API_URL}/caja-general/cuadrar`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+                cache: 'no-store',
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error al cuadrar caja: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error en cuadrarCajaGeneral:', error);
+        throw error;
     }
 }

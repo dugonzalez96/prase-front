@@ -187,14 +187,29 @@ export interface iCodigoCancelacion {
 export interface iCajaChicaPorEstatus {
     CajaChicaID: number;
     Fecha: Date;
-    FondoInicial: number;
-    SaldoEsperado: number;
-    SaldoReal: number;
-    Diferencia: number;
-    Estatus: string;
-    Observaciones?: string;
-    FechaCreacion: Date;
     FechaActualizacion: Date;
+    FechaCierre: Date;
+    TotalIngresos: string;
+    TotalEgresos: string;
+    TotalEfectivo: string;
+    TotalPagoConTarjeta: string;
+    TotalTransferencia: string;
+    SaldoEsperado: string;
+    SaldoReal: string;
+    TotalEfectivoCapturado: string;
+    TotalTarjetaCapturado: string;
+    TotalTransferenciaCapturado: string;
+    Diferencia: string;
+    Observaciones?: string;
+    FolioCierre: string;
+    Estatus: string;
+    UsuarioCuadre: {
+        UsuarioID: number;
+        NombreUsuario: string;
+        Contrasena: string;
+        EmpleadoID: number;
+        SucursalID: number;
+    };
 }
 
 // Interfaces legacy (mantener para compatibilidad)

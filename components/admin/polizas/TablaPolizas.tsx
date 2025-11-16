@@ -206,6 +206,7 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
     const abrirModalPagos = async (poliza: iGetPolizas) => {
         try {
             const esquema = await getEsquemaPago(poliza.NumeroPoliza);
+            // console.log("🚀 ~ abrirModalPagos ~ esquema:", esquema)
             if (esquema) {
                 setEsquemaPago(esquema);
                 setPolizaSeleccionada(poliza);

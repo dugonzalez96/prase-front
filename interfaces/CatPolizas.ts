@@ -351,7 +351,8 @@ export interface iGetEsquemaPago {
 export interface EsquemaPago {
     numeroPago: number;
     fechaPago: Date;
-    montoPorPagar: number;
+    montoObjetivo: number;
+    montoAplicado?: number;
     estado: string;
     pagosRealizados: any[];
 }

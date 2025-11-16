@@ -134,7 +134,7 @@ export const HistorialPagosPoliza = ({
                   <span className="font-medium text-primary">
                     {formatCurrency(
                       (esquemaPago?.totalPrima || 0) -
-                        (esquemaPago?.totalPagado || 0)
+                      (esquemaPago?.totalPagado || 0)
                     )}
                   </span>
                 </div>
@@ -157,7 +157,7 @@ export const HistorialPagosPoliza = ({
                       pago.pagosRealizados
                     );
                     const porcentajePagado =
-                      (totalPagado / pago.montoPorPagar) * 100;
+                      (totalPagado / pago.montoObjetivo) * 100;
 
                     return (
                       <div key={index} className="space-y-2">
@@ -177,7 +177,8 @@ export const HistorialPagosPoliza = ({
                           </div>
                           <div className="text-right">
                             <div className="font-medium">
-                              {formatCurrency(pago.montoPorPagar)}
+                              <span className="font-mono text-sm text-gray-500">Recomendado:</span>
+                              <span className="bg-red-200 py-1 px-2 rounded-full ml-2">{formatCurrency(pago.montoObjetivo)}</span>
                             </div>
                           </div>
                         </div>
@@ -223,8 +224,8 @@ export const HistorialPagosPoliza = ({
 
                         {index <
                           (esquemaPago?.esquemaPagos.length || 0) - 1 && (
-                          <Separator className="mt-4" />
-                        )}
+                            <Separator className="mt-4" />
+                          )}
                       </div>
                     );
                   })}
