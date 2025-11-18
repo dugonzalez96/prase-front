@@ -37,6 +37,7 @@ export function CajaChicaPage({
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [precuadre, setPrecuadre] = useState(precuadreInicial);
+    console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
     const [historial, setHistorial] = useState<iCajaChicaPorEstatus[]>([]);
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
@@ -131,9 +132,14 @@ export function CajaChicaPage({
                     {precuadre && !precuadre.DebeCuadrarseHoy && (
                         <Alert className="bg-yellow-50 border-yellow-200">
                             <AlertDescription className="text-yellow-800 flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                <strong> No es posible crear cuadre.</strong> Ya hay un corte de caja chica hoy.
+                                <AlertCircle className="h-4 w-4 text-yellow-600 " />
+                                <strong> No es posible crear cuadre.</strong>
                             </AlertDescription>
+                            <ul className="text-yellow-800 list-disc ml-5">
+                                {precuadre.mensajes.map((msg, index) => (
+                                    <li key={index} className="list-disc">{msg}</li>
+                                ))}
+                            </ul>
                         </Alert>
                     )}
                     <Card>
