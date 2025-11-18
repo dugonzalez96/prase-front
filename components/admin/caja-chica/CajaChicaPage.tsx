@@ -1,19 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { getCajasChicasPorEstatus, getPrecuadreCajaChicaXSucursal } from "@/actions/CajaChicaActions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, AlertCircle, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { CajaChicaClient } from "./CajaChicaClient";
-import { CancelarCuadreModal } from "./CancelarCuadreModal";
-import { CajaChicaGenerarCodigo } from "./CajaChicaGenerarCodigo";
-import { iPrecuadreCajaChicaBackend, iCajaChicaPorEstatus } from "@/interfaces/CajaChicaInterface";
-import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
-import { formatCurrency } from "@/lib/format";
-import { getCajasChicasPorEstatus, getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
     Select,
     SelectContent,
@@ -21,6 +12,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { iCajaChicaPorEstatus, iPrecuadreCajaChicaBackend } from "@/interfaces/CajaChicaInterface";
+import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
+import { formatCurrency } from "@/lib/format";
+import { AlertCircle, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CajaChicaClient } from "./CajaChicaClient";
+import { CajaChicaGenerarCodigo } from "./CajaChicaGenerarCodigo";
+import { CancelarCuadreModal } from "./CancelarCuadreModal";
 
 interface CajaChicaPageProps {
     usuarioId: number;
@@ -83,7 +83,7 @@ export function CajaChicaPage({
 
     const recargarPrecuadre = async () => {
         try {
-            const precuadreActualizado = await getPrecuadreCajaChica();
+            const precuadreActualizado = await getPrecuadreCajaChicaXSucursal(sucursal.SucursalID);
             if (precuadreActualizado && !("error" in precuadreActualizado)) {
                 setPrecuadre(precuadreActualizado);
                 cargarHistorial();
