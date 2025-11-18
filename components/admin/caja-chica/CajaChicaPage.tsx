@@ -1,19 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { getCajasChicasPorEstatus, getPrecuadreCajaChicaXSucursal } from "@/actions/CajaChicaActions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, AlertCircle, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { CajaChicaClient } from "./CajaChicaClient";
-import { CancelarCuadreModal } from "./CancelarCuadreModal";
-import { CajaChicaGenerarCodigo } from "./CajaChicaGenerarCodigo";
-import { iPrecuadreCajaChicaBackend, iCajaChicaPorEstatus } from "@/interfaces/CajaChicaInterface";
-import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
-import { formatCurrency } from "@/lib/format";
-import { getCajasChicasPorEstatus, getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
     Select,
     SelectContent,
@@ -21,6 +12,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { iCajaChicaPorEstatus, iPrecuadreCajaChicaBackend } from "@/interfaces/CajaChicaInterface";
+import { iGetMovimientos } from "@/interfaces/MovimientosInterface";
+import { formatCurrency } from "@/lib/format";
+import { AlertCircle, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CajaChicaClient } from "./CajaChicaClient";
+import { CajaChicaGenerarCodigo } from "./CajaChicaGenerarCodigo";
+import { CancelarCuadreModal } from "./CancelarCuadreModal";
 
 interface CajaChicaPageProps {
     usuarioId: number;
@@ -37,6 +37,7 @@ export function CajaChicaPage({
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [precuadre, setPrecuadre] = useState(precuadreInicial);
+    // console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
     const [historial, setHistorial] = useState<iCajaChicaPorEstatus[]>([]);
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
@@ -82,7 +83,7 @@ export function CajaChicaPage({
 
     const recargarPrecuadre = async () => {
         try {
-            const precuadreActualizado = await getPrecuadreCajaChica();
+            const precuadreActualizado = await getPrecuadreCajaChicaXSucursal(sucursal.SucursalID);
             if (precuadreActualizado && !("error" in precuadreActualizado)) {
                 setPrecuadre(precuadreActualizado);
                 cargarHistorial();
@@ -131,9 +132,14 @@ export function CajaChicaPage({
                     {precuadre && !precuadre.DebeCuadrarseHoy && (
                         <Alert className="bg-yellow-50 border-yellow-200">
                             <AlertDescription className="text-yellow-800 flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                <strong> No es posible crear cuadre.</strong> Ya hay un corte de caja chica hoy.
+                                <AlertCircle className="h-4 w-4 text-yellow-600 " />
+                                <strong> No es posible crear cuadre.</strong>
                             </AlertDescription>
+                            <ul className="text-yellow-800 list-disc ml-5">
+                                {precuadre.mensajes.map((msg, index) => (
+                                    <li key={index} className="list-disc">{msg}</li>
+                                ))}
+                            </ul>
                         </Alert>
                     )}
                     <Card>

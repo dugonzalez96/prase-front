@@ -1,8 +1,7 @@
-import { getPrecuadreCajaChica } from "@/actions/CajaChicaActions";
-import { getMovimientos } from "@/actions/MovimientosActions";
+import { getPrecuadreCajaChicaXSucursal } from "@/actions/CajaChicaActions";
 import { CajaChicaPage } from "@/components/admin/caja-chica/CajaChicaPage";
-import { currentUser } from "@/lib/auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { currentUser } from "@/lib/auth";
 import { AlertCircle } from "lucide-react";
 
 export default async function CajaChicaPageServer() {
@@ -23,7 +22,7 @@ export default async function CajaChicaPageServer() {
 
     // Cargar datos iniciales server-side
     const [precuadreResult] = await Promise.all([
-        getPrecuadreCajaChica(),
+        getPrecuadreCajaChicaXSucursal(user.Sucursal.SucursalID),
     ]);
 
     // Validar precuadre

@@ -6,7 +6,7 @@
  * Componente refactorizado basado en la estructura real del backend.
  * 
  * ✅ FUNCIONA:
- * - Carga de precuadre con getPrecuadreCajaChica()
+ * - Carga de precuadre con getPrecuadreCajaChicaXSucursal()
  * - Mostr encabezado simple (MOCK)
  * - Tabla de totales por método: Efectivo, Tarjeta, Transferencia
  * - Tabla de otros movimientos (ingresos/egresos)
@@ -16,22 +16,22 @@
  * - Loader durante envío del POST
  */
 
-import { getPrecuadreCajaChica, cuadrarCajaChica as cuadrarCajaChicaAction } from "@/actions/CajaChicaActions";
+import { cuadrarCajaChicaXSucursal as cuadrarCajaChicaAction, getPrecuadreCajaChicaXSucursal } from "@/actions/CajaChicaActions";
+import { LoaderModales } from "@/components/LoaderModales";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { iPrecuadreCajaChicaBackend } from "@/interfaces/CajaChicaInterface";
-import { AlertCircle, Calculator, TrendingDown, TrendingUp, Wallet } from "lucide-react";
-import { ClipLoader } from "react-spinners";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/format";
-import { LoaderModales } from "@/components/LoaderModales";
+import { AlertCircle, Calculator, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ClipLoader } from "react-spinners";
 
 interface CajaChicaClientProps {
     usuarioId: number;
@@ -63,7 +63,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
         setIsLoading(true);
         setError(null);
         try {
-            const precuadreResult = await getPrecuadreCajaChica();
+            const precuadreResult = await getPrecuadreCajaChicaXSucursal(sucursal.SucursalID);
 
             if (!isMounted.current) return;
 
@@ -131,7 +131,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                 SaldoReal: saldoReal
             };
 
-            const result = await cuadrarCajaChicaAction(usuarioId, dataToSend);
+            const result = await cuadrarCajaChicaAction(usuarioId, sucursal.SucursalID, dataToSend);
             console.log("🚀 ~ handleCuadre ~ result:", result)
 
             if (result.success) {
