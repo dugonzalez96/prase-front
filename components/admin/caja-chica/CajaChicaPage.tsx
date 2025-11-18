@@ -37,7 +37,7 @@ export function CajaChicaPage({
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [precuadre, setPrecuadre] = useState(precuadreInicial);
-    console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
+    // console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
     const [historial, setHistorial] = useState<iCajaChicaPorEstatus[]>([]);
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
