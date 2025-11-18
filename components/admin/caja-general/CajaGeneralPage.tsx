@@ -21,7 +21,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Landmark, Search, Clock, ArrowUpRight, ArrowDownLeft, Plus } from "lucide-react";
+import { Landmark, Search, Clock, ArrowUpRight, ArrowDownLeft, Plus, TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Calendar, BarChart3, Zap, Target } from "lucide-react";
 import { iCajaGeneralDashboard } from "@/interfaces/CajaGeneralDashboardInterface";
 import { getCajaGeneralDashboard, getPreCuadreCajaGeneral } from "@/actions/CajaGeneralActions";
 import { iGetSucursales } from "@/interfaces/SucursalesInterface";
@@ -34,6 +34,7 @@ import { formatNumber } from "@/lib/format-number";
 
 interface CajaGeneralPageProps {
     usuarioId: number;
+    sucursalUsuarioId: number;
     sucursales: iGetSucursales[];
     dashboardInicial: iCajaGeneralDashboard | null;
     preCuadreInicial: iPreCuadreResponse | null;
@@ -44,6 +45,7 @@ interface CajaGeneralPageProps {
 
 export function CajaGeneralPage({
     usuarioId,
+    sucursalUsuarioId,
     sucursales,
     dashboardInicial,
     preCuadreInicial,
@@ -51,7 +53,6 @@ export function CajaGeneralPage({
     cuentasBancarias,
     fechaActual
 }: CajaGeneralPageProps) {
-    console.log("🚀 ~ CajaGeneralPage ~ dashboardInicial:", dashboardInicial)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalCuadreOpen, setIsModalCuadreOpen] = useState(false);
 
@@ -85,8 +86,7 @@ export function CajaGeneralPage({
 
     const cargarPreCuadre = useCallback(async () => {
         try {
-            const sucursalId = sucursal !== "todas" ? Number(sucursal) : undefined;
-            const data = await getPreCuadreCajaGeneral(fecha, sucursalId);
+            const data = await getPreCuadreCajaGeneral(fecha);
             setPreCuadre(data);
         } catch (error) {
             console.error("Error al cargar pre-cuadre:", error);
@@ -438,7 +438,8 @@ export function CajaGeneralPage({
                         <CardHeader>
                             <CardTitle className="text-lg">Pre-Cuadre Caja General</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-6">
+                            {/* SECCIÓN DE CÁLCULO */}
                             <div className="space-y-3 bg-white p-4 rounded-lg border">
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm font-medium">Saldo Inicial:</span>
@@ -465,13 +466,231 @@ export function CajaGeneralPage({
                                     </span>
                                 </div>
                             </div>
+
+                            {/* SECCIÓN DE ANALÍTICA */}
+                            {preCuadre && (
+                                <div className="space-y-4 bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 p-5 rounded-xl border-2 border-indigo-200 shadow-lg">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="font-bold text-lg text-indigo-900 flex items-center gap-2">
+                                            <BarChart3 className="h-5 w-5 text-indigo-600" />
+                                            Analítica Avanzada
+                                        </h3>
+                                        <Zap className="h-5 w-5 text-amber-500" />
+                                    </div>
+
+                                    {/* ÚLTIMO CUADRE */}
+                                    {preCuadre.analitica ? (
+                                        <div className="bg-white/80 backdrop-blur p-4 rounded-lg border-l-4 border-l-indigo-500 shadow-md hover:shadow-lg transition-shadow">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <Calendar className="h-4 w-4 text-indigo-600" />
+                                                <p className="text-sm font-bold text-indigo-900">Último Cuadre</p>
+                                            </div>
+                                            <div className="space-y-2 ml-7">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-slate-600">Fecha:</span>
+                                                    <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
+                                                        {new Date(preCuadre.analitica.ultimoCuadreFecha).toLocaleDateString('es-MX', { 
+                                                            year: 'numeric', 
+                                                            month: '2-digit', 
+                                                            day: '2-digit',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center pt-2 border-t border-indigo-100">
+                                                    <span className="text-xs text-slate-600 font-medium">Saldo Final:</span>
+                                                    <span className="text-sm font-bold text-indigo-900 bg-indigo-100 px-3 py-1 rounded-full">
+                                                        $ {formatNumber(preCuadre.analitica.ultimoCuadreSaldoFinal)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-white/80 backdrop-blur p-4 rounded-lg border-l-4 border-l-slate-300 shadow-md">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <Calendar className="h-4 w-4 text-slate-400" />
+                                                <p className="text-sm font-bold text-slate-600">Sin datos de últimos cuadres</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* PROMEDIO DE LOS ÚLTIMOS CUADRES */}
+                                    {preCuadre.analitica ? (
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                                <Target className="h-4 w-4 text-blue-600" />
+                                                Promedios (Últimos {preCuadre.analitica.promedioUltimosCuadres.diasConsiderados} día(s))
+                                            </p>
+                                            <div className="grid sm:grid-cols-3 gap-3">
+                                                {/* Promedio Entradas */}
+                                                <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 opacity-10"></div>
+                                                    <div className="relative p-4 bg-white border-2 border-green-300">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className="p-2 bg-green-100 rounded-lg">
+                                                                <ArrowUpRight className="h-4 w-4 text-green-600" />
+                                                            </div>
+                                                            <span className="text-xs font-bold text-green-700">Entradas</span>
+                                                        </div>
+                                                        <p className="text-lg font-black text-green-900 mb-2">
+                                                            $ {formatNumber(preCuadre.analitica.promedioUltimosCuadres.totalEntradas)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Promedio Egresos */}
+                                                <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-600 opacity-10"></div>
+                                                    <div className="relative p-4 bg-white border-2 border-red-300">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className="p-2 bg-red-100 rounded-lg">
+                                                                <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                                                            </div>
+                                                            <span className="text-xs font-bold text-red-700">Egresos</span>
+                                                        </div>
+                                                        <p className="text-lg font-black text-red-900 mb-2">
+                                                            $ {formatNumber(preCuadre.analitica.promedioUltimosCuadres.totalEgresos)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Saldo Promedio */}
+                                                <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 opacity-10"></div>
+                                                    <div className="relative p-4 bg-white border-2 border-blue-300">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className="p-2 bg-blue-100 rounded-lg">
+                                                                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                                                            </div>
+                                                            <span className="text-xs font-bold text-blue-700">Saldo Promedio</span>
+                                                        </div>
+                                                        <p className="text-lg font-black text-blue-900 mb-2">
+                                                            $ {formatNumber(preCuadre.analitica.promedioUltimosCuadres.saldoFinal)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-white/80 rounded-lg border-2 border-slate-200 text-center">
+                                            <p className="text-xs text-slate-500 font-medium">Sin datos de promedio disponibles</p>
+                                        </div>
+                                    )}
+
+                                    {/* VARIACIÓN VS PROMEDIO */}
+                                    {preCuadre.analitica && preCuadre.analitica.variacionVsPromedio ? (
+                                        <div className="bg-white/80 backdrop-blur p-4 rounded-lg border-l-4 border-l-purple-500 shadow-md hover:shadow-lg transition-shadow">
+                                            <p className="text-sm font-bold text-purple-900 mb-4 flex items-center gap-2">
+                                                <TrendingUp className="h-4 w-4 text-purple-600" />
+                                                Variación vs Promedio
+                                            </p>
+                                            <div className="flex flex-col md:flex-row gap-2 space-y-3 ">
+                                                {/* Entradas */}
+                                                <div className="flex flex-1 items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100 p-3 rounded-lg">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-slate-200 rounded-full">
+                                                            {preCuadre.analitica.variacionVsPromedio.totalEntradasPct < 0 ? (
+                                                                <TrendingDown className="h-4 w-4 text-red-500" />
+                                                            ) : preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0 ? (
+                                                                <TrendingUp className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <span className="text-xs text-slate-500 font-bold">─</span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-slate-700">Entradas</span>
+                                                    </div>
+                                                    <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${
+                                                        preCuadre.analitica.variacionVsPromedio.totalEntradasPct < 0
+                                                            ? 'bg-red-500 text-white shadow-lg'
+                                                            : preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0
+                                                            ? 'bg-green-500 text-white shadow-lg'
+                                                            : 'bg-slate-300 text-slate-800 shadow'
+                                                    }`}>
+                                                        {preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.totalEntradasPct}%
+                                                    </span>
+                                                </div>
+
+                                                {/* Egresos */}
+                                                <div className="flex flex-1 items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100 p-3 rounded-lg">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-slate-200 rounded-full">
+                                                            {preCuadre.analitica.variacionVsPromedio.totalEgresosPct < 0 ? (
+                                                                <TrendingDown className="h-4 w-4 text-green-500" />
+                                                            ) : preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0 ? (
+                                                                <TrendingUp className="h-4 w-4 text-red-500" />
+                                                            ) : (
+                                                                <span className="text-xs text-slate-500 font-bold">─</span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-slate-700">Egresos</span>
+                                                    </div>
+                                                    <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${
+                                                        preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0
+                                                            ? 'bg-red-500 text-white shadow-lg'
+                                                            : preCuadre.analitica.variacionVsPromedio.totalEgresosPct < 0
+                                                            ? 'bg-green-500 text-white shadow-lg'
+                                                            : 'bg-slate-300 text-slate-800 shadow'
+                                                    }`}>
+                                                        {preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.totalEgresosPct}%
+                                                    </span>
+                                                </div>
+
+                                                {/* Saldo */}
+                                                <div className="flex flex-1 items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg border-2 border-indigo-300 font-bold">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-indigo-200 rounded-full">
+                                                            {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct < 0 ? (
+                                                                <TrendingDown className="h-4 w-4 text-red-500" />
+                                                            ) : preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? (
+                                                                <TrendingUp className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-indigo-900">Saldo Calculado</span>
+                                                    </div>
+                                                    <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${
+                                                        preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct < 0
+                                                            ? 'bg-red-500 text-white shadow-lg'
+                                                            : preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0
+                                                            ? 'bg-green-500 text-white shadow-lg'
+                                                            : 'bg-indigo-500 text-white shadow-lg'
+                                                    }`}>
+                                                        {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-white/80 rounded-lg border-2 border-slate-200 text-center">
+                                            <p className="text-xs text-slate-500 font-medium">Sin datos de variación disponibles</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <Button 
                                 className="w-full" 
                                 size="lg"
                                 onClick={() => setIsModalCuadreOpen(true)}
+                                disabled={!preCuadre.puedeCuadrarHoy}
+                                title={!preCuadre.puedeCuadrarHoy && preCuadre.motivosBloqueo.length > 0 ? preCuadre.motivosBloqueo[0] : ''}
                             >
-                                Proceder al Cuadre
+                                {preCuadre.yaCuadradoHoy ? 'Ya Cuadrado Hoy' : preCuadre.puedeCuadrarHoy ? 'Proceder al Cuadre' : 'No se puede cuadrar'}
                             </Button>
+
+                            {!preCuadre.puedeCuadrarHoy && preCuadre.motivosBloqueo.length > 0 && (
+                                <div className="p-3 bg-amber-50 border-l-4 border-l-amber-500 rounded">
+                                    <p className="text-xs font-semibold text-amber-900 flex items-center gap-2">
+                                        <AlertCircle className="h-4 w-4" />
+                                        Motivo del bloqueo:
+                                    </p>
+                                    <p className="text-xs text-amber-800 mt-1">
+                                        {preCuadre.motivosBloqueo[0]}
+                                    </p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </>
@@ -495,6 +714,7 @@ export function CajaGeneralPage({
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Fecha</TableHead>
+                                            {/* <TableHead>Folio</TableHead> */}
                                             <TableHead>Sucursal</TableHead>
                                             <TableHead className="text-right">Saldo Inicial</TableHead>
                                             <TableHead className="text-right">Entradas</TableHead>
@@ -511,6 +731,7 @@ export function CajaGeneralPage({
                                             return (
                                                 <TableRow key={idx}>
                                                     <TableCell>{fechaFormato}</TableCell>
+                                                    {/* <TableCell>{cuadre.f}</TableCell> */}
                                                     <TableCell>{cuadre.nombreSucursal || '-'}</TableCell>
                                                     <TableCell className="text-right">
                                                         $ {formatNumber(cuadre.saldoInicial)}
@@ -575,6 +796,7 @@ export function CajaGeneralPage({
                     cargarPreCuadre();
                 }}
                 usuarioId={usuarioId}
+                sucursalUsuarioId={sucursalUsuarioId}
                 sucursales={sucursales}
                 fechaActual={fechaActual}
                 saldoEsperado={preCuadre?.preCuadre.saldoCalculado || 0}

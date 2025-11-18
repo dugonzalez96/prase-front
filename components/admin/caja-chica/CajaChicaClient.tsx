@@ -121,9 +121,9 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
         setIsLoadingCorte(true);
         try {
             // Calcular el saldo real antes de enviar
-            const saldoReal = 
-                formDataCuadre.TotalEfectivoCapturado + 
-                formDataCuadre.TotalTarjetaCapturado + 
+            const saldoReal =
+                formDataCuadre.TotalEfectivoCapturado +
+                formDataCuadre.TotalTarjetaCapturado +
                 formDataCuadre.TotalTransferenciaCapturado;
 
             const dataToSend = {
@@ -134,8 +134,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
             const result = await cuadrarCajaChicaAction(usuarioId, dataToSend);
             console.log("🚀 ~ handleCuadre ~ result:", result)
 
-            if (!isMounted.current) return;
-
             if (result.success) {
                 toast({
                     title: "✅ Cuadre Exitoso",
@@ -143,14 +141,12 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                     variant: "default"
                 });
 
-                // Esperar un momento corto antes de navegar
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                if (isMounted.current) {
-                    // Navegar a la lista de cajas chicas
-                    router.push('/admin/caja-chica');
-                    setIsLoadingCorte(false);
-                }
+                // Navegar a la lista de cajas chicas
+                router.push('/admin/caja-chica');
+                router.refresh();
+                window.location.reload();
+                setIsLoadingCorte(false);
+
             } else {
                 if (isMounted.current) {
                     toast({

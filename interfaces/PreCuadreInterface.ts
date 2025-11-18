@@ -36,6 +36,26 @@ export interface iPreCuadreData {
     diferencia: number;
 }
 
+export interface iVariacionVsPromedio {
+    totalEntradasPct: number;
+    totalEgresosPct: number;
+    saldoCalculadoPct: number;
+}
+
+export interface iPromedioUltimosCuadres {
+    diasConsiderados: number;
+    totalEntradas: number;
+    totalEgresos: number;
+    saldoFinal: number;
+}
+
+export interface iAnalitica {
+    ultimoCuadreFecha: string;
+    ultimoCuadreSaldoFinal: number;
+    promedioUltimosCuadres: iPromedioUltimosCuadres;
+    variacionVsPromedio: iVariacionVsPromedio;
+}
+
 export interface iPreCuadreResponse {
     filtros: {
         fecha: string;
@@ -43,4 +63,8 @@ export interface iPreCuadreResponse {
     preCuadre: iPreCuadreData;
     entradasDetalle: iEntradasDetalle;
     egresosDetalle: iEgresosDetalle;
+    analitica: iAnalitica;
+    puedeCuadrarHoy: boolean;
+    yaCuadradoHoy: boolean;
+    motivosBloqueo: string[];
 }

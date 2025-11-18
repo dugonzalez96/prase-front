@@ -226,7 +226,7 @@ export async function getCajaGeneralDashboard(fecha: string, sucursalId?: number
                 cache: 'no-store',
             }
         );
-        console.log("🚀 ~ getCajaGeneralDashboard ~ response:", response)
+        // console.log("🚀 ~ getCajaGeneralDashboard ~ response:", response)
 
         if (!response.ok) {
             throw new Error(`Error al obtener datos del dashboard: ${response.statusText}`);

@@ -9,6 +9,7 @@ interface ModalCuadreCajaGeneralProps {
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
     usuarioId: number;
+    sucursalUsuarioId: number;
     sucursales: iGetSucursales[];
     fechaActual: string;
     saldoEsperado: number;
@@ -19,6 +20,7 @@ export function ModalCuadreCajaGeneral({
     onOpenChange,
     onSuccess,
     usuarioId,
+    sucursalUsuarioId,
     sucursales,
     fechaActual,
     saldoEsperado,
@@ -36,6 +38,7 @@ export function ModalCuadreCajaGeneral({
                 </DialogHeader>
                 <FormularioCuadreCajaGeneral
                     usuarioId={usuarioId}
+                    sucursalUsuarioId={sucursalUsuarioId}
                     sucursales={sucursales}
                     onSuccess={handleSuccess}
                     onCancel={() => onOpenChange(false)}
