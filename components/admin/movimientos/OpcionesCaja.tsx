@@ -60,7 +60,7 @@ export function OpcionesCaja({ usuarioId, NombreUsuario }: OpcionesCajaProps) {
                     </Button>
                 </div>
             )}
-            <div className="px-4 py-2">
+            {/* <div className="px-4 py-2">
                 <Button
                     variant="outline"
                     className="w-full rounded-lg"
@@ -69,7 +69,7 @@ export function OpcionesCaja({ usuarioId, NombreUsuario }: OpcionesCajaProps) {
                     <FaCut className="mr-2 h-4 w-4" />
                     Corte del Día
                 </Button>
-            </div>
+            </div> */}
 
 
             {inicioCajaActivo && (
