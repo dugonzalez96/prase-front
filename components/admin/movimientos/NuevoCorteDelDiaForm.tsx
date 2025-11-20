@@ -373,13 +373,11 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
     }, [step])
 
     const calcularTotales = () => {
-        const SaldoReal = Number(form.getValues("TotalEfectivoCapturado")) + Number(form.getValues("TotalPagoConTarjeta")) + Number(form.getValues("TotalTransferencia"));
+        const SaldoReal = Number(form.getValues("TotalEfectivoCapturado")) + Number(form.getValues("TotalTarjetaCapturado")) + Number(form.getValues("TotalTransferenciaCapturado"));
         form.setValue("SaldoReal", SaldoReal);
         const diferencia = form.getValues("SaldoEsperado") - SaldoReal;
         const difPositiva = Math.abs(diferencia);
         form.setValue("Diferencia", difPositiva);
-        form.setValue("TotalTarjetaCapturado", form.getValues("TotalPagoConTarjeta"));
-        form.setValue("TotalTransferenciaCapturado", form.getValues("TotalTransferencia"));
         form.trigger();
     };
 
@@ -413,7 +411,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             >
-                                <Card className={`${showMovementsModal ? '' : 'w-[80vw] max-w-7xl'} md:max-h-[90vh] max-h-[60vh] bg-white shadow-lg rounded-md flex flex-col transition-all duration-300`}>
+                                <Card className={`${showMovementsModal ? '' : 'w-[80vw] max-w-7xl'} md:max-h-[90vh] max-h-[90vh] bg-white shadow-lg rounded-md flex flex-col transition-all duration-300`}>
                                     <Button
                                         className="absolute top-2 right-2 bg-red-400 rounded-sm hover:bg-red-500 active:bg-red-600"
                                         size={"icon"}
@@ -638,42 +636,98 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                                                                     <CustomValue label="Observaciones" type={"string"} value="Observaciones" />
                                                                                 </div>
                                                                             ) : (
-                                                                                <div className="grid gap-4 sm:grid-cols-2">
-                                                                                    <FormField
-                                                                                        name="TotalEfectivoCapturado"
-                                                                                        control={form.control}
-                                                                                        render={({ field }) => (
-                                                                                            <FormItem>
-                                                                                                <FormLabel>Efectivo</FormLabel>
-                                                                                                <FormControl>
-                                                                                                    <Input
-                                                                                                        {...field}
-                                                                                                        value={formatCurrency(field.value)}
-                                                                                                        onChange={(e) => {
-                                                                                                            const valor = e.target.value.replace(/[^0-9]/g, "");
-                                                                                                            field.onChange(Number(valor) / 100);
-                                                                                                            calcularTotales();
-                                                                                                        }}
-                                                                                                    />
-                                                                                                </FormControl>
-                                                                                                <FormMessage />
-                                                                                            </FormItem>
-                                                                                        )}
-                                                                                    />
-                                                                                    <FormField
-                                                                                        name="Observaciones"
-                                                                                        control={form.control}
-                                                                                        render={({ field }) => (
-                                                                                            <FormItem>
-                                                                                                <FormLabel>Observaciones</FormLabel>
-                                                                                                <FormControl>
-                                                                                                    <Input {...field} value={field.value} />
-                                                                                                </FormControl>
-                                                                                                <FormMessage />
-                                                                                            </FormItem>
-                                                                                        )}
-                                                                                    />
+                                                                                <div className="grid gap-4">
+                                                                                    {/* Primera fila: 3 columnas responsivas */}
+                                                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                                                                                        {/* EFECTIVO */}
+                                                                                        <FormField
+                                                                                            name="TotalEfectivoCapturado"
+                                                                                            control={form.control}
+                                                                                            render={({ field }) => (
+                                                                                                <FormItem>
+                                                                                                    <FormLabel>Efectivo Capturado</FormLabel>
+                                                                                                    <FormControl>
+                                                                                                        <Input
+                                                                                                            {...field}
+                                                                                                            value={formatCurrency(field.value)}
+                                                                                                            onChange={(e) => {
+                                                                                                                const valor = e.target.value.replace(/[^0-9]/g, "");
+                                                                                                                field.onChange(Number(valor) / 100);
+                                                                                                                calcularTotales();
+                                                                                                            }}
+                                                                                                        />
+                                                                                                    </FormControl>
+                                                                                                    <FormMessage />
+                                                                                                </FormItem>
+                                                                                            )}
+                                                                                        />
+
+                                                                                        {/* TARJETA */}
+                                                                                        <FormField
+                                                                                            name="TotalTarjetaCapturado"
+                                                                                            control={form.control}
+                                                                                            render={({ field }) => (
+                                                                                                <FormItem>
+                                                                                                    <FormLabel>Tarjeta Capturado</FormLabel>
+                                                                                                    <FormControl>
+                                                                                                        <Input
+                                                                                                            {...field}
+                                                                                                            value={formatCurrency(field.value)}
+                                                                                                            onChange={(e) => {
+                                                                                                                const valor = e.target.value.replace(/[^0-9]/g, "");
+                                                                                                                field.onChange(Number(valor) / 100);
+                                                                                                                calcularTotales();
+                                                                                                            }}
+                                                                                                        />
+                                                                                                    </FormControl>
+                                                                                                    <FormMessage />
+                                                                                                </FormItem>
+                                                                                            )}
+                                                                                        />
+
+                                                                                        {/* TRANSFERENCIA */}
+                                                                                        <FormField
+                                                                                            name="TotalTransferenciaCapturado"
+                                                                                            control={form.control}
+                                                                                            render={({ field }) => (
+                                                                                                <FormItem>
+                                                                                                    <FormLabel>Transferencia Capturado</FormLabel>
+                                                                                                    <FormControl>
+                                                                                                        <Input
+                                                                                                            {...field}
+                                                                                                            value={formatCurrency(field.value)}
+                                                                                                            onChange={(e) => {
+                                                                                                                const valor = e.target.value.replace(/[^0-9]/g, "");
+                                                                                                                field.onChange(Number(valor) / 100);
+                                                                                                                calcularTotales();
+                                                                                                            }}
+                                                                                                        />
+                                                                                                    </FormControl>
+                                                                                                    <FormMessage />
+                                                                                                </FormItem>
+                                                                                            )}
+                                                                                        />
+                                                                                    </div>
+
+                                                                                    {/* Observaciones abajo en full width */}
+                                                                                    <div className="col-span-3">
+                                                                                        <FormField
+                                                                                            name="Observaciones"
+                                                                                            control={form.control}
+                                                                                            render={({ field }) => (
+                                                                                                <FormItem>
+                                                                                                    <FormLabel>Observaciones</FormLabel>
+                                                                                                    <FormControl>
+                                                                                                        <Input {...field} />
+                                                                                                    </FormControl>
+                                                                                                    <FormMessage />
+                                                                                                </FormItem>
+                                                                                            )}
+                                                                                        />
+                                                                                    </div>
                                                                                 </div>
+
                                                                             )}
                                                                         </div>
                                                                     </div>

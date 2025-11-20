@@ -249,55 +249,12 @@ export default function Sidebar({ UsuarioID, NombreUsuario, aplicaciones, user }
               </div>
             ))}
 
-            {/* Nueva sección: Gestión de Cajas */}
-            {/* {UsuarioID && (
-              <div className="mb-4 mt-6">
-                <div className="px-2 mb-2">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Gestión de Cajas
-                  </h3>
-                </div>
-                <div className="space-y-1">
-                  <Link href="/admin/validacion-movimientos" passHref>
-                    <Button
-                      variant={pathname === "/admin/validacion-movimientos" ? "link" : "ghost"}
-                      className="w-full justify-start text-sm"
-                      onClick={() => setSidebarAbierta(false)}
-                    >
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      Validar Movimientos
-                    </Button>
-                  </Link>
-                  <Link href="/admin/caja-chica" passHref>
-                    <Button
-                      variant={pathname === "/admin/caja-chica" ? "link" : "ghost"}
-                      className="w-full justify-start text-sm"
-                      onClick={() => setSidebarAbierta(false)}
-                    >
-                      <Wallet className="mr-2 h-4 w-4" />
-                      Caja Chica
-                    </Button>
-                  </Link>
-                  <Link href="/admin/caja-general" passHref>
-                    <Button
-                      variant={pathname === "/admin/caja-general" ? "link" : "ghost"}
-                      className="w-full justify-start text-sm"
-                      onClick={() => setSidebarAbierta(false)}
-                    >
-                      <Landmark className="mr-2 h-4 w-4" />
-                      Caja General
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )} */}
-
-            {UsuarioID
+            {/* {UsuarioID
               // && user?.grupo.nombre !== 'Administrador'
               &&
               (
                 <OpcionesCaja usuarioId={UsuarioID} NombreUsuario={NombreUsuario} />
-              )}
+              )} */}
           </nav>
 
           <div className="mt-auto">

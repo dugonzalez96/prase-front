@@ -62,17 +62,18 @@ const esquemaPagoPoliza = z.object({
     IDMetodoPago: z.number(),
     IDEstatusPago: z.number(),
     UsuarioID: z.number(),
-    UsuarioValidoID: z.number().optional(),
+    // UsuarioValidoID: z.number().optional(),
     CuentaBancariaID: z.number().optional(),
-    Validado: z.boolean().optional(),
+    Validado: z.number(),
 }).refine((data) => {
+    // Si el método de pago es diferente a efectivo (3), se requiere cuenta bancaria
     if (data.IDMetodoPago !== 3) {
-        return data.UsuarioValidoID !== undefined && data.CuentaBancariaID !== undefined && data.Validado !== undefined;
+        return data.CuentaBancariaID !== undefined && data.CuentaBancariaID !== null;
     }
     return true;
 }, {
-    message: "Los campos de validación son requeridos para este método de pago",
-    path: ["UsuarioValidoID", "CuentaBancariaID", "Validado"]
+    message: "La cuenta bancaria es requerida para este método de pago",
+    path: ["CuentaBancariaID"]
 });
 
 type TipoPagoForm = z.infer<typeof esquemaPagoPoliza>;
@@ -143,9 +144,9 @@ export const RegistroPagoPoliza = ({
             IDMetodoPago: 3,
             IDEstatusPago: 1,
             UsuarioID: usuarioId,
-            UsuarioValidoID: undefined,
+            // UsuarioValidoID: undefined,
             CuentaBancariaID: undefined,
-            Validado: false,
+            Validado: 0,
         },
     });
 
@@ -169,42 +170,47 @@ export const RegistroPagoPoliza = ({
 
     const isFormValid = () => {
         const metodoPago = form.watch("IDMetodoPago");
+        const montoPagado = form.watch("MontoPagado");
+
+        // El monto pagado debe ser mayor a 0
+        if (!montoPagado || montoPagado <= 0) return false;
+
+        // Si es efectivo (ID 3), solo necesita el monto
         if (metodoPago === 3) return true;
 
-        const usuarioValido = form.watch("UsuarioValidoID");
+        // Para otros métodos de pago, se necesita también la cuenta bancaria
         const cuentaBancaria = form.watch("CuentaBancariaID");
-        const validado = form.watch("Validado");
-
-        return usuarioValido !== undefined && 
-               cuentaBancaria !== undefined && 
-               validado === true;
+        return cuentaBancaria !== undefined && cuentaBancaria !== null;
     };
 
-    const onSubmit = async (datos: TipoPagoForm) => {
+    const onSubmit = (datos: TipoPagoForm) => {
         startTransition(async () => {
-            const datosBase = {
-                PolizaID: datos.PolizaID,
-                FechaPago: datos.FechaPago,
-                MontoPagado: datos.MontoPagado,
-                ReferenciaPago: datos.ReferenciaPago || "",
-                NombreTitular: datos.NombreTitular || "",
-                FechaMovimiento: datos.FechaMovimiento,
-                IDMetodoPago: datos.IDMetodoPago,
-                IDEstatusPago: datos.IDEstatusPago,
-                UsuarioID: datos.UsuarioID,
-            };
-
-            const datosEnviar = datos.IDMetodoPago === 3
-                ? datosBase
-                : {
-                    ...datosBase,
-                    UsuarioValidoID: datos.UsuarioValidoID,
-                    CuentaBancariaID: datos.CuentaBancariaID,
-                    Validado: datos.Validado,
+            try {
+                const datosBase = {
+                    PolizaID: datos.PolizaID,
+                    FechaPago: datos.FechaPago,
+                    MontoPagado: datos.MontoPagado,
+                    ReferenciaPago: datos.ReferenciaPago || "",
+                    NombreTitular: datos.NombreTitular || "",
+                    FechaMovimiento: datos.FechaMovimiento,
+                    IDMetodoPago: datos.IDMetodoPago,
+                    IDEstatusPago: datos.IDEstatusPago,
+                    UsuarioID: datos.UsuarioID,
+                    Validado: 0,
                 };
 
-            await onRegistrarPago(datosEnviar);
-            form.reset();
+                const datosEnviar = datos.IDMetodoPago === 3
+                    ? datosBase
+                    : {
+                        ...datosBase,
+                        CuentaBancariaID: datos.CuentaBancariaID,
+                    };
+
+                const res = await onRegistrarPago(datosEnviar);
+                form.reset();
+            } catch (error) {
+                console.error("Error al registrar pago:", error);
+            }
         });
     };
 
@@ -412,7 +418,7 @@ export const RegistroPagoPoliza = ({
 
                                     {form.watch("IDMetodoPago") !== 3 && (
                                         <>
-                                            <FormField
+                                            {/* <FormField
                                                 control={form.control}
                                                 name="UsuarioValidoID"
                                                 render={({ field }) => (
@@ -441,7 +447,7 @@ export const RegistroPagoPoliza = ({
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
-                                            />
+                                            /> */}
 
                                             <FormField
                                                 control={form.control}
@@ -473,26 +479,6 @@ export const RegistroPagoPoliza = ({
                                                     </FormItem>
                                                 )}
                                             />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="Validado"
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <Checkbox
-                                                                checked={field.value}
-                                                                onCheckedChange={field.onChange}
-                                                            />
-                                                        </FormControl>
-                                                        <div className="space-y-1 leading-none">
-                                                            <FormLabel>
-                                                                Validado
-                                                            </FormLabel>
-                                                        </div>
-                                                    </FormItem>
-                                                )}
-                                            />
                                         </>
                                     )}
                                 </>
@@ -500,10 +486,10 @@ export const RegistroPagoPoliza = ({
 
                             <Button 
                                 type="submit" 
-                                disabled={!isFormValid()}
+                                disabled={isPending}
                             >
                                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                                Registrar Pago
+                                {isPending ? "Registrando..." : "Registrar Pago"}
                             </Button>
                         </form>
                     </Form>

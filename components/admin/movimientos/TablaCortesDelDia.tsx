@@ -59,6 +59,7 @@ interface CorteUsuario {
 }
 
 export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[], usuarios: any }) => {
+    // console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
     const [selectedCorte, setSelectedCorte] = useState<CorteUsuario | null>(null)
     const [filteredCortes, setFilteredCortes] = useState<CorteUsuario[]>(cortes)
     const [selectedUser, setSelectedUser] = useState<string>("")
@@ -317,7 +318,11 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                         </Button>
                     </div>
                 )}
-                {selectedCorte && <CorteUsuarioModal corte={selectedCorte} onClose={() => setSelectedCorte(null)} />}
+                {selectedCorte &&
+                    <CorteUsuarioModal
+                        corte={selectedCorte}
+                        onClose={() => setSelectedCorte(null)}
+                    />}
             </div>
         </>
     )

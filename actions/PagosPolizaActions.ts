@@ -2,9 +2,22 @@
 
 import { iPagoPendiente, iValidarPagoPendiente } from "@/interfaces/PagosPolizaInterface";
 
-export const getPagosPendientes = async () => {
+export const getPagosPendientes = async (fechaInicio?: Date, fechaFin?: Date) => {
     try {
-        const url = `${process.env.API_URL}/pagos-poliza`;
+        // Calcular fechas por defecto (últimos 30 días)
+        const hoy = new Date();
+        const inicio = fechaInicio || new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const fin = fechaFin || hoy;
+
+        // Formatear fechas como YYYY-MM-DD
+        const formatearFecha = (fecha: Date) => {
+            const año = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const día = String(fecha.getDate()).padStart(2, '0');
+            return `${año}-${mes}-${día}`;
+        };
+
+        const url = `${process.env.API_URL}/pagos-poliza/no-validados-no-efectivo?fechaInicio=${formatearFecha(inicio)}&fechaFin=${formatearFecha(fin)}`;
 
         const response = await fetch(url, {
             method: 'GET',
