@@ -443,20 +443,20 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                     <CardContent className="space-y-6">
                         {/* CAMPOS DE CAPTURA */}
                         <div className="space-y-4">
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="text-sm font-medium">
                                         Efec. Capturado
                                     </label>
                                     <Input
                                         type="text"
-                                        value={formDataCuadre.TotalEfectivoCapturado}
+                                        value={formatCurrency(formDataCuadre.TotalEfectivoCapturado)}
                                         onChange={(e) => {
-                                            const value = e.target.value.replace(/[^0-9.]/g, "");
+                                            const valor = e.target.value.replace(/[^0-9]/g, "");
                                             setFormDataCuadre({
                                                 ...formDataCuadre,
                                                 TotalEfectivoCapturado:
-                                                    value === "" ? 0 : parseFloat(value) || 0,
+                                                    valor === "" ? 0 : Number(valor) / 100,
                                             });
                                         }}
                                         placeholder="0.00"
@@ -468,13 +468,13 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                                     </label>
                                     <Input
                                         type="text"
-                                        value={formDataCuadre.TotalTarjetaCapturado}
+                                        value={formatCurrency(formDataCuadre.TotalTarjetaCapturado)}
                                         onChange={(e) => {
-                                            const value = e.target.value.replace(/[^0-9.]/g, "");
+                                            const valor = e.target.value.replace(/[^0-9]/g, "");
                                             setFormDataCuadre({
                                                 ...formDataCuadre,
                                                 TotalTarjetaCapturado:
-                                                    value === "" ? 0 : parseFloat(value) || 0,
+                                                    valor === "" ? 0 : Number(valor) / 100,
                                             });
                                         }}
                                         placeholder="0.00"
@@ -487,14 +487,14 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                                     <Input
                                         type="text"
                                         value={
-                                            formDataCuadre.TotalTransferenciaCapturado
+                                            formatCurrency(formDataCuadre.TotalTransferenciaCapturado)
                                         }
                                         onChange={(e) => {
-                                            const value = e.target.value.replace(/[^0-9.]/g, "");
+                                            const valor = e.target.value.replace(/[^0-9]/g, "");
                                             setFormDataCuadre({
                                                 ...formDataCuadre,
                                                 TotalTransferenciaCapturado:
-                                                    value === "" ? 0 : parseFloat(value) || 0,
+                                                    valor === "" ? 0 : Number(valor) / 100,
                                             });
                                         }}
                                         placeholder="0.00"
