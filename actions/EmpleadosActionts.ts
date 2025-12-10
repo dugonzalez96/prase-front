@@ -18,6 +18,20 @@ export const getEmpleados = async () => {
         console.log("Error al obtener empleados: ", error);
     }
 };
+export const getEmpleadosByID = async (id: number) => {
+    try {
+        const resp = await fetch(`${url}/empleados/${id}`, {
+            cache: "no-store",
+        });
+
+        if (!resp.ok) return null;
+
+        const data: iGetEmpleados = await resp.json();
+        return data;
+    } catch (error) {
+        console.log("Error al obtener empleados: ", error);
+    }
+};
 
 export const getTiposEmpleado = async () => {
     try {

@@ -31,7 +31,8 @@ import { iGetInicioActivo, iPostInicioCaja } from "@/interfaces/MovimientosInter
 import { formatCurrency } from "@/lib/format";
 import { formatDateTimeFull } from "@/lib/format-date";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isSameDay, parseISO } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDownCircle, ArrowDownLeft, ArrowUpCircle, ArrowUpRight, Banknote, CalendarClock, CreditCard, DollarSign, Eye, Info, SaveIcon, X } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
@@ -412,13 +413,15 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             >
                                 <Card className={`${showMovementsModal ? '' : 'w-[80vw] max-w-7xl'} md:max-h-[90vh] max-h-[90vh] bg-white shadow-lg rounded-md flex flex-col transition-all duration-300`}>
-                                    <Button
-                                        className="absolute top-2 right-2 bg-red-400 rounded-sm hover:bg-red-500 active:bg-red-600"
-                                        size={"icon"}
-                                        onClick={onClose}
-                                    >
-                                        <X className="w-4 h-4 text-white" />
-                                    </Button>
+                                    <div className="flex justify-end">
+                                        <Button
+                                            className="bg-red-500 rounded-sm hover:bg-red-400 active:bg-red-600 "
+                                            size={"icon"}
+                                            onClick={onClose}
+                                        >
+                                            <X className="w-4 h-4 text-white" />
+                                        </Button>
+                                    </div>
                                     <CardHeader>
                                         <div>
                                             <CardTitle>Crear nuevo corte</CardTitle>
@@ -583,6 +586,11 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                                                         {corteUsuario && (
                                                             <Form {...form}>
                                                                 <form onSubmit={form.handleSubmit(manejarGuardarCorte)} className="space-y-2">
+                                                                    <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                                                                        <p className="text-sm ">
+                                                                            Fecha del corte: <span className="font-semibold">{format(new Date(), "d 'de' MMMM 'del' yyyy", { locale: es })}</span>
+                                                                        </p>
+                                                                    </div>
                                                                     <div className="grid gap-2 sm:grid-cols-2">
                                                                         <div className="border p-2 rounded-lg bg-card">
                                                                             <h3 className="text-lg font-semibold mb-3 flex items-center">

@@ -178,13 +178,15 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                             >
                                 <Card className="max-w-3xl md:max-h-[90vh] max-h-[50vh] overflow-y-auto bg-white shadow-lg rounded-md">
 
-                                    <Button
-                                        className="absolute top-2 right-2 bg-red-400 rounded-sm hover:bg-red-500 active:bg-red-600"
-                                        size={"icon"}
-                                        onClick={onClose}
-                                    >
-                                        <X className="w-4 h-4 text-white" />
-                                    </Button>
+                                    <div className="flex justify-end">
+                                        <Button
+                                            className="bg-red-500 rounded-sm hover:bg-red-400 active:bg-red-600 "
+                                            size={"icon"}
+                                            onClick={onClose}
+                                        >
+                                            <X className="w-4 h-4 text-white" />
+                                        </Button>
+                                    </div>
                                     <CardHeader>
                                         {/* Header similar al de la tarjeta */}
                                         <div className="bg-primary/10 p-6">
