@@ -45,6 +45,15 @@ export const generarPDFCotizacion = async ({
     });
   };
 
+  const formatearFechaConMesTexto = (fecha: Date | string): string => {
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    const f = new Date(fecha);
+    const dia = String(f.getDate()).padStart(2, '0');
+    const mes = meses[f.getMonth()];
+    const año = f.getFullYear();
+    return `${dia}/${mes}/${año}`;
+  };
+
   const formatearMoneda = (cantidad: string | number): string => {
     const valor = typeof cantidad === "string" ? parseFloat(cantidad) : cantidad;
     return new Intl.NumberFormat("es-MX", {
@@ -52,6 +61,12 @@ export const generarPDFCotizacion = async ({
       currency: "MXN",
       minimumFractionDigits: 2,
     }).format(valor);
+  };
+
+  const calcularFechaPago = (fechaBase: Date | string, meses: number): string => {
+    const fecha = new Date(fechaBase);
+    fecha.setMonth(fecha.getMonth() + meses);
+    return formatearFechaConMesTexto(fecha);
   };
 
   const nombreUso = usosVehiculo.find((uso) => uso.UsoID === datos.UsoVehiculo)?.Nombre || "No especificado";
@@ -207,38 +222,174 @@ export const generarPDFCotizacion = async ({
     columnStyles: {
       0: { cellWidth: ANCHO_PAGINA * 0.7, fontStyle: "bold" },
       1: { cellWidth: ANCHO_PAGINA * 0.3, halign: "right" }
+    },
+    didParseCell: (data) => {
+      // Resaltar la fila del TOTAL PAGO ANUAL (última fila)
+      if (data.row.index === costosBase.length - 1) {
+        data.cell.styles.fillColor = [240, 248, 255]; // Azul muy claro
+        data.cell.styles.textColor = [0, 51, 102]; // Azul oscuro
+      }
     }
   });
 
-  const planesPago = [
-    [
-      `TOTAL PAGO SEMESTRAL: ${formatearMoneda(resultadosSemestral.total)}`,
-      detallesPagoSemestral ? `Primer pago: ${formatearMoneda(detallesPagoSemestral.primerPago)}` : "",
-      detallesPagoSemestral ? `Pagos subsecuentes: ${formatearMoneda(detallesPagoSemestral.pagoSubsecuente)}` : ""
-    ],
-    [
-      `TOTAL PAGO TRIMESTRAL: ${formatearMoneda(resultadosTrimestral.total)}`,
-      detallesPagoTrimestral ? `Primer pago: ${formatearMoneda(detallesPagoTrimestral.primerPago)}` : "",
-      detallesPagoTrimestral ? `Pagos subsecuentes: ${formatearMoneda(detallesPagoTrimestral.pagoSubsecuente)}` : ""
-    ],
-    ...(showMensual ? [[
-      `TOTAL PAGO MENSUAL: ${formatearMoneda(resultadosMensual.total)}`,
-      detallesPagoMensual ? `Primer pago: ${formatearMoneda(detallesPagoMensual.primerPago)}` : "",
-      detallesPagoMensual ? `Pagos subsecuentes: ${formatearMoneda(detallesPagoMensual.pagoSubsecuente)}` : ""
-    ]] : [])
-  ];
-
+  const fechaActivacion = datos.FechaCotizacion || new Date();
+  
+  // Plan Semestral
   autoTable(doc, {
     startY: (doc as any).lastAutoTable.finalY + 4,
-    body: planesPago,
+    body: [
+      [
+        `TOTAL PAGO SEMESTRAL: ${formatearMoneda(resultadosSemestral.total)}`,
+        detallesPagoSemestral ? `Primer pago: ${formatearMoneda(detallesPagoSemestral.primerPago)}` : "",
+        detallesPagoSemestral ? `1 PAGO SUBSECUENTE: ${formatearMoneda(detallesPagoSemestral.pagoSubsecuente)}` : ""
+      ]
+    ],
     theme: "grid",
     styles: { fontSize: 8, cellPadding: 2 },
     columnStyles: {
-      0: { cellWidth: ANCHO_PAGINA * 0.33, fontStyle: "bold" },
+      0: { cellWidth: ANCHO_PAGINA * 0.34, fontStyle: "bold" },
       1: { cellWidth: ANCHO_PAGINA * 0.33, halign: "right" },
       2: { cellWidth: ANCHO_PAGINA * 0.33, halign: "right" },
     }
   });
+
+  autoTable(doc, {
+    startY: (doc as any).lastAutoTable.finalY,
+    body: [[`FECHA DE PAGO SUBSECUENTE: ${calcularFechaPago(fechaActivacion, 6)}`]],
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2, fontStyle: "bold", halign: "left" },
+    columnStyles: {
+      0: { cellWidth: ANCHO_PAGINA }
+    },
+    didDrawCell: (data) => {
+      if (data.row.index === 0 && data.column.index === 0) {
+        const text = data.cell.text[0];
+        const fechaMatch = text.match(/\d{2}\/[A-Za-z]{3}\/\d{4}/);
+        if (fechaMatch) {
+          const fecha = fechaMatch[0];
+          const textoAntes = text.substring(0, text.indexOf(fecha));
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          const anchoTextoAntes = doc.getTextWidth(textoAntes);
+          const anchoFecha = doc.getTextWidth(fecha);
+          const x = data.cell.x + anchoTextoAntes + 2;
+          const y = data.cell.y + data.cell.height - 2.2;
+          doc.setDrawColor(0);
+          doc.setLineWidth(0.3);
+          doc.line(x, y, x + anchoFecha + 1, y);
+        }
+      }
+    }
+  });
+
+  // Plan Trimestral
+  autoTable(doc, {
+    startY: (doc as any).lastAutoTable.finalY + 2,
+    body: [
+      [
+        `TOTAL PAGO TRIMESTRAL: ${formatearMoneda(resultadosTrimestral.total)}`,
+        detallesPagoTrimestral ? `Primer pago: ${formatearMoneda(detallesPagoTrimestral.primerPago)}` : "",
+        detallesPagoTrimestral ? `3 PAGOS SUBSECUENTES: ${formatearMoneda(detallesPagoTrimestral.pagoSubsecuente)}` : ""
+      ]
+    ],
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2 },
+    columnStyles: {
+      0: { cellWidth: ANCHO_PAGINA * 0.34, fontStyle: "bold" },
+      1: { cellWidth: ANCHO_PAGINA * 0.33, halign: "right" },
+      2: { cellWidth: ANCHO_PAGINA * 0.33, halign: "right" },
+    }
+  });
+
+  autoTable(doc, {
+    startY: (doc as any).lastAutoTable.finalY,
+    body: [[`FECHAS DE PAGOS SUBSECUENTES: ${calcularFechaPago(fechaActivacion, 3)}, ${calcularFechaPago(fechaActivacion, 6)}, ${calcularFechaPago(fechaActivacion, 9)}`]],
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2, fontStyle: "bold", halign: "left" },
+    columnStyles: {
+      0: { cellWidth: ANCHO_PAGINA }
+    },
+    didDrawCell: (data) => {
+      if (data.row.index === 0 && data.column.index === 0) {
+        const text = data.cell.text[0];
+        const fechaRegex = /\d{2}\/[A-Za-z]{3}\/\d{4}/g;
+        const fechas = text.match(fechaRegex);
+        if (fechas) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setDrawColor(0);
+          doc.setLineWidth(0.3);
+          let posicionBusqueda = 0;
+          fechas.forEach((fecha) => {
+            const indiceFecha = text.indexOf(fecha, posicionBusqueda);
+            const textoAntes = text.substring(0, indiceFecha);
+            const anchoTextoAntes = doc.getTextWidth(textoAntes);
+            const anchoFecha = doc.getTextWidth(fecha);
+            const x = data.cell.x + anchoTextoAntes + 2;
+            const y = data.cell.y + data.cell.height - 2.2;
+            doc.line(x, y, x + anchoFecha + 1, y);
+            posicionBusqueda = indiceFecha + fecha.length;
+          });
+        }
+      }
+    }
+  });
+
+  // Plan Mensual (opcional)
+  if (showMensual) {
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 2,
+      body: [
+        [
+          `TOTAL PAGO MENSUAL: ${formatearMoneda(resultadosMensual.total)}`,
+          detallesPagoMensual ? `Primer pago: ${formatearMoneda(detallesPagoMensual.primerPago)}` : "",
+          detallesPagoMensual ? `11 PAGOS SUBSECUENTES: ${formatearMoneda(detallesPagoMensual.pagoSubsecuente)}` : ""
+        ]
+      ],
+      theme: "grid",
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: ANCHO_PAGINA * 0.34, fontStyle: "bold" },
+        1: { cellWidth: ANCHO_PAGINA * 0.33, halign: "right" },
+        2: { cellWidth: ANCHO_PAGINA * 0.33, halign: "right" },
+      }
+    });
+
+    const fechasMensuales = Array.from({length: 11}, (_, i) => calcularFechaPago(fechaActivacion, i + 1)).join(",  ");
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY,
+      body: [[`FECHAS DE PAGOS SUBSECUENTES: ${fechasMensuales}`]],
+      theme: "grid",
+      styles: { fontSize: 8, cellPadding: 2, fontStyle: "bold", halign: "left" },
+      columnStyles: {
+        0: { cellWidth: ANCHO_PAGINA }
+      },
+      didDrawCell: (data) => {
+        if (data.row.index === 0 && data.column.index === 0) {
+          const text = data.cell.text[0];
+          const fechaRegex = /\d{2}\/[A-Za-z]{3}\/\d{4}/g;
+          const fechas = text.match(fechaRegex);
+          if (fechas) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.3);
+            let posicionBusqueda = 0;
+            fechas.forEach((fecha) => {
+              const indiceFecha = text.indexOf(fecha, posicionBusqueda);
+              const textoAntes = text.substring(0, indiceFecha);
+              const anchoTextoAntes = doc.getTextWidth(textoAntes);
+              const anchoFecha = doc.getTextWidth(fecha);
+              const x = data.cell.x + anchoTextoAntes + 2;
+              const y = data.cell.y + data.cell.height - 2.2;
+              doc.line(x, y, x + anchoFecha + 1, y);
+              posicionBusqueda = indiceFecha + fecha.length;
+            });
+          }
+        }
+      }
+    });
+  }
 
   const textoLegal = [
     "Atención a siniestros en México 800-772-73-10",

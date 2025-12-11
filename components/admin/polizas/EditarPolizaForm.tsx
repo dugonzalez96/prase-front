@@ -181,7 +181,7 @@ export const EditarPolizaForm = ({ poliza, onGuardar, clientes }: EditarPolizaFo
                             )}
                         />
 
-                        <FormField
+                        {/* <FormField
                             control={formPoliza.control}
                             name="PrimaTotal"
                             render={({ field }) => (
@@ -195,12 +195,15 @@ export const EditarPolizaForm = ({ poliza, onGuardar, clientes }: EditarPolizaFo
                                                 const valor = e.target.value.replace(/[^0-9]/g, "");
                                                 field.onChange(Number(valor) / 100);
                                             }}
+                                            readOnly
+                                            disabled
                                         />
+
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
-                        />
+                        /> */}
                     </div>
 
                     {!mostrarFormularioCliente && (

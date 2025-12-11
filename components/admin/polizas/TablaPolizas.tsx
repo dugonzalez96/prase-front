@@ -582,8 +582,8 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
                                                                     </TableRow>
                                                                 </TableHeader>
                                                                 <TableBody>
-                                                                    {poliza.detalles.map((detalle, index) => (
-                                                                        <TableRow key={index}>
+                                                                    {poliza.detalles.slice().reverse().map((detalle) => (
+                                                                        <TableRow key={detalle.CoberturaID}>
                                                                             <TableCell>
                                                                                 {obtenerNombreCobertura(detalle.CoberturaID)}
                                                                             </TableCell>

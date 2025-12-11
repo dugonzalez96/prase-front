@@ -133,7 +133,7 @@ export function CajaChicaPage({
                         <Alert className="bg-yellow-50 border-yellow-200">
                             <AlertDescription className="text-yellow-800 flex items-center gap-2">
                                 <AlertCircle className="h-4 w-4 text-yellow-600 " />
-                                <strong> No es posible crear cuadre.</strong>
+                                <strong> No es posible crear cuadre hoy, ya hay uno existente.</strong>
                             </AlertDescription>
                             <ul className="text-yellow-800 list-disc ml-5">
                                 {precuadre.mensajes.map((msg, index) => (
