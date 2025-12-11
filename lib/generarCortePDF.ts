@@ -208,5 +208,5 @@ export const generarCortePDF = async (data: any) => {
   doc.text(firmaLabel, firmaLabelX, startY + 37);
 
   // Guardar
-  doc.save(`corte_caja_${fechaCorte}.pdf`);
+  doc.save(`corte_del_dia_${fechaCorte}.pdf`);
 };
