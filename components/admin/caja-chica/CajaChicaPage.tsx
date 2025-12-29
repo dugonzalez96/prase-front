@@ -236,7 +236,6 @@ export function CajaChicaPage({
                                     </Select>
                                 </div>
                             </div>
-
                             {/* TABLA */}
                             {cargando ? (
                                 <div className="text-center py-8">
@@ -267,54 +266,65 @@ export function CajaChicaPage({
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {datosPaginados.map((cuadre) => (
-                                                    <tr key={cuadre.CajaChicaID} className="border-b hover:bg-muted/50">
-                                                        <td className="py-2 px-2">
-                                                            {cuadre.CajaChicaID}
-                                                        </td>
-                                                        <td className="py-2 px-2">
-                                                            {cuadre.FolioCierre}
-                                                        </td>
-                                                        <td className="py-2 px-2">
-                                                            {new Date(cuadre.Fecha).toLocaleDateString("es-MX")}
-                                                        </td>
-                                                        <td className="text-right py-2 px-2">
-                                                            {formatCurrency(Number(cuadre.SaldoEsperado))}
-                                                        </td>
-                                                        <td className="text-right py-2 px-2">
-                                                            {formatCurrency(Number(cuadre.SaldoEsperado))}
-                                                        </td>
-                                                        <td className="text-right py-2 px-2">
-                                                            {formatCurrency(Number(cuadre.SaldoReal))}
-                                                        </td>
-                                                        <td className={`text-right py-2 px-2 font-medium ${Number(cuadre.Diferencia) === 0
-                                                            ? "text-green-600"
-                                                            : Number(cuadre.Diferencia) > 0
-                                                                ? "text-blue-600"
-                                                                : "text-red-600"
-                                                            }`}>
-                                                            {formatCurrency(Number(cuadre.Diferencia))}
-                                                        </td>
-                                                        <td className="text-center py-2 px-2">
-                                                            <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                                                                {cuadre.Estatus}
-                                                            </span>
-                                                        </td>
-                                                        <td className="text-center py-2 px-2">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => {
-                                                                    setCuadreSeleccionado(cuadre.CajaChicaID);
-                                                                    setModalCancelacionAbierto(true);
-                                                                }}
-                                                                title="Cancelar cuadre"
-                                                            >
-                                                                <Trash2 className="h-4 w-4 text-red-600" />
-                                                            </Button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                                {datosPaginados.map((cuadre) => {
+                                                    // Determinar si es el cuadre más reciente
+                                                    const cuadreMasReciente = historial.reduce((masReciente, actual) => {
+                                                        return new Date(actual.Fecha) > new Date(masReciente.Fecha) ? actual : masReciente;
+                                                    }, historial[0]);
+                                                    const esElMasReciente = cuadre.CajaChicaID === cuadreMasReciente?.CajaChicaID;
+                                                    
+                                                    return (
+                                                        <tr key={cuadre.CajaChicaID} className="border-b hover:bg-muted/50">
+                                                            <td className="py-2 px-2">
+                                                                {cuadre.CajaChicaID}
+                                                            </td>
+                                                            <td className="py-2 px-2">
+                                                                {cuadre.FolioCierre}
+                                                            </td>
+                                                            <td className="py-2 px-2">
+                                                                {new Date(cuadre.Fecha).toLocaleDateString("es-MX")}
+                                                            </td>
+                                                            <td className="text-right py-2 px-2">
+                                                                {formatCurrency(Number(cuadre.SaldoEsperado))}
+                                                            </td>
+                                                            <td className="text-right py-2 px-2">
+                                                                {formatCurrency(Number(cuadre.SaldoEsperado))}
+                                                            </td>
+                                                            <td className="text-right py-2 px-2">
+                                                                {formatCurrency(Number(cuadre.SaldoReal))}
+                                                            </td>
+                                                            <td className={`text-right py-2 px-2 font-medium ${Number(cuadre.Diferencia) === 0
+                                                                ? "text-green-600"
+                                                                : Number(cuadre.Diferencia) > 0
+                                                                    ? "text-blue-600"
+                                                                    : "text-red-600"
+                                                                }`}>
+                                                                {formatCurrency(Number(cuadre.Diferencia))}
+                                                            </td>
+                                                            <td className="text-center py-2 px-2">
+                                                                <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                                                                    {cuadre.Estatus}
+                                                                </span>
+                                                            </td>
+                                                            <td className="text-center py-2 px-2">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setCuadreSeleccionado(cuadre.CajaChicaID);
+                                                                        setModalCancelacionAbierto(true);
+                                                                    }}
+                                                                    disabled={!esElMasReciente}
+                                                                    title={esElMasReciente 
+                                                                        ? "Cancelar cuadre" 
+                                                                        : "Solo se puede cancelar el cuadre más reciente"}
+                                                                >
+                                                                    <Trash2 className={`h-4 w-4 ${esElMasReciente ? "text-red-600" : "text-gray-400"}`} />
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                     </div>

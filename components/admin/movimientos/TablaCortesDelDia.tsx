@@ -132,7 +132,7 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
 
     // Función para obtener el valor absoluto de la diferencia
     const getAbsoluteDifference = (difference: string) => {
-        return Math.abs(Number.parseFloat(difference)).toFixed(2)
+        return (Number.parseFloat(difference)).toFixed(2)
     }
 
     return (

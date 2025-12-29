@@ -137,7 +137,7 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
 
     // Función para obtener el valor absoluto de la diferencia
     const getAbsoluteDifference = (difference: string) => {
-        return Math.abs(Number.parseFloat(difference)).toFixed(2)
+        return (Number.parseFloat(difference)).toFixed(2)
     }
 
     // Función para truncar el correo electrónico
