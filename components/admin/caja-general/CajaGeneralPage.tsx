@@ -109,12 +109,25 @@ export function CajaGeneralPage({
         return variants[estado] || "bg-gray-100 text-gray-800";
     };
 
-    const formatHora = (horaString: string): string => {
+    const formatHora = (valor: string): string => {
+        // Intentar parsear como fecha completa (ISO u otro formato reconocible)
+        const fecha = new Date(valor);
+        if (!isNaN(fecha.getTime())) {
+            return fecha.toLocaleString("es-MX", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        }
+
+        // Fallback: si solo viene hora en formato HH:mm:ss, mostrar HH:mm
         try {
-            const [horas, minutos] = horaString.split(":").slice(0, 2);
+            const [horas, minutos] = valor.split(":").slice(0, 2);
             return `${horas}:${minutos}`;
         } catch {
-            return horaString;
+            return valor;
         }
     };
 

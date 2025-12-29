@@ -133,7 +133,11 @@ export function FormularioCuadreCajaGeneral({
                                 <div className="relative">
                                     <Input
                                         {...field}
-                                        value={formatCurrency(field.value, { showSymbol: true })}
+                                        value={
+                                            field.value === 0 && !form.formState.dirtyFields?.totalEfectivoCapturado
+                                                ? ""
+                                                : formatCurrency(field.value, { showSymbol: true })
+                                        }
                                         placeholder="$ 0.00"
                                         onChange={(e) => {
                                             const valor = e.target.value.replace(/[^0-9]/g, "");
@@ -157,7 +161,11 @@ export function FormularioCuadreCajaGeneral({
                                 <div className="relative">
                                     <Input
                                         {...field}
-                                        value={formatCurrency(field.value, { showSymbol: true })}
+                                        value={
+                                            field.value === 0 && !form.formState.dirtyFields?.totalTarjetaCapturado
+                                                ? ""
+                                                : formatCurrency(field.value, { showSymbol: true })
+                                        }
                                         placeholder="$ 0.00"
                                         onChange={(e) => {
                                             const valor = e.target.value.replace(/[^0-9]/g, "");
@@ -181,7 +189,11 @@ export function FormularioCuadreCajaGeneral({
                                 <div className="relative">
                                     <Input
                                         {...field}
-                                        value={formatCurrency(field.value, { showSymbol: true })}
+                                        value={
+                                            field.value === 0 && !form.formState.dirtyFields?.totalTransferenciaCapturado
+                                                ? ""
+                                                : formatCurrency(field.value, { showSymbol: true })
+                                        }
                                         placeholder="$ 0.00"
                                         onChange={(e) => {
                                             const valor = e.target.value.replace(/[^0-9]/g, "");
@@ -207,7 +219,13 @@ export function FormularioCuadreCajaGeneral({
                     </div>
                     <div className="flex justify-between text-sm pt-2 border-t">
                         <span className="font-medium">Diferencia:</span>
-                        <span className={`font-semibold ${diferencia === 0 ? "text-green-600" : "text-red-600"}`}>
+                        <span className={`font-semibold ${
+                            diferencia === 0
+                                ? "text-blue-600"
+                                : diferencia > 0
+                                    ? "text-red-600"
+                                    : "text-green-600"
+                        }`}>
                             {diferencia === 0 ? "$ 0.00 (Cuadrado)" : `$ ${formatNumber(Math.abs(diferencia))} ${diferencia > 0 ? "(Faltante)" : "(Sobrante)"}`}
                         </span>
                     </div>
