@@ -35,12 +35,14 @@ import { ArrowRight } from "lucide-react";
 const clienteSchema = z.object({
     clienteExistente: z.string().optional(),
     nombreCompleto: z.string().min(1, {
-        message: "El nombre es requerido"
+        message: "El nombre completo es requerido"
     }),
     fechaNacimiento: z.string().min(1, {
         message: "La fecha de nacimiento es requerida"
     }),
-    genero: z.enum(["Masculino", "Femenino", "Otro"]),
+    genero: z.enum(["Masculino", "Femenino", "Otro"], {
+        required_error: "El género es requerido"
+    }),
     direccion: z.string().min(1, {
         message: "La dirección es requerida"
     }),
@@ -48,7 +50,7 @@ const clienteSchema = z.object({
         message: "El teléfono debe tener al menos 10 dígitos"
     }),
     email: z.string().email({
-        message: "El correo debe ser un correo electrónico válido"
+        message: "El correo electrónico debe ser válido"
     }),
     zonaResidencia: z.string().min(1, {
         message: "La zona de residencia es requerida"
@@ -221,9 +223,16 @@ export const ClientePolizaStep = ({
                                 name="nombreCompleto"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Nombre Completo</FormLabel>
+                                        <FormLabel>
+                                            Nombre Completo <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="Juan Pérez" />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa el nombre completo"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -235,9 +244,16 @@ export const ClientePolizaStep = ({
                                 name="fechaNacimiento"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Fecha de Nacimiento</FormLabel>
+                                        <FormLabel>
+                                            Fecha de Nacimiento <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input type="date" {...field} disabled={deshabilitarCampos} />
+                                            <Input 
+                                                type="date" 
+                                                {...field} 
+                                                disabled={deshabilitarCampos}
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -249,15 +265,17 @@ export const ClientePolizaStep = ({
                                 name="genero"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Género</FormLabel>
+                                        <FormLabel>
+                                            Género <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
                                             value={field.value}
                                             disabled={deshabilitarCampos}
                                         >
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Seleccionar género" />
+                                                <SelectTrigger className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}>
+                                                    <SelectValue placeholder="Selecciona el género" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -276,9 +294,16 @@ export const ClientePolizaStep = ({
                                 name="direccion"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Dirección</FormLabel>
+                                        <FormLabel>
+                                            Dirección <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="Dirección del cliente..." />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa la dirección completa"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -290,9 +315,16 @@ export const ClientePolizaStep = ({
                                 name="telefono"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Teléfono</FormLabel>
+                                        <FormLabel>
+                                            Teléfono <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="3111234567" />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa el número de teléfono"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -304,9 +336,16 @@ export const ClientePolizaStep = ({
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Correo Electrónico</FormLabel>
+                                        <FormLabel>
+                                            Correo Electrónico <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="correo@ejemplo.com" />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa el correo electrónico"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -318,9 +357,16 @@ export const ClientePolizaStep = ({
                                 name="RFC"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>RFC</FormLabel>
+                                        <FormLabel>
+                                            RFC <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="XXXX0000000XX" />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa el RFC"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -332,9 +378,16 @@ export const ClientePolizaStep = ({
                                 name="zonaResidencia"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Zona de Residencia</FormLabel>
+                                        <FormLabel>
+                                            Zona de Residencia <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="Zona de residencia..." />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa la zona de residencia"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

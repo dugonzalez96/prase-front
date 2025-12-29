@@ -43,28 +43,28 @@ const vehiculoSchema = z.object({
     vehiculoExistente: z.string(),
     ClienteID: z.coerce.number(),
     Marca: z.string().min(1, {
-        message: "Requerido"
+        message: "La marca es requerida"
     }),
     Submarca: z.string().min(1, {
-        message: "Requerido"
+        message: "La submarca es requerida"
     }),
-    Version: z.string().min(1, { message: "Requerido" }),
-    Modelo: z.coerce.number(),
-    TipoVehiculo: z.string().min(1),
+    Version: z.string().min(1, { message: "La versión es requerida" }),
+    Modelo: z.coerce.number().min(1900, { message: "El modelo es requerido" }),
+    TipoVehiculo: z.string().min(1, { message: "El tipo de vehículo es requerido" }),
     ValorVehiculo: z.coerce.number().min(10000, { message: "Debe ser un número mayor o igual a 10,000" }),
     ValorFactura: z.coerce.number().min(10000, { message: "Debe ser un número mayor o igual a 10,000" }),
     FechaRegistro: z.string(),
     UsoVehiculo: z.string().min(1, {
-        message: "Requerido"
+        message: "El uso del vehículo es requerido"
     }),
     ZonaResidencia: z.string().min(1, {
-        message: "Requerido"
+        message: "La zona de residencia es requerida"
     }),
     Salvamento: z.coerce.number().min(0, { message: "Debe ser un número mayor o igual a 0" }),
-    NoMotor: z.string().min(1, { message: "Requerido" }),
-    Placas: z.string().min(1, { message: "Requerido" }),
-    VIN: z.string().min(1, { message: "Requerido" }),
-    NumOcupantes: z.coerce.number(),
+    NoMotor: z.string().min(1, { message: "El número de motor es requerido" }),
+    Placas: z.string().min(1, { message: "Las placas son requeridas" }),
+    VIN: z.string().min(1, { message: "El VIN es requerido" }),
+    NumOcupantes: z.coerce.number().min(1, { message: "El número de ocupantes es requerido" }),
 });
 
 interface VehiculoPolizaStepProps {
@@ -283,9 +283,16 @@ export const VehiculoPolizaStep = ({
                                 name="Marca"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Marca</FormLabel>
+                                        <FormLabel>
+                                            Marca <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos}
+                                                placeholder="Ingresa la marca del vehículo"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -297,9 +304,16 @@ export const VehiculoPolizaStep = ({
                                 name="Submarca"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Submarca</FormLabel>
+                                        <FormLabel>
+                                            Submarca <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos}
+                                                placeholder="Ingresa la submarca del vehículo"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -311,9 +325,16 @@ export const VehiculoPolizaStep = ({
                                 name="Version"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Versión</FormLabel>
+                                        <FormLabel>
+                                            Versión <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos}
+                                                placeholder="Ingresa la versión del vehículo"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -325,9 +346,16 @@ export const VehiculoPolizaStep = ({
                                 name="Modelo"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Modelo</FormLabel>
+                                        <FormLabel>
+                                            Modelo <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos}
+                                                placeholder="Ingresa el año del modelo"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -339,15 +367,17 @@ export const VehiculoPolizaStep = ({
                                 name="TipoVehiculo"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Tipo de Vehículo</FormLabel>
+                                        <FormLabel>
+                                            Tipo de Vehículo <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <Select
                                             onValueChange={manejarCambioTipo}
                                             value={field.value?.toString()}
                                             disabled={deshabilitarCampos}
                                         >
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Seleccionar tipo" />
+                                                <SelectTrigger className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}>
+                                                    <SelectValue placeholder="Selecciona el tipo de vehículo" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -371,7 +401,9 @@ export const VehiculoPolizaStep = ({
                                 name="UsoVehiculo"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Uso del Vehículo</FormLabel>
+                                        <FormLabel>
+                                            Uso del Vehículo <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <Select
                                             onValueChange={(valor) => {
                                                 // console.log(typeof(valor))
@@ -381,8 +413,8 @@ export const VehiculoPolizaStep = ({
                                             disabled={deshabilitarCampos}
                                         >
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Seleccionar uso" />
+                                                <SelectTrigger className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}>
+                                                    <SelectValue placeholder="Selecciona el uso del vehículo" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -406,12 +438,15 @@ export const VehiculoPolizaStep = ({
                                 name="NumOcupantes"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Número de Ocupantes</FormLabel>
+                                        <FormLabel>
+                                            Número de Ocupantes <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
                                                 {...field}
                                                 onChange={e => field.onChange(Number(e.target.value))}
+                                                placeholder="Ingresa el número de ocupantes"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -467,9 +502,16 @@ export const VehiculoPolizaStep = ({
                                 name="Placas"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Placas</FormLabel>
+                                        <FormLabel>
+                                            Placas <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="REA5610" />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa las placas del vehículo"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -481,9 +523,16 @@ export const VehiculoPolizaStep = ({
                                 name="NoMotor"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Número de motor</FormLabel>
+                                        <FormLabel>
+                                            Número de Motor <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="1234567890" />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa el número de motor"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -495,9 +544,16 @@ export const VehiculoPolizaStep = ({
                                 name="VIN"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>VIN</FormLabel>
+                                        <FormLabel>
+                                            VIN <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} placeholder="3VWSK69M12M123069" />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos} 
+                                                placeholder="Ingresa el VIN del vehículo"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -509,9 +565,16 @@ export const VehiculoPolizaStep = ({
                                 name="ZonaResidencia"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Zona de Residencia</FormLabel>
+                                        <FormLabel>
+                                            Zona de Residencia <span className="text-red-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} disabled={deshabilitarCampos} />
+                                            <Input 
+                                                {...field} 
+                                                disabled={deshabilitarCampos}
+                                                placeholder="Ingresa la zona de residencia"
+                                                className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
