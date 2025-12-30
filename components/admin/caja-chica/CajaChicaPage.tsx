@@ -37,10 +37,7 @@ export function CajaChicaPage({
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [precuadre, setPrecuadre] = useState(precuadreInicial);
-    console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
-    // console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
     const [historial, setHistorial] = useState<iCajaChicaPorEstatus[]>([]);
-    console.log("🚀 ~ CajaChicaPage ~ historial:", historial)
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
     const [fechaHasta, setFechaHasta] = useState<string>("");
@@ -293,7 +290,7 @@ export function CajaChicaPage({
                                                     <th className="text-left py-2 px-2 font-medium">Fecha</th>
                                                     <th className="text-right py-2 px-2 font-medium">Total Ingresos</th>
                                                     <th className="text-right py-2 px-2 font-medium">Saldo Esperado</th>
-                                                    <th className="text-right py-2 px-2 font-medium">Saldo Real</th>
+                                                    <th className="text-right py-2 px-2 font-medium">Entregó en efectivo</th>
                                                     <th className="text-right py-2 px-2 font-medium">Diferencia</th>
                                                     <th className="text-center py-2 px-2 font-medium">Estatus</th>
                                                     <th className="text-center py-2 px-2 font-medium">Opciones</th>
