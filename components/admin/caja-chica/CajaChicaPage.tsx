@@ -37,8 +37,10 @@ export function CajaChicaPage({
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [precuadre, setPrecuadre] = useState(precuadreInicial);
+    console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
     // console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
     const [historial, setHistorial] = useState<iCajaChicaPorEstatus[]>([]);
+    console.log("🚀 ~ CajaChicaPage ~ historial:", historial)
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
     const [fechaHasta, setFechaHasta] = useState<string>("");
@@ -98,6 +100,16 @@ export function CajaChicaPage({
     const indiceInicio = (paginaActual - 1) * elementosPorPagina;
     const indiceFin = indiceInicio + elementosPorPagina;
     const datosPaginados = historial.slice(indiceInicio, indiceFin);
+
+    // Obtener el último cuadre cerrado para mostrar el faltante
+    const ultimoCuadre = historial.length > 0 
+        ? historial.reduce((masReciente, actual) => 
+            new Date(actual.Fecha) > new Date(masReciente.Fecha) ? actual : masReciente
+          , historial[0])
+        : null;
+
+    const diferenciaultimaXCuadre = ultimoCuadre ? Number(ultimoCuadre.Diferencia) : 0;
+    const esNegativo = diferenciaultimaXCuadre < 0;
 
     return (
         <div className="space-y-6" >
@@ -183,6 +195,28 @@ export function CajaChicaPage({
                             </div>
                         </CardContent>
                     </Card>
+                    
+                    {/* TARJETA INFORMATIVA - FALTANTE DEL ÚLTIMO CUADRE */}
+                    {ultimoCuadre && (
+                        <Card className={`py-3 px-4 ${esNegativo ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <p className={`text-sm font-medium ${esNegativo ? "text-red-700" : "text-green-700"}`}>
+                                        {esNegativo ? "⚠️ Faltante" : "✓ Sobrante"} • {new Date(ultimoCuadre.Fecha).toLocaleDateString("es-MX")}
+                                    </p>
+                                    {ultimoCuadre.Observaciones && (
+                                        <p className={`text-xs mt-1 ${esNegativo ? "text-red-600" : "text-green-600"}`}>
+                                            {ultimoCuadre.Observaciones}
+                                        </p>
+                                    )}
+                                </div>
+                                <span className={`text-xl font-bold whitespace-nowrap ${esNegativo ? "text-red-600" : "text-green-600"}`}>
+                                    {formatCurrency(diferenciaultimaXCuadre)}
+                                </span>
+                            </div>
+                        </Card>
+                    )}
+                    {/* FIN TARJETA INFORMATIVA */}
                     {/* LISTADO - PLACEHOLDER */}
                     <Card>
                         <CardHeader>
