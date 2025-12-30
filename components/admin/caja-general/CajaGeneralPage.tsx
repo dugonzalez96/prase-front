@@ -21,7 +21,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Landmark, Search, Clock, ArrowUpRight, ArrowDownLeft, Plus, TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Calendar, BarChart3, Zap, Target } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Landmark, Search, Clock, ArrowUpRight, ArrowDownLeft, Plus, TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Calendar, BarChart3, Zap, Target, HelpCircle } from "lucide-react";
 import { iCajaGeneralDashboard } from "@/interfaces/CajaGeneralDashboardInterface";
 import { getCajaGeneralDashboard, getPreCuadreCajaGeneral } from "@/actions/CajaGeneralActions";
 import { iGetSucursales } from "@/interfaces/SucursalesInterface";
@@ -132,6 +133,7 @@ export function CajaGeneralPage({
     };
 
     return (
+        <TooltipProvider>
         <div className="space-y-6 pb-6">
             {/* HEADER */}
             <div className="flex items-center justify-between">
@@ -157,13 +159,31 @@ export function CajaGeneralPage({
             {/* FILTROS */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Filtros</CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">Filtros</CardTitle>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <HelpCircle className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Selecciona una fecha y sucursal para filtrar los datos del dashboard</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="flex gap-4 items-end">
                         <div className="flex-1">
-                            <Label htmlFor="fecha" className="mb-2 block">
+                            <Label htmlFor="fecha" className="mb-2 flex items-center gap-2">
                                 Fecha del Cuadre
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Selecciona la fecha para consultar el movimiento de caja</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </Label>
                             <Input
                                 id="fecha"
@@ -173,8 +193,16 @@ export function CajaGeneralPage({
                             />
                         </div>
                         <div className="flex-1">
-                            <Label htmlFor="sucursal" className="mb-2 block">
+                            <Label htmlFor="sucursal" className="mb-2 flex items-center gap-2">
                                 Sucursal
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Filtra los datos por sucursal o selecciona todas</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </Label>
                             <Select value={sucursal} onValueChange={setSucursal}>
                                 <SelectTrigger id="sucursal">
@@ -209,8 +237,16 @@ export function CajaGeneralPage({
                         {/* Saldo Inicial */}
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Saldo
+                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                                    <span>Saldo Inicial</span>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Saldo con el que inicia el día</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -223,9 +259,19 @@ export function CajaGeneralPage({
                         {/* Entradas */}
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <ArrowUpRight className="h-4 w-4 text-green-600" />
-                                    Entradas
+                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                                    <span className="flex items-center gap-2">
+                                        <ArrowUpRight className="h-4 w-4 text-green-600" />
+                                        Entradas
+                                    </span>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Total de ingresos registrados en el día</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -238,9 +284,19 @@ export function CajaGeneralPage({
                         {/* Egresos */}
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <ArrowDownLeft className="h-4 w-4 text-red-600" />
-                                    Egresos
+                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                                    <span className="flex items-center gap-2">
+                                        <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                                        Egresos
+                                    </span>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Total de egresos registrados en el día</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -253,8 +309,16 @@ export function CajaGeneralPage({
                         {/* Saldo Final  */}
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Saldo Final
+                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                                    <span>Saldo Final</span>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Saldo inicial + entradas - egresos</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -268,11 +332,21 @@ export function CajaGeneralPage({
                     {/* ENTRADAS DEL DÍA - TIMELINE */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle>Entradas del Día</CardTitle>
-                                <CardDescription>
-                                    Detalle de ingresos registrados
-                                </CardDescription>
+                            <div className="flex items-center gap-2">
+                                <div>
+                                    <CardTitle>Entradas del Día</CardTitle>
+                                    <CardDescription>
+                                        Detalle de ingresos registrados
+                                    </CardDescription>
+                                </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <HelpCircle className="h-5 w-5 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Todas las entradas de efectivo registradas en el día</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
 
                         </CardHeader>
@@ -311,10 +385,22 @@ export function CajaGeneralPage({
                     {/* EGRESOS DEL DÍA - TIMELINE */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Egresos del Día</CardTitle>
-                            <CardDescription>
-                                Detalle de salidas registradas
-                            </CardDescription>
+                            <div className="flex items-center gap-2">
+                                <div>
+                                    <CardTitle>Egresos del Día</CardTitle>
+                                    <CardDescription>
+                                        Detalle de salidas registradas
+                                    </CardDescription>
+                                </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <HelpCircle className="h-5 w-5 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Todas las salidas de efectivo registradas en el día</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {dashboard.egresos && dashboard.egresos.length > 0 ? (
@@ -351,10 +437,22 @@ export function CajaGeneralPage({
                     {/* CORTES DE USUARIO - TABLA */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Cortes de Usuario</CardTitle>
-                            <CardDescription>
-                                Detalle de cortes de cajas de usuarios
-                            </CardDescription>
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <CardTitle>Cortes de Usuario</CardTitle>
+                                    <CardDescription>
+                                        Detalle de cortes de cajas de usuarios
+                                    </CardDescription>
+                                </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <HelpCircle className="h-5 w-5 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Resumen de los cortes parciales realizados por cada usuario</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {dashboard.cortesUsuarios && dashboard.cortesUsuarios.length > 0 ? (
@@ -397,10 +495,22 @@ export function CajaGeneralPage({
                     {/* INICIOS DE USUARIO - AUDITORÍA */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Inicios de Usuario</CardTitle>
-                            <CardDescription>
-                                Auditoría de inicios de caja
-                            </CardDescription>
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <CardTitle>Inicios de Usuario</CardTitle>
+                                    <CardDescription>
+                                        Auditoría de inicios de caja
+                                    </CardDescription>
+                                </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <HelpCircle className="h-5 w-5 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Registro de quién abrió la caja y en qué momento</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {dashboard.iniciosUsuarios && dashboard.iniciosUsuarios.length > 0 ? (
@@ -454,6 +564,17 @@ export function CajaGeneralPage({
                         <CardContent className="space-y-6">
                             {/* SECCIÓN DE CÁLCULO */}
                             <div className="space-y-3 bg-white p-4 rounded-lg border">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="font-semibold text-sm">Desglose de Cálculo</h4>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Cálculo automático del saldo esperado para el día</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm font-medium">Saldo Inicial:</span>
                                     <span className="text-sm font-semibold">
@@ -487,6 +608,14 @@ export function CajaGeneralPage({
                                         <h3 className="font-bold text-lg text-indigo-900 flex items-center gap-2">
                                             <BarChart3 className="h-5 w-5 text-indigo-600" />
                                             Analítica Avanzada
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <HelpCircle className="h-4 w-4 text-indigo-600 cursor-help" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Análisis comparativo del movimiento actual vs histórico</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </h3>
                                         <Zap className="h-5 w-5 text-amber-500" />
                                     </div>
@@ -497,6 +626,14 @@ export function CajaGeneralPage({
                                             <div className="flex items-center gap-3 mb-3">
                                                 <Calendar className="h-4 w-4 text-indigo-600" />
                                                 <p className="text-sm font-bold text-indigo-900">Último Cuadre</p>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <HelpCircle className="h-4 w-4 text-indigo-600 cursor-help" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Información del último cuadre registrado</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             </div>
                                             <div className="space-y-2 ml-7">
                                                 <div className="flex justify-between items-center">
@@ -534,6 +671,14 @@ export function CajaGeneralPage({
                                             <p className="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2">
                                                 <Target className="h-4 w-4 text-blue-600" />
                                                 Promedios (Últimos {preCuadre.analitica.promedioUltimosCuadres.diasConsiderados} día(s))
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <HelpCircle className="h-4 w-4 text-blue-600 cursor-help" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Promedio de movimientos de los últimos cuadres realizados</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             </p>
                                             <div className="grid sm:grid-cols-3 gap-3">
                                                 {/* Promedio Entradas */}
@@ -597,6 +742,14 @@ export function CajaGeneralPage({
                                             <p className="text-sm font-bold text-purple-900 mb-4 flex items-center gap-2">
                                                 <TrendingUp className="h-4 w-4 text-purple-600" />
                                                 Variación vs Promedio
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <HelpCircle className="h-4 w-4 text-purple-600 cursor-help" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Porcentaje de variación del movimiento actual respecto al promedio</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             </p>
                                             <div className="flex flex-col md:flex-row gap-2 space-y-3 ">
                                                 {/* Entradas */}
@@ -715,10 +868,22 @@ export function CajaGeneralPage({
             {dashboard && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Historial de Cuadres de Caja</CardTitle>
-                        <CardDescription>
-                            Cuadres realizados anteriormente
-                        </CardDescription>
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <CardTitle>Historial de Cuadres de Caja</CardTitle>
+                                <CardDescription>
+                                    Cuadres realizados anteriormente
+                                </CardDescription>
+                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <HelpCircle className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Registro histórico de todos los cuadres realizados</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {dashboard.historialCuadres && dashboard.historialCuadres.length > 0 ? (
@@ -815,5 +980,6 @@ export function CajaGeneralPage({
                 saldoEsperado={preCuadre?.preCuadre.saldoCalculado || 0}
             />
         </div>
+        </TooltipProvider>
     );
 }
