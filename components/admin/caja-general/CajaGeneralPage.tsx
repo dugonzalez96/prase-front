@@ -70,6 +70,7 @@ export function CajaGeneralPage({
     const [sucursal, setSucursal] = useState("todas");
     const [loading, setLoading] = useState(false);
     const [dashboard, setDashboard] = useState<iCajaGeneralDashboard | null>(dashboardInicial);
+    // console.log("🚀 ~ CajaGeneralPage ~ dashboard:", dashboard)
     const [preCuadre, setPreCuadre] = useState<iPreCuadreResponse | null>(preCuadreInicial);
 
     const handleBuscar = useCallback(async () => {
@@ -463,7 +464,10 @@ export function CajaGeneralPage({
                                                 <TableHead>Usuario</TableHead>
                                                 <TableHead>Sucursal</TableHead>
                                                 <TableHead>Hora Corte</TableHead>
-                                                <TableHead className="text-right">Monto Corte</TableHead>
+                                                <TableHead className="text-right">Monto Total</TableHead>
+                                                <TableHead className="text-right">Efectivo</TableHead>
+                                                <TableHead className="text-right">Transferencias</TableHead>
+                                                <TableHead className="text-right">Depósitos</TableHead>
                                                 <TableHead>Estado</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -475,6 +479,15 @@ export function CajaGeneralPage({
                                                     <TableCell>{formatHora(corte.fechaHoraCorte)}</TableCell>
                                                     <TableCell className="text-right font-semibold">
                                                         $ {formatNumber(corte.montoCorte)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-green-700">
+                                                        {corte.efectivoEntregado !== undefined ? `$ ${formatNumber(corte.efectivoEntregado)}` : '-'}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-blue-700">
+                                                        {corte.transferencias !== undefined ? `$ ${formatNumber(corte.transferencias)}` : '-'}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-purple-700">
+                                                        {corte.depositos !== undefined ? `$ ${formatNumber(corte.depositos)}` : '-'}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge className={getEstadoBadge(corte.estadoCajaChica)}>
@@ -978,6 +991,8 @@ export function CajaGeneralPage({
                 sucursales={sucursales}
                 fechaActual={fechaActual}
                 saldoEsperado={preCuadre?.preCuadre.saldoCalculado || 0}
+                totalTarjetaCapturado={dashboard?.preCuadre.totalTarjetaCapturado || 0}
+                totalTransferenciaCapturado={dashboard?.preCuadre.totalTransferenciaCapturado || 0}
             />
         </div>
         </TooltipProvider>

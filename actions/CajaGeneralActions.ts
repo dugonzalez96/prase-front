@@ -547,6 +547,7 @@ export async function cuadrarCajaGeneral(body: {
     totalTarjetaCapturado: number;
     totalTransferenciaCapturado: number;
 }) {
+    console.log("🚀 ~ cuadrarCajaGeneral ~ body:", body)
     try {
         const response = await fetch(
             `${process.env.API_URL}/caja-general/cuadrar`,

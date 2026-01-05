@@ -134,6 +134,7 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
             const result = await cuadrarCajaChicaAction(usuarioId, sucursal.SucursalID, dataToSend);
             console.log("🚀 ~ handleCuadre ~ result:", result)
 
+            // Manejar respuestas con success
             if (result.success) {
                 toast({
                     title: "✅ Cuadre Exitoso",
@@ -145,20 +146,16 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                 router.push('/admin/caja-chica');
                 router.refresh();
                 window.location.reload();
-                setIsLoadingCorte(false);
 
             } else {
-                if (isMounted.current) {
-                    toast({
-                        title: "Error",
-                        description: result.message,
-                        variant: "destructive",
-                    });
-                    setIsLoadingCorte(false);
-                }
+                toast({
+                    title: "Error",
+                    description: result.message || "No se pudo completar el cuadre",
+                    variant: "destructive",
+                });
+                setIsLoadingCorte(false);
             }
         } catch (err) {
-            if (!isMounted.current) return;
             const errorMsg = err instanceof Error ? err.message : "Error al cuadrar";
             toast({
                 title: "Error",

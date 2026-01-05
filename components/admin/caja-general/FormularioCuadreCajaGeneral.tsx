@@ -38,6 +38,8 @@ interface FormularioCuadreCajaGeneralProps {
     onCancel?: () => void;
     fechaActual: string;
     saldoEsperado: number;
+    totalTarjetaCapturado: number;
+    totalTransferenciaCapturado: number;
 }
 
 const formularioCuadreSchema = z.object({
@@ -56,6 +58,8 @@ export function FormularioCuadreCajaGeneral({
     onCancel,
     fechaActual,
     saldoEsperado,
+    totalTarjetaCapturado,
+    totalTransferenciaCapturado,
 }: FormularioCuadreCajaGeneralProps) {
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
@@ -65,8 +69,8 @@ export function FormularioCuadreCajaGeneral({
         defaultValues: {
             sucursalId: sucursalUsuarioId,
             totalEfectivoCapturado: 0,
-            totalTarjetaCapturado: 0,
-            totalTransferenciaCapturado: 0,
+            totalTarjetaCapturado: totalTarjetaCapturado,
+            totalTransferenciaCapturado: totalTransferenciaCapturado,
             observaciones: "",
         },
     });
@@ -167,10 +171,8 @@ export function FormularioCuadreCajaGeneral({
                                                 : formatCurrency(field.value, { showSymbol: true })
                                         }
                                         placeholder="$ 0.00"
-                                        onChange={(e) => {
-                                            const valor = e.target.value.replace(/[^0-9]/g, "");
-                                            field.onChange(Number(valor) / 100);
-                                        }}
+                                        readOnly
+                                        className="bg-gray-100 cursor-not-allowed"
                                     />
                                 </div>
                             </FormControl>
@@ -195,10 +197,8 @@ export function FormularioCuadreCajaGeneral({
                                                 : formatCurrency(field.value, { showSymbol: true })
                                         }
                                         placeholder="$ 0.00"
-                                        onChange={(e) => {
-                                            const valor = e.target.value.replace(/[^0-9]/g, "");
-                                            field.onChange(Number(valor) / 100);
-                                        }}
+                                        readOnly
+                                        className="bg-gray-100 cursor-not-allowed"
                                     />
                                 </div>
                             </FormControl>
