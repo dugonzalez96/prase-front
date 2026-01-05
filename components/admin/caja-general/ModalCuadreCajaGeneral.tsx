@@ -13,6 +13,8 @@ interface ModalCuadreCajaGeneralProps {
     sucursales: iGetSucursales[];
     fechaActual: string;
     saldoEsperado: number;
+    totalTarjetaCapturado: number;
+    totalTransferenciaCapturado: number;
 }
 
 export function ModalCuadreCajaGeneral({
@@ -24,6 +26,8 @@ export function ModalCuadreCajaGeneral({
     sucursales,
     fechaActual,
     saldoEsperado,
+    totalTarjetaCapturado,
+    totalTransferenciaCapturado,
 }: ModalCuadreCajaGeneralProps) {
     const handleSuccess = () => {
         onOpenChange(false);
@@ -44,6 +48,8 @@ export function ModalCuadreCajaGeneral({
                     onCancel={() => onOpenChange(false)}
                     fechaActual={fechaActual}
                     saldoEsperado={saldoEsperado}
+                    totalTarjetaCapturado={totalTarjetaCapturado}
+                    totalTransferenciaCapturado={totalTransferenciaCapturado}
                 />
             </DialogContent>
         </Dialog>

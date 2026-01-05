@@ -137,7 +137,7 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
 
     // Función para obtener el valor absoluto de la diferencia
     const getAbsoluteDifference = (difference: string) => {
-        return Math.abs(Number.parseFloat(difference)).toFixed(2)
+        return (Number.parseFloat(difference)).toFixed(2)
     }
 
     // Función para truncar el correo electrónico
@@ -484,6 +484,24 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                                             <CardHeader className="pb-2 border-b">
                                                 <CardTitle>Movimientos</CardTitle>
                                                 <div className="text-sm text-muted-foreground">Detalle de ingresos y egresos</div>
+                                                {(() => {
+                                                    const total = ((ingresos || []).reduce((sum, item) => sum + Number(item.Monto || 0), 0) +
+                                                        (pagosPoliza || []).reduce((sum, item) => sum + Number(item.MontoPagado || 0), 0)) -
+                                                        (egresos || []).reduce((sum, item) => sum + Number(item.Monto || 0), 0);
+
+                                                    let colorClass = "text-blue-600"; // Azul si es 0
+                                                    if (total > 0) colorClass = "text-green-600";
+                                                    if (total < 0) colorClass = "text-red-600";
+
+                                                    return (
+                                                        <div className="rounded-lg mb-3 bg-gray-200 shadow-sm p-4">
+                                                            <p className="text-sm text-muted-foreground">Total de movimientos:</p>
+                                                            <p className={`text-lg font-semibold ${colorClass}`}>
+                                                                {formatCurrency(String(total))}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                })()}
                                                 <Button
                                                     className="bg-primary rounded-sm hover:bg-primary/80 active:bg-primary/90"
                                                     onClick={() => generarCortePDF(corteMovimientosInfo)}>

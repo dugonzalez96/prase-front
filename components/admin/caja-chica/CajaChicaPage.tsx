@@ -37,7 +37,6 @@ export function CajaChicaPage({
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [precuadre, setPrecuadre] = useState(precuadreInicial);
-    // console.log("🚀 ~ CajaChicaPage ~ precuadre:", precuadre)
     const [historial, setHistorial] = useState<iCajaChicaPorEstatus[]>([]);
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
@@ -98,6 +97,16 @@ export function CajaChicaPage({
     const indiceInicio = (paginaActual - 1) * elementosPorPagina;
     const indiceFin = indiceInicio + elementosPorPagina;
     const datosPaginados = historial.slice(indiceInicio, indiceFin);
+
+    // Obtener el último cuadre cerrado para mostrar el faltante
+    const ultimoCuadre = historial.length > 0 
+        ? historial.reduce((masReciente, actual) => 
+            new Date(actual.Fecha) > new Date(masReciente.Fecha) ? actual : masReciente
+          , historial[0])
+        : null;
+
+    const diferenciaultimaXCuadre = ultimoCuadre ? Number(ultimoCuadre.Diferencia) : 0;
+    const esNegativo = diferenciaultimaXCuadre < 0;
 
     return (
         <div className="space-y-6" >
@@ -183,6 +192,28 @@ export function CajaChicaPage({
                             </div>
                         </CardContent>
                     </Card>
+                    
+                    {/* TARJETA INFORMATIVA - FALTANTE DEL ÚLTIMO CUADRE */}
+                    {ultimoCuadre && (
+                        <Card className={`py-3 px-4 ${esNegativo ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <p className={`text-sm font-medium ${esNegativo ? "text-red-700" : "text-green-700"}`}>
+                                        {esNegativo ? "⚠️ Faltante" : "✓ Sobrante"} • {new Date(ultimoCuadre.Fecha).toLocaleDateString("es-MX")}
+                                    </p>
+                                    {ultimoCuadre.Observaciones && (
+                                        <p className={`text-xs mt-1 ${esNegativo ? "text-red-600" : "text-green-600"}`}>
+                                            {ultimoCuadre.Observaciones}
+                                        </p>
+                                    )}
+                                </div>
+                                <span className={`text-xl font-bold whitespace-nowrap ${esNegativo ? "text-red-600" : "text-green-600"}`}>
+                                    {formatCurrency(diferenciaultimaXCuadre)}
+                                </span>
+                            </div>
+                        </Card>
+                    )}
+                    {/* FIN TARJETA INFORMATIVA */}
                     {/* LISTADO - PLACEHOLDER */}
                     <Card>
                         <CardHeader>
@@ -236,7 +267,6 @@ export function CajaChicaPage({
                                     </Select>
                                 </div>
                             </div>
-
                             {/* TABLA */}
                             {cargando ? (
                                 <div className="text-center py-8">
@@ -260,61 +290,72 @@ export function CajaChicaPage({
                                                     <th className="text-left py-2 px-2 font-medium">Fecha</th>
                                                     <th className="text-right py-2 px-2 font-medium">Total Ingresos</th>
                                                     <th className="text-right py-2 px-2 font-medium">Saldo Esperado</th>
-                                                    <th className="text-right py-2 px-2 font-medium">Saldo Real</th>
+                                                    <th className="text-right py-2 px-2 font-medium">Entregó en efectivo</th>
                                                     <th className="text-right py-2 px-2 font-medium">Diferencia</th>
                                                     <th className="text-center py-2 px-2 font-medium">Estatus</th>
                                                     <th className="text-center py-2 px-2 font-medium">Opciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {datosPaginados.map((cuadre) => (
-                                                    <tr key={cuadre.CajaChicaID} className="border-b hover:bg-muted/50">
-                                                        <td className="py-2 px-2">
-                                                            {cuadre.CajaChicaID}
-                                                        </td>
-                                                        <td className="py-2 px-2">
-                                                            {cuadre.FolioCierre}
-                                                        </td>
-                                                        <td className="py-2 px-2">
-                                                            {new Date(cuadre.Fecha).toLocaleDateString("es-MX")}
-                                                        </td>
-                                                        <td className="text-right py-2 px-2">
-                                                            {formatCurrency(Number(cuadre.SaldoEsperado))}
-                                                        </td>
-                                                        <td className="text-right py-2 px-2">
-                                                            {formatCurrency(Number(cuadre.SaldoEsperado))}
-                                                        </td>
-                                                        <td className="text-right py-2 px-2">
-                                                            {formatCurrency(Number(cuadre.SaldoReal))}
-                                                        </td>
-                                                        <td className={`text-right py-2 px-2 font-medium ${Number(cuadre.Diferencia) === 0
-                                                            ? "text-green-600"
-                                                            : Number(cuadre.Diferencia) > 0
-                                                                ? "text-blue-600"
-                                                                : "text-red-600"
-                                                            }`}>
-                                                            {formatCurrency(Number(cuadre.Diferencia))}
-                                                        </td>
-                                                        <td className="text-center py-2 px-2">
-                                                            <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                                                                {cuadre.Estatus}
-                                                            </span>
-                                                        </td>
-                                                        <td className="text-center py-2 px-2">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => {
-                                                                    setCuadreSeleccionado(cuadre.CajaChicaID);
-                                                                    setModalCancelacionAbierto(true);
-                                                                }}
-                                                                title="Cancelar cuadre"
-                                                            >
-                                                                <Trash2 className="h-4 w-4 text-red-600" />
-                                                            </Button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                                {datosPaginados.map((cuadre) => {
+                                                    // Determinar si es el cuadre más reciente
+                                                    const cuadreMasReciente = historial.reduce((masReciente, actual) => {
+                                                        return new Date(actual.Fecha) > new Date(masReciente.Fecha) ? actual : masReciente;
+                                                    }, historial[0]);
+                                                    const esElMasReciente = cuadre.CajaChicaID === cuadreMasReciente?.CajaChicaID;
+                                                    
+                                                    return (
+                                                        <tr key={cuadre.CajaChicaID} className="border-b hover:bg-muted/50">
+                                                            <td className="py-2 px-2">
+                                                                {cuadre.CajaChicaID}
+                                                            </td>
+                                                            <td className="py-2 px-2">
+                                                                {cuadre.FolioCierre}
+                                                            </td>
+                                                            <td className="py-2 px-2">
+                                                                {new Date(cuadre.Fecha).toLocaleDateString("es-MX")}
+                                                            </td>
+                                                            <td className="text-right py-2 px-2">
+                                                                {formatCurrency(Number(cuadre.SaldoEsperado))}
+                                                            </td>
+                                                            <td className="text-right py-2 px-2">
+                                                                {formatCurrency(Number(cuadre.SaldoEsperado))}
+                                                            </td>
+                                                            <td className="text-right py-2 px-2">
+                                                                {formatCurrency(Number(cuadre.SaldoReal))}
+                                                            </td>
+                                                            <td className={`text-right py-2 px-2 font-medium ${Number(cuadre.Diferencia) === 0
+                                                                ? "text-green-600"
+                                                                : Number(cuadre.Diferencia) > 0
+                                                                    ? "text-blue-600"
+                                                                    : "text-red-600"
+                                                                }`}>
+                                                                {formatCurrency(Number(cuadre.Diferencia))}
+                                                            </td>
+                                                            <td className="text-center py-2 px-2">
+                                                                <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                                                                    {cuadre.Estatus}
+                                                                </span>
+                                                            </td>
+                                                            <td className="text-center py-2 px-2">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setCuadreSeleccionado(cuadre.CajaChicaID);
+                                                                        setModalCancelacionAbierto(true);
+                                                                    }}
+                                                                    disabled={!esElMasReciente}
+                                                                    title={esElMasReciente 
+                                                                        ? "Cancelar cuadre" 
+                                                                        : "Solo se puede cancelar el cuadre más reciente"}
+                                                                >
+                                                                    <Trash2 className={`h-4 w-4 ${esElMasReciente ? "text-red-600" : "text-gray-400"}`} />
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                     </div>

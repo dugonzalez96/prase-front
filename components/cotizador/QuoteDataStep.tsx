@@ -412,9 +412,9 @@ export const QuoteDataStep = ({
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {Array.from({ length: 28 }, (_, i) => i + 3).map((dia) => (
+                                    {Array.from({ length: 31 }, (_, i) => i).map((dia) => (
                                         <SelectItem key={dia} value={dia.toString()}>
-                                            {dia} días
+                                            {dia == 0 ? "Inmediata" : dia === 1 ? "1 día" : `${dia} días`}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

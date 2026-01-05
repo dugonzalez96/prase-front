@@ -260,7 +260,11 @@ export function NuevoMovimientoCajaGeneralForm({
                             <FormControl>
                                 <Input
                                     {...field}
-                                    value={formatCurrency(field.value, { showSymbol: true })}
+                                    value={
+                                        field.value === 0 && !form.formState.dirtyFields?.monto
+                                            ? ""
+                                            : formatCurrency(field.value, { showSymbol: true })
+                                    }
                                     placeholder="$ 0.00"
                                     onChange={(e) => {
                                         const valor = e.target.value.replace(/[^0-9]/g, "");
