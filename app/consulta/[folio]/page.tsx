@@ -22,11 +22,13 @@ export default function EsquemaPagosPage() {
   const [error, setError] = useState<string | null>(null);
   const [mensajeVigencia, setMensajeVigencia] = useState<string | null>(null);
 
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+
   const fetchEsquemaPagos = async (folio: string) => {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://prase-api-production.up.railway.app/polizas/esquema-pagos/${encodeURIComponent(
+        `${apiBaseUrl}/polizas/esquema-pagos/${encodeURIComponent(
           folio
         )}`,
         { cache: "no-store" }

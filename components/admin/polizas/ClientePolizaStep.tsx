@@ -46,9 +46,9 @@ const clienteSchema = z.object({
     direccion: z.string().min(1, {
         message: "La dirección es requerida"
     }),
-    telefono: z.string().min(10, {
-        message: "El teléfono debe tener al menos 10 dígitos"
-    }),
+    telefono: z.string()
+        .min(10, { message: "El teléfono debe tener al menos 10 dígitos" })
+        .regex(/^[0-9]+$/, { message: "El teléfono debe contener solo números" }),
     email: z.string().email({
         message: "El correo electrónico debe ser válido"
     }),
@@ -138,7 +138,7 @@ export const ClientePolizaStep = ({
         }
     };
 
-    const manejarSeleccionCliente = (valorSeleccionado: string) => {
+    const manejarSeleccionCliente = async (valorSeleccionado: string) => {
         if (valorSeleccionado === "nuevo") {
             form.reset({
                 clienteExistente: undefined,
@@ -169,6 +169,8 @@ export const ClientePolizaStep = ({
                     zonaResidencia: clienteSeleccionado.ZonaResidencia,
                     RFC: clienteSeleccionado.RFC || "",
                 });
+                // Forzar validación de todos los campos después de cargar los datos
+                await form.trigger();
             }
         }
     };
@@ -250,8 +252,11 @@ export const ClientePolizaStep = ({
                                         <FormControl>
                                             <Input 
                                                 type="date" 
-                                                {...field} 
+                                                {...field}
+                                                // Forzar valor vacío controlado para evitar que Safari muestre la fecha actual por defecto
+                                                value={field.value || ""}
                                                 disabled={deshabilitarCampos}
+                                                placeholder="Selecciona la fecha"
                                                 className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
                                             />
                                         </FormControl>
@@ -320,7 +325,11 @@ export const ClientePolizaStep = ({
                                         </FormLabel>
                                         <FormControl>
                                             <Input 
-                                                {...field} 
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const valor = e.target.value.replace(/[^0-9]/g, '');
+                                                    field.onChange(valor);
+                                                }}
                                                 disabled={deshabilitarCampos} 
                                                 placeholder="Ingresa el número de teléfono"
                                                 className={deshabilitarCampos ? "text-gray-900 font-semibold" : ""}
