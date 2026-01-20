@@ -289,8 +289,8 @@ export function CajaChicaPage({
                                                     <th className="text-left py-2 px-2 font-medium">Folio</th>
                                                     <th className="text-left py-2 px-2 font-medium">Fecha</th>
                                                     <th className="text-right py-2 px-2 font-medium">Total Ingresos</th>
-                                                    <th className="text-right py-2 px-2 font-medium">Saldo Esperado</th>
-                                                    <th className="text-right py-2 px-2 font-medium">Entregó en efectivo</th>
+                                                    <th className="text-right py-2 px-2 font-medium">Saldo Esperado en Efectivo</th>
+                                                    <th className="text-right py-2 px-2 font-medium">Saldo entregado efectivo</th>
                                                     <th className="text-right py-2 px-2 font-medium">Diferencia</th>
                                                     <th className="text-center py-2 px-2 font-medium">Estatus</th>
                                                     <th className="text-center py-2 px-2 font-medium">Opciones</th>
