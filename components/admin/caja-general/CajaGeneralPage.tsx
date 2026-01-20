@@ -235,11 +235,11 @@ export function CajaGeneralPage({
             {dashboard && (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {/* Saldo Inicial */}
+                        {/* Cuadre del dia anterior */}
                         <Card>
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                                    <span>Saldo Inicial</span>
+                                    <span>Cuadre del dia anterior</span>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />

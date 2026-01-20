@@ -77,9 +77,10 @@ export function FormularioCuadreCajaGeneral({
 
     // Calcular saldo real
     const totalEfectivo = form.watch("totalEfectivoCapturado");
-    const totalTarjeta = form.watch("totalTarjetaCapturado");
-    const totalTransferencia = form.watch("totalTransferenciaCapturado");
-    const saldoReal = totalEfectivo + totalTarjeta + totalTransferencia;
+    // const totalTarjeta = form.watch("totalTarjetaCapturado");
+    // const totalTransferencia = form.watch("totalTransferenciaCapturado");
+    const saldoReal = totalEfectivo
+    // + totalTarjeta + totalTransferencia;
     const diferencia = saldoEsperado - saldoReal;
 
     const onSubmit = async (valores: z.infer<typeof formularioCuadreSchema>) => {
@@ -159,7 +160,7 @@ export function FormularioCuadreCajaGeneral({
                     control={form.control}
                     name="totalTarjetaCapturado"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem hidden>
                             <FormLabel>Total Tarjeta Capturado</FormLabel>
                             <FormControl>
                                 <div className="relative">
@@ -185,7 +186,7 @@ export function FormularioCuadreCajaGeneral({
                     control={form.control}
                     name="totalTransferenciaCapturado"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem hidden>
                             <FormLabel>Total Transferencia Capturado</FormLabel>
                             <FormControl>
                                 <div className="relative">
@@ -219,13 +220,12 @@ export function FormularioCuadreCajaGeneral({
                     </div>
                     <div className="flex justify-between text-sm pt-2 border-t">
                         <span className="font-medium">Diferencia:</span>
-                        <span className={`font-semibold ${
-                            diferencia === 0
+                        <span className={`font-semibold ${diferencia === 0
                                 ? "text-blue-600"
                                 : diferencia > 0
                                     ? "text-red-600"
                                     : "text-green-600"
-                        }`}>
+                            }`}>
                             {diferencia === 0 ? "$ 0.00 (Cuadrado)" : `$ ${formatNumber(Math.abs(diferencia))} ${diferencia > 0 ? "(Faltante)" : "(Sobrante)"}`}
                         </span>
                     </div>
