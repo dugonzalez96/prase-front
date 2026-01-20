@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { ArrowDownCircle, ArrowUpCircle, Calendar, Clock, DollarSign, Eye, Filter, Mail, Plus, Scale, X } from "lucide-react"
+import { ArrowDownCircle, ArrowUpCircle, Calendar, Clock, DollarSign, Eye, Filter, Grid, List, Mail, Plus, Scale, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { CorteUsuarioModal } from "./CorteDelDiaModal"
 import { NuevoCorteDelDiaForm } from "./NuevoCorteDelDiaForm"
@@ -59,13 +59,16 @@ interface CorteUsuario {
 }
 
 export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[], usuarios: any }) => {
+    // console.log("🚀 ~ TablaCortesDelDia ~ usuarios:", usuarios)
     // console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
     const [selectedCorte, setSelectedCorte] = useState<CorteUsuario | null>(null)
     const [filteredCortes, setFilteredCortes] = useState<CorteUsuario[]>(cortes)
+    // console.log("🚀 ~ TablaCortesDelDia ~ filteredCortes:", filteredCortes)
     const [selectedUser, setSelectedUser] = useState<string>("")
     const [startDate, setStartDate] = useState<Date | undefined>(undefined)
     const [endDate, setEndDate] = useState<Date | undefined>(undefined)
     const [isFiltering, setIsFiltering] = useState(false)
+    const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
 
     const [isNewCorteOpen, setIsNewCorteOpen] = useState(false)
 
@@ -146,6 +149,24 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                         </Button>
                         {isNewCorteOpen && <NuevoCorteDelDiaForm usuarios={usuarios} onClose={() => setIsNewCorteOpen(false)} />}
                         <div className="flex gap-4">
+                            <div className="flex gap-2">
+                                <Button
+                                    variant={viewMode === 'cards' ? "default" : "outline"}
+                                    onClick={() => setViewMode('cards')}
+                                    className="rounded-md"
+                                    size="icon"
+                                >
+                                    <Grid className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant={viewMode === 'table' ? "default" : "outline"}
+                                    onClick={() => setViewMode('table')}
+                                    className="rounded-md"
+                                    size="icon"
+                                >
+                                    <List className="w-4 h-4" />
+                                </Button>
+                            </div>
                             <Button
                                 variant={isFiltering ? "default" : "outline"}
                                 onClick={() => setIsFiltering(!isFiltering)}
@@ -215,8 +236,9 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredCortes.map((corte) => (
+                {viewMode === 'cards' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredCortes.map((corte) => (
                         <Card key={corte.CorteUsuarioID} className="overflow-hidden flex flex-col rounded-lg">
                             <CardHeader className="bg-primary/10 pb-2">
                                 <div className="flex justify-between items-start">
@@ -306,8 +328,95 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                 </Button>
                             </CardFooter>
                         </Card>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="rounded-lg border overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-primary/10">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-sm font-medium">ID</th>
+                                        <th className="px-4 py-3 text-left text-sm font-medium">Usuario</th>
+                                        <th className="px-4 py-3 text-left text-sm font-medium">Fecha</th>
+                                        <th className="px-4 py-3 text-left text-sm font-medium">Hora</th>
+                                        <th className="px-4 py-3 text-right text-sm font-medium">Ingresos</th>
+                                        <th className="px-4 py-3 text-right text-sm font-medium">Egresos</th>
+                                        <th className="px-4 py-3 text-right text-sm font-medium">Saldo Esperado</th>
+                                        <th className="px-4 py-3 text-right text-sm font-medium">Saldo Entregó</th>
+                                        <th className="px-4 py-3 text-right text-sm font-medium">Diferencia</th>
+                                        <th className="px-4 py-3 text-center text-sm font-medium">Estatus</th>
+                                        <th className="px-4 py-3 text-center text-sm font-medium">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                    {filteredCortes.map((corte) => (
+                                        <tr key={corte.CorteUsuarioID} className="hover:bg-muted/50">
+                                            <td className="px-4 py-3 text-sm">#{corte.CorteUsuarioID}</td>
+                                            <td className="px-4 py-3 text-sm">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <span className="truncate max-w-[150px] inline-block">
+                                                                {truncateEmail(corte.usuarioID.NombreUsuario)}
+                                                            </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{corte.usuarioID.NombreUsuario}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">{formatDate(corte.FechaCorte)}</td>
+                                            <td className="px-4 py-3 text-sm">{formatTime(corte.FechaCorte)}</td>
+                                            <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
+                                                {formatCurrency(corte.TotalIngresos)}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-right font-medium text-red-600">
+                                                {formatCurrency(corte.TotalEgresos)}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-right font-medium">
+                                                {formatCurrency(corte.SaldoEsperado)}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-right font-medium">
+                                                {formatCurrency(corte.SaldoReal)}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-right">
+                                                {Number.parseFloat(corte.Diferencia) !== 0 ? (
+                                                    <span className="font-medium text-red-600">
+                                                        {formatCurrency(getAbsoluteDifference(corte.Diferencia))}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-muted-foreground">$0.00</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-center">
+                                                <span
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        corte.Estatus === "Cerrado"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-yellow-100 text-yellow-800"
+                                                    }`}
+                                                >
+                                                    {corte.Estatus}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-center">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => setSelectedCorte(corte)}
+                                                    className="rounded-md"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
 
                 {filteredCortes.length === 0 && (
                     <div className="text-center py-10">

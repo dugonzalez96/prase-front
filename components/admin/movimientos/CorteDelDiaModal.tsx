@@ -275,7 +275,7 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                                                     <div className="bg-white p-3 rounded-md shadow-sm">
                                                         <p className="flex items-center text-sm text-muted-foreground">
                                                             <Scale className="w-3 h-3 mr-1 text-blue-500" />
-                                                            Saldo Real
+                                                            Saldo entregó
                                                         </p>
                                                         <p className="font-medium text-lg">{formatCurrency(corte.SaldoReal)}</p>
                                                     </div>
