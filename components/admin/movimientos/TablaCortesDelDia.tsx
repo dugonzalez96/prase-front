@@ -14,6 +14,7 @@ import { useEffect, useState } from "react"
 import { CorteUsuarioModal } from "./CorteDelDiaModal"
 import { NuevoCorteDelDiaForm } from "./NuevoCorteDelDiaForm"
 import { ClienteGenerarCodigoCorteUsuario } from "./GenerarCodigoCanelacionCrteUsuario/ClienteGenerarCodigoCorteUsuario"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
 interface Usuario {
     UsuarioID: number
     NombreUsuario: string
@@ -62,10 +63,12 @@ interface CorteUsuario {
 export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[], usuarios: any }) => {
     // console.log("🚀 ~ TablaCortesDelDia ~ usuarios:", usuarios)
     // console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
+    const user = useCurrentUser();
     const [selectedCorte, setSelectedCorte] = useState<CorteUsuario | null>(null)
     const [filteredCortes, setFilteredCortes] = useState<CorteUsuario[]>(cortes)
     // console.log("🚀 ~ TablaCortesDelDia ~ filteredCortes:", filteredCortes)
     const [selectedUser, setSelectedUser] = useState<string>("")
+    const [selectedEstatus, setSelectedEstatus] = useState<string>("")
     const [startDate, setStartDate] = useState<Date | undefined>(undefined)
     const [endDate, setEndDate] = useState<Date | undefined>(undefined)
     const [isFiltering, setIsFiltering] = useState(false)
@@ -75,13 +78,18 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
 
     // Get unique users for the filter dropdown
     const uniqueUsers = Array.from(new Set(cortes.map((corte) => corte.usuarioID.NombreUsuario)))
+    const uniqueEstatus = Array.from(new Set(cortes.map((corte) => corte.Estatus)))
 
     // Apply filters when they change
     useEffect(() => {
         let result = [...cortes]
 
-        if (selectedUser) {
+        if (selectedUser && selectedUser !== "all") {
             result = result.filter((corte) => corte.usuarioID.NombreUsuario === selectedUser)
+        }
+
+        if (selectedEstatus && selectedEstatus !== "all") {
+            result = result.filter((corte) => corte.Estatus === selectedEstatus)
         }
 
         if (startDate) {
@@ -96,7 +104,7 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
         }
 
         setFilteredCortes(result)
-    }, [cortes, selectedUser, startDate, endDate])
+    }, [cortes, selectedUser, selectedEstatus, startDate, endDate])
 
     const formatCurrency = (amount: string) => {
         return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(Number.parseFloat(amount))
@@ -114,6 +122,7 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
 
     const resetFilters = () => {
         setSelectedUser("")
+        setSelectedEstatus("")
         setStartDate(undefined)
         setEndDate(undefined)
         setIsFiltering(false)
@@ -139,6 +148,11 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
         return (Number.parseFloat(difference)).toFixed(2)
     }
 
+    // Obtener el ID del último corte cerrado
+    const ultimoCorteCerrado = cortes
+        .filter(c => c.Estatus === "Cerrado")
+        .reduce((max, corte) => corte.CorteUsuarioID > max ? corte.CorteUsuarioID : max, 0)
+
     return (
         <>
             <div className="container mx-auto">
@@ -149,7 +163,7 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                             Nuevo corte
                         </Button>
 
-                        <ClienteGenerarCodigoCorteUsuario />
+                        {user?.grupo?.nombre === "Administrador" && <ClienteGenerarCodigoCorteUsuario />}
                         {isNewCorteOpen && <NuevoCorteDelDiaForm usuarios={usuarios} onClose={() => setIsNewCorteOpen(false)} />}
                         <div className="flex gap-4">
                             <div className="flex gap-2">
@@ -190,7 +204,7 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
 
                 {isFiltering && (
                     <div className="mb-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
                                 <Label htmlFor="user-filter">Usuario</Label>
                                 <Select value={selectedUser} onValueChange={setSelectedUser}>
@@ -202,6 +216,23 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                         {uniqueUsers.map((user) => (
                                             <SelectItem key={user} value={user}>
                                                 {truncateEmail(user)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="estatus-filter">Estatus</Label>
+                                <Select value={selectedEstatus} onValueChange={setSelectedEstatus}>
+                                    <SelectTrigger id="estatus-filter">
+                                        <SelectValue placeholder="Todos los estatus" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos los estatus</SelectItem>
+                                        {uniqueEstatus.map((estatus) => (
+                                            <SelectItem key={estatus} value={estatus}>
+                                                {estatus}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -242,22 +273,37 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                 {viewMode === 'cards' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredCortes.map((corte) => (
-                            <Card key={corte.CorteUsuarioID} className="overflow-hidden flex flex-col rounded-lg">
-                                <CardHeader className="bg-primary/10 pb-2">
+                            <Card key={corte.CorteUsuarioID} className={`overflow-hidden flex flex-col rounded-lg ${
+                                corte.Estatus === "Cancelado" ? "bg-gray-100 opacity-75" : ""
+                            }`}>
+                                <CardHeader className={`pb-2 ${
+                                    corte.Estatus === "Cancelado" ? "bg-gray-300/50" : "bg-primary/10"
+                                }`}>
                                     <div className="flex justify-between items-start">
-                                        <CardTitle>Corte #{corte.CorteUsuarioID}</CardTitle>
+                                        <CardTitle className={corte.Estatus === "Cancelado" ? "text-gray-600" : ""}>
+                                            Corte #{corte.CorteUsuarioID}
+                                        </CardTitle>
                                         <span
-                                            className={`px-2 py-1 text-xs rounded-full ${corte.Estatus === "Cerrado" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                                                }`}
+                                            className={`px-2 py-1 text-xs rounded-full ${
+                                                corte.Estatus === "Cerrado" 
+                                                    ? "bg-green-100 text-green-800" 
+                                                    : corte.Estatus === "Cancelado"
+                                                    ? "bg-gray-300 text-gray-700"
+                                                    : "bg-yellow-100 text-yellow-800"
+                                            }`}
                                         >
                                             {corte.Estatus}
                                         </span>
                                     </div>
                                 </CardHeader>
 
-                                <div className="bg-primary/5 px-6 py-3">
+                                <div className={`px-6 py-3 ${
+                                    corte.Estatus === "Cancelado" ? "bg-gray-200/50" : "bg-primary/5"
+                                }`}>
                                     <div className="flex items-center mb-2">
-                                        <Mail className="w-4 h-4 mr-2 text-primary" />
+                                        <Mail className={`w-4 h-4 mr-2 ${
+                                            corte.Estatus === "Cancelado" ? "text-gray-500" : "text-primary"
+                                        }`} />
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
@@ -354,7 +400,9 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                 </thead>
                                 <tbody className="divide-y">
                                     {filteredCortes.map((corte) => (
-                                        <tr key={corte.CorteUsuarioID} className="hover:bg-muted/50">
+                                        <tr key={corte.CorteUsuarioID} className={`hover:bg-muted/50 ${
+                                            corte.Estatus === "Cancelado" ? "bg-gray-100 opacity-75" : ""
+                                        }`}>
                                             <td className="px-4 py-3 text-sm">#{corte.CorteUsuarioID}</td>
                                             <td className="px-4 py-3 text-sm">
                                                 <TooltipProvider>
@@ -395,10 +443,13 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                             </td>
                                             <td className="px-4 py-3 text-sm text-center">
                                                 <span
-                                                    className={`px-2 py-1 text-xs rounded-full ${corte.Estatus === "Cerrado"
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        corte.Estatus === "Cerrado"
                                                             ? "bg-green-100 text-green-800"
+                                                            : corte.Estatus === "Cancelado"
+                                                            ? "bg-gray-300 text-gray-700"
                                                             : "bg-yellow-100 text-yellow-800"
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {corte.Estatus}
                                                 </span>
@@ -433,6 +484,7 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                     <CorteUsuarioModal
                         corte={selectedCorte}
                         onClose={() => setSelectedCorte(null)}
+                        ultimoCorteCerradoID={ultimoCorteCerrado}
                     />}
             </div>
         </>

@@ -82,9 +82,10 @@ interface CorteUsuario {
 interface CorteUsuarioModalProps {
     corte: CorteUsuario
     onClose: () => void
+    ultimoCorteCerradoID?: number
 }
 
-export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
+export function CorteUsuarioModal({ corte, onClose, ultimoCorteCerradoID }: CorteUsuarioModalProps) {
     //useState para Ingresos y Egresos
     const [ingresos, setIngresos] = useState<any[]>([]);
     const [egresos, setEgresos] = useState<any[]>([]);
@@ -185,7 +186,9 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
 
                                     <div className="flex justify-between items-center p-2">
                                         <div>
-                                            {user?.grupo?.nombre === "Administrador" && corte.Estatus !== "Cancelado" && (
+                                            {corte.Estatus === "Cerrado" && 
+                                             ultimoCorteCerradoID && 
+                                             corte.CorteUsuarioID === ultimoCorteCerradoID && (
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
