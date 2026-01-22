@@ -47,6 +47,8 @@ interface CorteUsuario {
     Observaciones: string
     Estatus: string
     usuarioID: Usuario
+    corteDe?: string
+    creadoPor?: string
     InicioCaja?: {
         InicioCajaID: number
         FechaInicio: string
@@ -62,7 +64,7 @@ interface CorteUsuario {
 
 export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[], usuarios: any }) => {
     // console.log("🚀 ~ TablaCortesDelDia ~ usuarios:", usuarios)
-    // console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
+    console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
     const user = useCurrentUser();
     const [selectedCorte, setSelectedCorte] = useState<CorteUsuario | null>(null)
     const [filteredCortes, setFilteredCortes] = useState<CorteUsuario[]>(cortes)
@@ -317,6 +319,16 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                             </Tooltip>
                                         </TooltipProvider>
                                     </div>
+                                    {(corte.corteDe || corte.creadoPor) && (
+                                        <div className="text-xs text-muted-foreground mb-2 space-y-1">
+                                            {corte.corteDe && (
+                                                <div>Corte de: <span className="font-medium">{corte.corteDe}</span></div>
+                                            )}
+                                            {corte.creadoPor && (
+                                                <div>Creado por: <span className="font-medium">{corte.creadoPor}</span></div>
+                                            )}
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center text-sm">
                                             <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
@@ -387,6 +399,8 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                     <tr>
                                         <th className="px-4 py-3 text-left text-sm font-medium">ID</th>
                                         <th className="px-4 py-3 text-left text-sm font-medium">Usuario</th>
+                                        <th className="px-4 py-3 text-left text-sm font-medium">Corte de</th>
+                                        <th className="px-4 py-3 text-left text-sm font-medium">Creado por</th>
                                         <th className="px-4 py-3 text-left text-sm font-medium">Fecha</th>
                                         <th className="px-4 py-3 text-left text-sm font-medium">Hora</th>
                                         <th className="px-4 py-3 text-right text-sm font-medium">Ingresos</th>
@@ -417,6 +431,12 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">
+                                                {corte.corteDe || "-"}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">
+                                                {corte.creadoPor || "-"}
                                             </td>
                                             <td className="px-4 py-3 text-sm">{formatDate(corte.FechaCorte)}</td>
                                             <td className="px-4 py-3 text-sm">{formatTime(corte.FechaCorte)}</td>

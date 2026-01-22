@@ -2,6 +2,7 @@
 
 import { IGetAllCorteDia, IPostCorteDelDia, CorteUsuario } from "@/interfaces/CorteDelDiaInterface";
 import { iGetUsers } from "@/interfaces/SeguridadInterface";
+import { currentUser } from "@/lib/auth";
 
 const url = process.env.API_URL;
 
@@ -103,12 +104,19 @@ export const getCorteCerradoByUserByDay = async (id: number) => {
 
 export const postCorteDelDia = async (body: IPostCorteDelDia) => {
     try {
+        const user = await currentUser();
+        
+        const bodyWithCreator = {
+            ...body,
+            usuarioCreadorID: user?.usuario?.UsuarioID || null
+        };
+
         const resp = await fetch(`${url}/cortes-usuarios/guardar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify(bodyWithCreator)
         });
 
         const data = await resp.json();
