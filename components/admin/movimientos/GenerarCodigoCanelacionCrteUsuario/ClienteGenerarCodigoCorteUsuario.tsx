@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { KeyRound } from "lucide-react";
-import GenerarCodigoModal from "./GenerarCodigoModal";
+import GenerarCodigoModalCorteUsuario from "./GenerarCodigoModalCorteUsuario";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
-export const ClienteGenerarCodigo = () => {
+export const ClienteGenerarCodigoCorteUsuario = () => {
     const [modalAbierto, setModalAbierto] = useState(false);
     const user = useCurrentUser();
 
@@ -22,7 +22,7 @@ export const ClienteGenerarCodigo = () => {
                 Generar código
             </Button>
 
-            <GenerarCodigoModal
+            <GenerarCodigoModalCorteUsuario
                 abierto={modalAbierto}
                 alCerrar={() => setModalAbierto(false)}
             />

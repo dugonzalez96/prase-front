@@ -13,6 +13,7 @@ import { ArrowDownCircle, ArrowUpCircle, Calendar, Clock, DollarSign, Eye, Filte
 import { useEffect, useState } from "react"
 import { CorteUsuarioModal } from "./CorteDelDiaModal"
 import { NuevoCorteDelDiaForm } from "./NuevoCorteDelDiaForm"
+import { ClienteGenerarCodigoCorteUsuario } from "./GenerarCodigoCanelacionCrteUsuario/ClienteGenerarCodigoCorteUsuario"
 interface Usuario {
     UsuarioID: number
     NombreUsuario: string
@@ -147,6 +148,8 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                             <Plus className="w-4 h-4 mr-2" />
                             Nuevo corte
                         </Button>
+
+                        <ClienteGenerarCodigoCorteUsuario />
                         {isNewCorteOpen && <NuevoCorteDelDiaForm usuarios={usuarios} onClose={() => setIsNewCorteOpen(false)} />}
                         <div className="flex gap-4">
                             <div className="flex gap-2">
@@ -239,95 +242,95 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                 {viewMode === 'cards' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredCortes.map((corte) => (
-                        <Card key={corte.CorteUsuarioID} className="overflow-hidden flex flex-col rounded-lg">
-                            <CardHeader className="bg-primary/10 pb-2">
-                                <div className="flex justify-between items-start">
-                                    <CardTitle>Corte #{corte.CorteUsuarioID}</CardTitle>
-                                    <span
-                                        className={`px-2 py-1 text-xs rounded-full ${corte.Estatus === "Cerrado" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                                            }`}
-                                    >
-                                        {corte.Estatus}
-                                    </span>
-                                </div>
-                            </CardHeader>
+                            <Card key={corte.CorteUsuarioID} className="overflow-hidden flex flex-col rounded-lg">
+                                <CardHeader className="bg-primary/10 pb-2">
+                                    <div className="flex justify-between items-start">
+                                        <CardTitle>Corte #{corte.CorteUsuarioID}</CardTitle>
+                                        <span
+                                            className={`px-2 py-1 text-xs rounded-full ${corte.Estatus === "Cerrado" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                                                }`}
+                                        >
+                                            {corte.Estatus}
+                                        </span>
+                                    </div>
+                                </CardHeader>
 
-                            <div className="bg-primary/5 px-6 py-3">
-                                <div className="flex items-center mb-2">
-                                    <Mail className="w-4 h-4 mr-2 text-primary" />
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <span className="font-medium truncate max-w-[180px] inline-block">
-                                                    {truncateEmail(corte.usuarioID.NombreUsuario)}
-                                                </span>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>{corte.usuarioID.NombreUsuario}</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center text-sm">
-                                        <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
-                                        <span>{formatDate(corte.FechaCorte)}</span>
+                                <div className="bg-primary/5 px-6 py-3">
+                                    <div className="flex items-center mb-2">
+                                        <Mail className="w-4 h-4 mr-2 text-primary" />
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <span className="font-medium truncate max-w-[180px] inline-block">
+                                                        {truncateEmail(corte.usuarioID.NombreUsuario)}
+                                                    </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{corte.usuarioID.NombreUsuario}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                     </div>
-                                    <div className="flex items-center text-sm">
-                                        <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
-                                        <span>{formatTime(corte.FechaCorte)}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <CardContent className="pt-4 flex-grow">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <p className="flex items-center text-sm">
-                                            <ArrowDownCircle className="w-3 h-3 mr-1 text-green-500" />
-                                            <span className="text-muted-foreground">Ingresos:</span>
-                                        </p>
-                                        <p className="font-medium">{formatCurrency(corte.TotalIngresos)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="flex items-center text-sm">
-                                            <ArrowUpCircle className="w-3 h-3 mr-1 text-red-500" />
-                                            <span className="text-muted-foreground">Egresos:</span>
-                                        </p>
-                                        <p className="font-medium">{formatCurrency(corte.TotalEgresos)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="flex items-center text-sm">
-                                            <Scale className="w-3 h-3 mr-1 text-blue-500" />
-                                            <span className="text-muted-foreground">Saldo Esperado:</span>
-                                        </p>
-                                        <p className="font-medium">{formatCurrency(corte.SaldoEsperado)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="flex items-center text-sm">
-                                            <Scale className="w-3 h-3 mr-1 text-blue-500" />
-                                            <span className="text-muted-foreground">Saldo Real:</span>
-                                        </p>
-                                        <p className="font-medium">{formatCurrency(corte.SaldoReal)}</p>
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center text-sm">
+                                            <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
+                                            <span>{formatDate(corte.FechaCorte)}</span>
+                                        </div>
+                                        <div className="flex items-center text-sm">
+                                            <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
+                                            <span>{formatTime(corte.FechaCorte)}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {Number.parseFloat(corte.Diferencia) !== 0 && (
-                                    <div className="mt-2 p-2 bg-red-50 rounded-md border border-red-200">
-                                        <p className="flex items-center text-sm text-red-700">
-                                            <DollarSign className="w-3 h-3 mr-1" />
-                                            <span>Diferencia: {formatCurrency(getAbsoluteDifference(corte.Diferencia))}</span>
-                                        </p>
+                                <CardContent className="pt-4 flex-grow">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <p className="flex items-center text-sm">
+                                                <ArrowDownCircle className="w-3 h-3 mr-1 text-green-500" />
+                                                <span className="text-muted-foreground">Ingresos:</span>
+                                            </p>
+                                            <p className="font-medium">{formatCurrency(corte.TotalIngresos)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="flex items-center text-sm">
+                                                <ArrowUpCircle className="w-3 h-3 mr-1 text-red-500" />
+                                                <span className="text-muted-foreground">Egresos:</span>
+                                            </p>
+                                            <p className="font-medium">{formatCurrency(corte.TotalEgresos)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="flex items-center text-sm">
+                                                <Scale className="w-3 h-3 mr-1 text-blue-500" />
+                                                <span className="text-muted-foreground">Saldo Esperado:</span>
+                                            </p>
+                                            <p className="font-medium">{formatCurrency(corte.SaldoEsperado)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="flex items-center text-sm">
+                                                <Scale className="w-3 h-3 mr-1 text-blue-500" />
+                                                <span className="text-muted-foreground">Saldo Real:</span>
+                                            </p>
+                                            <p className="font-medium">{formatCurrency(corte.SaldoReal)}</p>
+                                        </div>
                                     </div>
-                                )}
-                            </CardContent>
 
-                            <CardFooter className="pt-0 mt-auto">
-                                <Button className="w-full rounded-md" onClick={() => setSelectedCorte(corte)}>
-                                    <Eye className="mr-2 h-4 w-4" /> Ver Detalles
-                                </Button>
-                            </CardFooter>
-                        </Card>
+                                    {Number.parseFloat(corte.Diferencia) !== 0 && (
+                                        <div className="mt-2 p-2 bg-red-50 rounded-md border border-red-200">
+                                            <p className="flex items-center text-sm text-red-700">
+                                                <DollarSign className="w-3 h-3 mr-1" />
+                                                <span>Diferencia: {formatCurrency(getAbsoluteDifference(corte.Diferencia))}</span>
+                                            </p>
+                                        </div>
+                                    )}
+                                </CardContent>
+
+                                <CardFooter className="pt-0 mt-auto">
+                                    <Button className="w-full rounded-md" onClick={() => setSelectedCorte(corte)}>
+                                        <Eye className="mr-2 h-4 w-4" /> Ver Detalles
+                                    </Button>
+                                </CardFooter>
+                            </Card>
                         ))}
                     </div>
                 ) : (
@@ -392,11 +395,10 @@ export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[]
                                             </td>
                                             <td className="px-4 py-3 text-sm text-center">
                                                 <span
-                                                    className={`px-2 py-1 text-xs rounded-full ${
-                                                        corte.Estatus === "Cerrado"
+                                                    className={`px-2 py-1 text-xs rounded-full ${corte.Estatus === "Cerrado"
                                                             ? "bg-green-100 text-green-800"
                                                             : "bg-yellow-100 text-yellow-800"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {corte.Estatus}
                                                 </span>
