@@ -12,6 +12,7 @@ import { iGetTipoPagos } from "@/interfaces/CatTipoPagos";
 import { calcularPrima } from "./CalculosPrima";
 import { getAjustesCP } from "@/actions/AjustesCP";
 import { useCalculosPrima } from "@/hooks/useCalculoPrima";
+import { currentUser } from "@/lib/auth";
 
 interface GenerarPDFProps {
   datos: iGetCotizacion;
@@ -30,6 +31,16 @@ export const generarPDFCotizacion = async ({
   isSave,
   showMensual,
 }: GenerarPDFProps) => {
+  // Obtener dirección de la sucursal del usuario actual
+  let direccionSucursal: string | undefined;
+  try {
+    const user = await currentUser();
+    direccionSucursal = user?.Sucursal?.Direccion;
+  } catch (error) {
+    // Si falla (ej. del lado del cliente), direccionSucursal quedará undefined
+    console.warn('No se pudo obtener la dirección de la sucursal:', error);
+  }
+
   const doc = new jsPDF({
     format: 'letter'
   });
@@ -394,7 +405,7 @@ export const generarPDFCotizacion = async ({
   const textoLegal = [
     "Atención a siniestros en México 800-772-73-10",
     "Atención a clientes y cotizaciones al 800 908-90-08 consultas, modificaciones y otros trámites 311-909-10-00.",
-    "Avenida Independencia #361 Colonia los Llanitos, Tepic Nayarit, C.p. 63170.",
+    ...(direccionSucursal ? [direccionSucursal] : []),
     "*Esta póliza pierde cobertura en caso de no tener al corriente sus pagos.",
   ];
 
