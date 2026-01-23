@@ -9,7 +9,9 @@ import {
     iCorteUsuarioResumen,
     iPostMovimientoCajaGeneral,
     iPostPrecuadreCajaGeneral,
-    iPostCuadreCajaGeneral
+    iPostCuadreCajaGeneral,
+    iCancelarCajaGeneral,
+    iCodigoCancelacionCajaGeneral
 } from "@/interfaces/CajaGeneralInterface";
 
 // Mock data para caja general activa
@@ -572,3 +574,66 @@ export async function cuadrarCajaGeneral(body: {
         throw error;
     }
 }
+
+/**
+ * Cancelar cuadre de caja general
+ * PATCH /caja-general/{id}/cancelar
+ */
+export const cancelarCajaGeneral = async (
+    id: number,
+    body: iCancelarCajaGeneral
+) => {
+    try {
+        const resp = await fetch(`${process.env.API_URL}/caja-general/${id}/cancelar`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+            return {
+                success: false,
+                message: data.message || data.error || "Error al cancelar cuadre general",
+            };
+        }
+
+        return {
+            success: true,
+            message: data.message || "Cuadre general cancelado correctamente",
+            data,
+        };
+    } catch (error) {
+        console.log("Error al cancelar cuadre general:", error);
+        return {
+            success: false,
+            message: "Error al conectar con el servidor",
+        };
+    }
+};
+
+/**
+ * Generar código de cancelación
+ * GET /caja-general/{id}/codigo
+ */
+export const generarCodigoCancelacionCajaGeneral = async (id: number) => {
+    try {
+        const resp = await fetch(`${process.env.API_URL}/caja-general/${id}/codigo`, {
+            cache: "no-store",
+        });
+
+        if (!resp.ok) {
+            const error = await resp.json();
+            return { error: error.message || "Error al generar código" };
+        }
+
+        const data: iCodigoCancelacionCajaGeneral = await resp.json();
+        return data;
+    } catch (error) {
+        console.log("Error al generar código de cancelación:", error);
+        return { error: "Error al conectar con el servidor" };
+    }
+};

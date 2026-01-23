@@ -148,3 +148,14 @@ export interface iCorteUsuarioResumen {
     Estado: 'CERRADO' | 'PENDIENTE';
     FechaCorte: Date;
 }
+
+export interface iCancelarCajaGeneral {
+    usuario: string;
+    codigo: string;
+    motivo: string;
+}
+
+export interface iCodigoCancelacionCajaGeneral {
+    id: number;
+    codigo: string;
+}
