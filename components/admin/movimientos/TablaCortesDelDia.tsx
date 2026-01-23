@@ -64,7 +64,7 @@ interface CorteUsuario {
 
 export const TablaCortesDelDia = ({ cortes, usuarios }: { cortes: CorteUsuario[], usuarios: any }) => {
     // console.log("🚀 ~ TablaCortesDelDia ~ usuarios:", usuarios)
-    console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
+    // console.log("🚀 ~ TablaCortesDelDia ~ cortes:", cortes)
     const user = useCurrentUser();
     const [selectedCorte, setSelectedCorte] = useState<CorteUsuario | null>(null)
     const [filteredCortes, setFilteredCortes] = useState<CorteUsuario[]>(cortes)

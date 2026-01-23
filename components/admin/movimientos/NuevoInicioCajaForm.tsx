@@ -88,6 +88,12 @@ export const NuevoInicioCajaForm = ({
                     title: "Éxito",
                     description: "Inicio de caja creado correctamente",
                 })
+                form.reset({
+                    TotalEfectivo: 0,
+                    TotalTransferencia: 0,
+                    UsuarioID: undefined,
+                    UsuarioAutorizoID: usuarioAutorizoId,
+                })
                 router.refresh()
             } catch (error) {
                 toast({
