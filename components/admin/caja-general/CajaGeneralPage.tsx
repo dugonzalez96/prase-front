@@ -904,6 +904,7 @@ export function CajaGeneralPage({
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead>ID</TableHead>
                                             <TableHead>Fecha</TableHead>
                                             {/* <TableHead>Folio</TableHead> */}
                                             <TableHead>Sucursal</TableHead>
@@ -921,6 +922,7 @@ export function CajaGeneralPage({
                                             const fechaFormato = fecha.toLocaleDateString('es-MX');
                                             return (
                                                 <TableRow key={idx}>
+                                                    <TableCell>{cuadre.cajaGeneralId}</TableCell>
                                                     <TableCell>{fechaFormato}</TableCell>
                                                     {/* <TableCell>{cuadre.f}</TableCell> */}
                                                     <TableCell>{cuadre.nombreSucursal || '-'}</TableCell>
