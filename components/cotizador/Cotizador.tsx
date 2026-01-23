@@ -44,6 +44,7 @@ interface CotizadorProps {
     asociaciones: iGetAsociacionPaqueteCobertura[];
     reglasNegocio: iGetAllReglaNegocio[];
     tiposMoneda: iGetTiposMoneda[] | [];
+    direccionSucursal?: string;
 }
 
 const steps: Step[] = [
@@ -68,6 +69,7 @@ export const Cotizador = ({
     asociaciones,
     reglasNegocio,
     tiposMoneda,
+    direccionSucursal,
 }: CotizadorProps) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [isStepValid, setIsStepValid] = useState(false);
@@ -175,6 +177,7 @@ export const Cotizador = ({
                     guardarCotizacion: true,
                     tiposPago: tiposPagos,
                     coberturas,
+                    direccionSucursal,
                 });
 
                 if (resultado.success) {

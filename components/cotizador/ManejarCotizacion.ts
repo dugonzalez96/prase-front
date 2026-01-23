@@ -30,6 +30,7 @@ interface OpcionesCotizacion {
     guardarCotizacion?: boolean;
     tiposPago: iGetTipoPagos[];
     coberturas: iGetCoberturas[];
+    direccionSucursal?: string;
 }
 
 const obtenerPDFBase64 = (doc: jsPDF): string => {
@@ -126,6 +127,7 @@ export const manejarCotizacion = async ({
     usosVehiculo,
     guardarCotizacion = false,
     tiposPago,
+    direccionSucursal,
 }: OpcionesCotizacion) => {
     try {
         let respuestaCotizacion;
@@ -190,6 +192,7 @@ export const manejarCotizacion = async ({
             tiposPago,
             isSave: guardarCotizacion,
             showMensual: datosFormulario.showMensual,
+            direccionSucursal,
         });
 
         if (datosFormulario.Correo) {

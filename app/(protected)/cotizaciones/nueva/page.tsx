@@ -237,6 +237,7 @@ export default async function CotizadorPage() {
                     reglasNegocio={data.reglasNegocio}
                     usuarioID={user?.usuario.UsuarioID || 0}
                     tiposMoneda={data.tiposMoneda ?? []}
+                    direccionSucursal={user?.Sucursal?.Direccion}
                 />
             </main>
         );

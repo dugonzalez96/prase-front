@@ -12,7 +12,6 @@ import { iGetTipoPagos } from "@/interfaces/CatTipoPagos";
 import { calcularPrima } from "./CalculosPrima";
 import { getAjustesCP } from "@/actions/AjustesCP";
 import { useCalculosPrima } from "@/hooks/useCalculoPrima";
-import { currentUser } from "@/lib/auth";
 
 interface GenerarPDFProps {
   datos: iGetCotizacion;
@@ -21,6 +20,7 @@ interface GenerarPDFProps {
   tiposPago: iGetTipoPagos[];
   isSave: boolean;
   showMensual?: boolean;
+  direccionSucursal?: string;
 }
 
 export const generarPDFCotizacion = async ({
@@ -30,17 +30,8 @@ export const generarPDFCotizacion = async ({
   tiposPago,
   isSave,
   showMensual,
+  direccionSucursal,
 }: GenerarPDFProps) => {
-  // Obtener dirección de la sucursal del usuario actual
-  let direccionSucursal: string | undefined;
-  try {
-    const user = await currentUser();
-    direccionSucursal = user?.Sucursal?.Direccion;
-  } catch (error) {
-    // Si falla (ej. del lado del cliente), direccionSucursal quedará undefined
-    console.warn('No se pudo obtener la dirección de la sucursal:', error);
-  }
-
   const doc = new jsPDF({
     format: 'letter'
   });
