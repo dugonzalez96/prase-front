@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { getCajaGeneralDashboard, getPreCuadreCajaGeneral } from "@/actions/CajaGeneralActions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,18 +21,17 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Landmark, Search, Clock, ArrowUpRight, ArrowDownLeft, Plus, TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Calendar, BarChart3, Zap, Target, HelpCircle } from "lucide-react";
 import { iCajaGeneralDashboard } from "@/interfaces/CajaGeneralDashboardInterface";
-import { getCajaGeneralDashboard, getPreCuadreCajaGeneral } from "@/actions/CajaGeneralActions";
-import { iGetSucursales } from "@/interfaces/SucursalesInterface";
-import { iPreCuadreResponse } from "@/interfaces/PreCuadreInterface";
 import { iGetCuentasBancarias } from "@/interfaces/ClientesInterface";
+import { iPreCuadreResponse } from "@/interfaces/PreCuadreInterface";
 import { iGetUsers } from "@/interfaces/SeguridadInterface";
-import { ModalNuevoMovimientoCajaGeneral } from "./ModalNuevoMovimientoCajaGeneral";
-import { ModalCuadreCajaGeneral } from "./ModalCuadreCajaGeneral";
+import { iGetSucursales } from "@/interfaces/SucursalesInterface";
 import { formatNumber } from "@/lib/format-number";
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, BarChart3, Calendar, CheckCircle2, HelpCircle, Landmark, Plus, Search, Target, TrendingDown, TrendingUp, Zap } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ModalCuadreCajaGeneral } from "./ModalCuadreCajaGeneral";
+import { ModalNuevoMovimientoCajaGeneral } from "./ModalNuevoMovimientoCajaGeneral";
 
 interface CajaGeneralPageProps {
     usuarioId: number;
@@ -477,16 +477,16 @@ export function CajaGeneralPage({
                                                     <TableCell className="font-medium">{corte.usuario}</TableCell>
                                                     <TableCell>{corte.nombreSucursal}</TableCell>
                                                     <TableCell>{formatHora(corte.fechaHoraCorte)}</TableCell>
-                                                    <TableCell className="text-right font-semibold">
+                                                    <TableCell className="text-right font-semibold whitespace-nowrap">
                                                         $ {formatNumber(corte.montoCorte)}
                                                     </TableCell>
-                                                    <TableCell className="text-right text-green-700">
+                                                    <TableCell className="text-right text-green-700 whitespace-nowrap">
                                                         {corte.efectivoEntregado !== undefined ? `$ ${formatNumber(corte.efectivoEntregado)}` : '-'}
                                                     </TableCell>
-                                                    <TableCell className="text-right text-blue-700">
+                                                    <TableCell className="text-right text-blue-700 whitespace-nowrap">
                                                         {corte.transferencias !== undefined ? `$ ${formatNumber(corte.transferencias)}` : '-'}
                                                     </TableCell>
-                                                    <TableCell className="text-right text-purple-700">
+                                                    <TableCell className="text-right text-purple-700 whitespace-nowrap">
                                                         {corte.depositos !== undefined ? `$ ${formatNumber(corte.depositos)}` : '-'}
                                                     </TableCell>
                                                     <TableCell>
@@ -836,7 +836,7 @@ export function CajaGeneralPage({
                                                             ? 'bg-green-500 text-white shadow-lg'
                                                             : 'bg-indigo-500 text-white shadow-lg'
                                                     }`}>
-                                                        {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct}%
+                                                        {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct.toFixed(2)}%
                                                     </span>
                                                 </div>
                                             </div>
