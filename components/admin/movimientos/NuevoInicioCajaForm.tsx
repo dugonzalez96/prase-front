@@ -54,7 +54,7 @@ export const NuevoInicioCajaForm = ({
         defaultValues: {
             TotalEfectivo: 0,
             TotalTransferencia: 0,
-            UsuarioID: 24,
+            UsuarioID: undefined,
             UsuarioAutorizoID: usuarioAutorizoId,
         },
     })
@@ -74,11 +74,18 @@ export const NuevoInicioCajaForm = ({
         startTransition(async () => {
             try {
                 const respuesta = await postInicioCaja(datosConMontoInicial)
+                // console.log("🚀 ~ onSubmit ~ respuesta:", respuesta)
 
                 if (respuesta?.error) {
+                    let errorMessage = "Ocurrió un error al crear el inicio de caja"
+                    
+                    if (respuesta.errorCode) {
+                        errorMessage = respuesta.message
+                    }
+
                     toast({
                         title: "Error",
-                        description: "Ocurrió un error al crear el inicio de caja",
+                        description: errorMessage,
                         variant: "destructive",
                     })
                     return
@@ -120,7 +127,7 @@ export const NuevoInicioCajaForm = ({
                             <FormLabel>Usuario</FormLabel>
                             <Select
                                 onValueChange={(value) => field.onChange(Number(value))}
-                                value={field.value.toString()}
+                                value={field.value?.toString() ?? ""}
                             >
                                 <FormControl>
                                     <SelectTrigger>

@@ -45,12 +45,21 @@ export const postInicioCaja = async (body: iPostInicioCaja) => {
             body: JSON.stringify(body)
         });
 
-        if (!resp.ok) return { error: 'Error al crear inicio de caja' };
-
         const data = await resp.json();
+
+        if (!resp.ok) {
+            return { 
+                error: true, 
+                errorCode: data.errorCode,
+                message: data.message || 'Error al crear inicio de caja',
+                details: data.details
+            };
+        }
+
         return data;
     } catch (error) {
         console.log(`Error al crear inicio de caja: ${error}`);
+        return { error: true, message: 'Error de conexión al crear inicio de caja' };
     }
 }
 

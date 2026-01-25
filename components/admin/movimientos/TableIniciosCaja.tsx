@@ -45,6 +45,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/format"
 import { iGetIniciosCaja } from "@/interfaces/MovimientosInterface"
 import { deleteInicioCaja } from "@/actions/MovimientosActions"
@@ -118,6 +119,17 @@ export const TableIniciosCaja = ({ iniciosCaja }: TableIniciosCajaProps) => {
         })
     }
 
+    const getStatusBadgeVariant = (estatus: string): "default" | "destructive" | "secondary" | "outline" => {
+        switch (estatus) {
+            case "Activo":
+                return "default"
+            case "Cerrado":
+                return "destructive"
+            default:
+                return "secondary"
+        }   
+    }
+
     if (isPending) {
         return <LoaderModales />
     }
@@ -144,7 +156,11 @@ export const TableIniciosCaja = ({ iniciosCaja }: TableIniciosCajaProps) => {
                             <TableCell>{formatCurrency(Number(inicio.MontoInicial))}</TableCell>
                             <TableCell>{formatCurrency(Number(inicio.TotalEfectivo))}</TableCell>
                             <TableCell>{formatCurrency(Number(inicio.TotalTransferencia))}</TableCell>
-                            <TableCell>{inicio.Estatus}</TableCell>
+                            <TableCell>
+                                <Badge variant={getStatusBadgeVariant(inicio.Estatus)}>
+                                    {inicio.Estatus}
+                                </Badge>
+                            </TableCell>
                             <TableCell className="flex items-center gap-3">
                                 <Tooltip>
                                     <TooltipTrigger>
