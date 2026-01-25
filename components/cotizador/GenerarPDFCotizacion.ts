@@ -20,6 +20,7 @@ interface GenerarPDFProps {
   tiposPago: iGetTipoPagos[];
   isSave: boolean;
   showMensual?: boolean;
+  direccionSucursal?: string;
 }
 
 export const generarPDFCotizacion = async ({
@@ -29,6 +30,7 @@ export const generarPDFCotizacion = async ({
   tiposPago,
   isSave,
   showMensual,
+  direccionSucursal,
 }: GenerarPDFProps) => {
   const doc = new jsPDF({
     format: 'letter'
@@ -394,7 +396,7 @@ export const generarPDFCotizacion = async ({
   const textoLegal = [
     "Atención a siniestros en México 800-772-73-10",
     "Atención a clientes y cotizaciones al 800 908-90-08 consultas, modificaciones y otros trámites 311-909-10-00.",
-    "Avenida Independencia #361 Colonia los Llanitos, Tepic Nayarit, C.p. 63170.",
+    ...(direccionSucursal ? [direccionSucursal] : []),
     "*Esta póliza pierde cobertura en caso de no tener al corriente sus pagos.",
   ];
 

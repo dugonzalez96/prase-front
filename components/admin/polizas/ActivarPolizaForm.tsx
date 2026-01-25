@@ -1,4 +1,4 @@
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { StepIndicator } from "@/components/cotizador/StepIndicator";
@@ -71,9 +71,21 @@ export const ActivarPolizaForm = ({
   const [polizaId, setPolizaId] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
   const [numOcupantes, setNumOcupantes] = useState(5);
+  const [resetKey, setResetKey] = useState(0);
 
   const router = useRouter();
   const { toast } = useToast();
+
+  // Resetear el formulario cuando cambie la cotización (cuando se cierre y abra el modal)
+  useEffect(() => {
+    setPasoActual(1);
+    setPasoMaximoAlcanzado(1);
+    setClienteId(null);
+    setVehiculoId(null);
+    setZonaResidencia("");
+    setPolizaId(null);
+    setResetKey(prev => prev + 1);
+  }, [cotizacion.CotizacionID]);
 
   const subirDocumentos = async (archivos: ArchivosBase64) => {
     if (!polizaId) return;
@@ -231,6 +243,7 @@ export const ActivarPolizaForm = ({
         />
         {pasoActual === 1 && (
           <ClientePolizaStep
+            key={resetKey}
             nombreInicial={cotizacion.NombrePersona}
             telefonoInicial={cotizacion.Telefono}
             emailInicial={cotizacion.Correo}

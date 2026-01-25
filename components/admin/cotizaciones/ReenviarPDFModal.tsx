@@ -36,6 +36,7 @@ interface ReenviarPDFModalProps {
     abierto: boolean;
     tiposPago: iGetTipoPagos[];
     alCerrar: () => void;
+    direccionSucursal?: string;
 }
 
 export const ReenviarPDFModal = ({
@@ -45,6 +46,7 @@ export const ReenviarPDFModal = ({
     abierto,
     alCerrar,
     tiposPago,
+    direccionSucursal,
 }: ReenviarPDFModalProps) => {
     const [enviando, setEnviando] = useState(false);
     const { toast } = useToast();
@@ -65,6 +67,7 @@ export const ReenviarPDFModal = ({
                 usosVehiculo,
                 isSave: false,
                 tiposPago,
+                direccionSucursal,
             });
 
             const pdfBase64 = doc.output("datauristring").split(",")[1];

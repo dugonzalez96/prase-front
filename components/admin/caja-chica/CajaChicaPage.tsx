@@ -41,6 +41,7 @@ export function CajaChicaPage({
     const [cargando, setCargando] = useState(false);
     const [fechaDesde, setFechaDesde] = useState<string>("");
     const [fechaHasta, setFechaHasta] = useState<string>("");
+    const [estatusSeleccionado, setEstatusSeleccionado] = useState<"Cerrado" | "Cancelado" | "Ambos">("Ambos");
     const [paginaActual, setPaginaActual] = useState(1);
     const [elementosPorPagina, setElementosPorPagina] = useState(10);
     const [modalCancelacionAbierto, setModalCancelacionAbierto] = useState(false);
@@ -57,21 +58,40 @@ export function CajaChicaPage({
         setFechaHasta(formatFecha(hoy));
     }, []);
 
-    // Cargar historial cuando cambien las fechas
+    // Cargar historial cuando cambien las fechas o el estatus
     useEffect(() => {
         if (fechaDesde && fechaHasta) {
             cargarHistorial();
         }
-    }, [fechaDesde, fechaHasta]);
+    }, [fechaDesde, fechaHasta, estatusSeleccionado]);
 
     const cargarHistorial = async () => {
         setCargando(true);
         try {
-            const datos = await getCajasChicasPorEstatus("Cerrado", fechaDesde, fechaHasta);
-            // console.log("🚀 ~ cargarHistorial ~ datos:", datos)
-            if (Array.isArray(datos)) {
-                setHistorial(datos);
+            if (estatusSeleccionado === "Ambos") {
+                // Hacer dos peticiones en paralelo
+                const [datosCerrados, datosCancelados] = await Promise.all([
+                    getCajasChicasPorEstatus("Cerrado", fechaDesde, fechaHasta),
+                    getCajasChicasPorEstatus("Cancelado", fechaDesde, fechaHasta)
+                ]);
+                
+                // Combinar ambos arrays
+                const todosLosDatos = [
+                    ...(Array.isArray(datosCerrados) ? datosCerrados : []),
+                    ...(Array.isArray(datosCancelados) ? datosCancelados : [])
+                ];
+                
+                // Ordenar por ID descendente
+                todosLosDatos.sort((a, b) => b.CajaChicaID - a.CajaChicaID);
+                
+                setHistorial(todosLosDatos);
                 setPaginaActual(1);
+            } else {
+                const datos = await getCajasChicasPorEstatus(estatusSeleccionado, fechaDesde, fechaHasta);
+                if (Array.isArray(datos)) {
+                    setHistorial(datos);
+                    setPaginaActual(1);
+                }
             }
         } catch (error) {
             console.error("Error al cargar historial:", error);
@@ -224,7 +244,7 @@ export function CajaChicaPage({
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {/* FILTROS */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4 border-b">
                                 <div>
                                     <label className="text-sm font-medium text-muted-foreground">Desde</label>
                                     <Input
@@ -242,6 +262,26 @@ export function CajaChicaPage({
                                         onChange={(e) => setFechaHasta(e.target.value)}
                                         disabled={cargando}
                                     />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Estatus</label>
+                                    <Select
+                                        value={estatusSeleccionado}
+                                        onValueChange={(val: "Cerrado" | "Cancelado" | "Ambos") => {
+                                            setEstatusSeleccionado(val);
+                                            setPaginaActual(1);
+                                        }}
+                                        disabled={cargando}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Cerrado">Cerrado</SelectItem>
+                                            <SelectItem value="Cancelado">Cancelado</SelectItem>
+                                            <SelectItem value="Ambos">Ambos</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-muted-foreground">
@@ -289,8 +329,8 @@ export function CajaChicaPage({
                                                     <th className="text-left py-2 px-2 font-medium">Folio</th>
                                                     <th className="text-left py-2 px-2 font-medium">Fecha</th>
                                                     <th className="text-right py-2 px-2 font-medium">Total Ingresos</th>
-                                                    <th className="text-right py-2 px-2 font-medium">Saldo Esperado</th>
-                                                    <th className="text-right py-2 px-2 font-medium">Entregó en efectivo</th>
+                                                    <th className="text-right py-2 px-2 font-medium">Saldo Esperado en Efectivo</th>
+                                                    <th className="text-right py-2 px-2 font-medium">Saldo entregado efectivo</th>
                                                     <th className="text-right py-2 px-2 font-medium">Diferencia</th>
                                                     <th className="text-center py-2 px-2 font-medium">Estatus</th>
                                                     <th className="text-center py-2 px-2 font-medium">Opciones</th>
@@ -333,25 +373,31 @@ export function CajaChicaPage({
                                                                 {formatCurrency(Number(cuadre.Diferencia))}
                                                             </td>
                                                             <td className="text-center py-2 px-2">
-                                                                <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                                                                <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                                                                    cuadre.Estatus === "Cancelado" 
+                                                                        ? "bg-gray-100 text-gray-600" 
+                                                                        : "bg-green-100 text-green-800"
+                                                                }`}>
                                                                     {cuadre.Estatus}
                                                                 </span>
                                                             </td>
                                                             <td className="text-center py-2 px-2">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => {
-                                                                        setCuadreSeleccionado(cuadre.CajaChicaID);
-                                                                        setModalCancelacionAbierto(true);
-                                                                    }}
-                                                                    disabled={!esElMasReciente}
-                                                                    title={esElMasReciente 
-                                                                        ? "Cancelar cuadre" 
-                                                                        : "Solo se puede cancelar el cuadre más reciente"}
-                                                                >
-                                                                    <Trash2 className={`h-4 w-4 ${esElMasReciente ? "text-red-600" : "text-gray-400"}`} />
-                                                                </Button>
+                                                                {cuadre.Estatus !== "Cancelado" && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => {
+                                                                            setCuadreSeleccionado(cuadre.CajaChicaID);
+                                                                            setModalCancelacionAbierto(true);
+                                                                        }}
+                                                                        disabled={!esElMasReciente}
+                                                                        title={esElMasReciente 
+                                                                            ? "Cancelar cuadre" 
+                                                                            : "Solo se puede cancelar el cuadre más reciente"}
+                                                                    >
+                                                                        <Trash2 className={`h-4 w-4 ${esElMasReciente ? "text-red-600" : "text-gray-400"}`} />
+                                                                    </Button>
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     );

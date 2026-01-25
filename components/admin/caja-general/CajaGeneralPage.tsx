@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { getCajaGeneralDashboard, getPreCuadreCajaGeneral } from "@/actions/CajaGeneralActions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,18 +21,20 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Landmark, Search, Clock, ArrowUpRight, ArrowDownLeft, Plus, TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Calendar, BarChart3, Zap, Target, HelpCircle } from "lucide-react";
 import { iCajaGeneralDashboard } from "@/interfaces/CajaGeneralDashboardInterface";
-import { getCajaGeneralDashboard, getPreCuadreCajaGeneral } from "@/actions/CajaGeneralActions";
-import { iGetSucursales } from "@/interfaces/SucursalesInterface";
-import { iPreCuadreResponse } from "@/interfaces/PreCuadreInterface";
 import { iGetCuentasBancarias } from "@/interfaces/ClientesInterface";
+import { iPreCuadreResponse } from "@/interfaces/PreCuadreInterface";
 import { iGetUsers } from "@/interfaces/SeguridadInterface";
-import { ModalNuevoMovimientoCajaGeneral } from "./ModalNuevoMovimientoCajaGeneral";
-import { ModalCuadreCajaGeneral } from "./ModalCuadreCajaGeneral";
+import { iGetSucursales } from "@/interfaces/SucursalesInterface";
 import { formatNumber } from "@/lib/format-number";
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, BarChart3, Calendar, CheckCircle2, HelpCircle, Landmark, Plus, Search, Target, Trash2, TrendingDown, TrendingUp, Zap } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ModalCuadreCajaGeneral } from "./ModalCuadreCajaGeneral";
+import { ModalNuevoMovimientoCajaGeneral } from "./ModalNuevoMovimientoCajaGeneral";
+import { CancelarCuadreGeneralModal } from "./CancelarCuadreGeneralModal";
+import { CajaGeneralGenerarCodigo } from "./CajaGeneralGenerarCodigo";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface CajaGeneralPageProps {
     usuarioId: number;
@@ -54,8 +57,11 @@ export function CajaGeneralPage({
     cuentasBancarias,
     fechaActual
 }: CajaGeneralPageProps) {
+    const user = useCurrentUser();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalCuadreOpen, setIsModalCuadreOpen] = useState(false);
+    const [modalCancelacionAbierto, setModalCancelacionAbierto] = useState(false);
+    const [cuadreSeleccionado, setCuadreSeleccionado] = useState<number | null>(null);
 
     // Obtener fecha local (no UTC)
     const getLocalDate = () => {
@@ -104,9 +110,17 @@ export function CajaGeneralPage({
     const getEstadoBadge = (estado: string) => {
         const variants: Record<string, any> = {
             CERRADO: "bg-green-100 text-green-800",
+            Cerrado: "bg-green-100 text-green-800",
             PENDIENTE: "bg-yellow-100 text-yellow-800",
+            Pendiente: "bg-yellow-100 text-yellow-800",
             CUADRADA: "bg-blue-100 text-blue-800",
+            Cuadrada: "bg-blue-100 text-blue-800",
             "CON_DIFERENCIA": "bg-orange-100 text-orange-800",
+            "Con_Diferencia": "bg-orange-100 text-orange-800",
+            CANCELADO: "bg-red-100 text-red-800",
+            Cancelado: "bg-red-100 text-red-800",
+            ABIERTA: "bg-purple-100 text-purple-800",
+            Abierta: "bg-purple-100 text-purple-800",
         };
         return variants[estado] || "bg-gray-100 text-gray-800";
     };
@@ -136,6 +150,13 @@ export function CajaGeneralPage({
     return (
         <TooltipProvider>
         <div className="space-y-6 pb-6">
+            {/* Botón para generar código (solo Admin) */}
+            {user?.grupo?.nombre === "Administrador" && (
+                <div className="flex justify-end pt-2">
+                    <CajaGeneralGenerarCodigo />
+                </div>
+            )}
+
             {/* HEADER */}
             <div className="flex items-center justify-between">
                 <div>
@@ -235,11 +256,11 @@ export function CajaGeneralPage({
             {dashboard && (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {/* Saldo Inicial */}
+                        {/* Cuadre del dia anterior */}
                         <Card>
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                                    <span>Saldo Inicial</span>
+                                    <span>Cuadre del dia anterior</span>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
@@ -477,16 +498,16 @@ export function CajaGeneralPage({
                                                     <TableCell className="font-medium">{corte.usuario}</TableCell>
                                                     <TableCell>{corte.nombreSucursal}</TableCell>
                                                     <TableCell>{formatHora(corte.fechaHoraCorte)}</TableCell>
-                                                    <TableCell className="text-right font-semibold">
+                                                    <TableCell className="text-right font-semibold whitespace-nowrap">
                                                         $ {formatNumber(corte.montoCorte)}
                                                     </TableCell>
-                                                    <TableCell className="text-right text-green-700">
+                                                    <TableCell className="text-right text-green-700 whitespace-nowrap">
                                                         {corte.efectivoEntregado !== undefined ? `$ ${formatNumber(corte.efectivoEntregado)}` : '-'}
                                                     </TableCell>
-                                                    <TableCell className="text-right text-blue-700">
+                                                    <TableCell className="text-right text-blue-700 whitespace-nowrap">
                                                         {corte.transferencias !== undefined ? `$ ${formatNumber(corte.transferencias)}` : '-'}
                                                     </TableCell>
-                                                    <TableCell className="text-right text-purple-700">
+                                                    <TableCell className="text-right text-purple-700 whitespace-nowrap">
                                                         {corte.depositos !== undefined ? `$ ${formatNumber(corte.depositos)}` : '-'}
                                                     </TableCell>
                                                     <TableCell>
@@ -836,7 +857,7 @@ export function CajaGeneralPage({
                                                             ? 'bg-green-500 text-white shadow-lg'
                                                             : 'bg-indigo-500 text-white shadow-lg'
                                                     }`}>
-                                                        {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct}%
+                                                        {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct.toFixed(2)}%
                                                     </span>
                                                 </div>
                                             </div>
@@ -904,6 +925,7 @@ export function CajaGeneralPage({
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead>ID</TableHead>
                                             <TableHead>Fecha</TableHead>
                                             {/* <TableHead>Folio</TableHead> */}
                                             <TableHead>Sucursal</TableHead>
@@ -913,14 +935,17 @@ export function CajaGeneralPage({
                                             <TableHead className="text-right">Saldo Final</TableHead>
                                             <TableHead>Usuario</TableHead>
                                             <TableHead>Estatus</TableHead>
+                                            <TableHead className="text-center">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {dashboard.historialCuadres.map((cuadre, idx) => {
                                             const fecha = new Date(cuadre.fecha);
                                             const fechaFormato = fecha.toLocaleDateString('es-MX');
+                                            const esElMasReciente = idx === 0;
                                             return (
                                                 <TableRow key={idx}>
+                                                    <TableCell>{cuadre.cajaGeneralId}</TableCell>
                                                     <TableCell>{fechaFormato}</TableCell>
                                                     {/* <TableCell>{cuadre.f}</TableCell> */}
                                                     <TableCell>{cuadre.nombreSucursal || '-'}</TableCell>
@@ -941,6 +966,24 @@ export function CajaGeneralPage({
                                                         <Badge className={getEstadoBadge(cuadre.estatus)}>
                                                             {cuadre.estatus}
                                                         </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        {cuadre.estatus !== "Cancelado" && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setCuadreSeleccionado(cuadre.cajaGeneralId);
+                                                                    setModalCancelacionAbierto(true);
+                                                                }}
+                                                                disabled={!esElMasReciente}
+                                                                title={esElMasReciente 
+                                                                    ? "Cancelar cuadre" 
+                                                                    : "Solo se puede cancelar el cuadre más reciente"}
+                                                            >
+                                                                <Trash2 className={`h-4 w-4 ${esElMasReciente ? "text-red-600" : "text-gray-400"}`} />
+                                                            </Button>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             );
@@ -994,6 +1037,22 @@ export function CajaGeneralPage({
                 totalTarjetaCapturado={dashboard?.preCuadre.totalTarjetaCapturado || 0}
                 totalTransferenciaCapturado={dashboard?.preCuadre.totalTransferenciaCapturado || 0}
             />
+
+            {/* MODAL DE CANCELACIÓN */}
+            {cuadreSeleccionado && (
+                <CancelarCuadreGeneralModal
+                    abierto={modalCancelacionAbierto}
+                    alCerrar={() => setModalCancelacionAbierto(false)}
+                    cuadreId={cuadreSeleccionado}
+                    onCancelarExitoso={() => {
+                        handleBuscar();
+                        cargarPreCuadre();
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }}
+                />
+            )}
         </div>
         </TooltipProvider>
     );

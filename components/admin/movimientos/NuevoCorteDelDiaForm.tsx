@@ -164,6 +164,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
         return usuario ? usuario.NombreUsuario : null;
     }
     const handleUserSelection = async (userId: string) => {
+        console.log("🚀 ~ handleUserSelection ~ userId:", userId)
         setSelectedUser(userId);
         // Aseguramos que usuarios está definido y es un array antes de buscar el nombre
         const nombreUsuario = Array.isArray(usuarios) ? obtenerNombreUsuario(usuarios, Number(userId)) : null;
@@ -172,6 +173,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
 
         setIsLoading(true);
         const respuesta = await getCorteDelDiaByID(Number(userId));
+        console.log("🚀 ~ handleUserSelection ~ respuesta:", respuesta)
 
         if (respuesta && Array.isArray(respuesta) && respuesta.length > 0) {
             const hoy = new Date();
@@ -179,7 +181,7 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
                 isSameDay(parseISO(corte.FechaCorte), hoy)
             );
 
-            if (corteDelDia) {
+            if (corteDelDia && corteDelDia.Estatus !== "Cancelado") {
                 setCorteUsuario(corteDelDia);
                 form.reset(corteDelDia);
                 toast({
@@ -231,9 +233,9 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
         if (respuesta && Array.isArray(respuesta) && respuesta.length > 0) {
             const hoy = new Date();
 
-            // Buscar el corte con la misma fecha del día actual
+            // Buscar el corte con la misma fecha del día actual que NO esté cancelado
             const corteDelDia = respuesta.find(corte =>
-                isSameDay(parseISO(corte.FechaCorte), hoy)
+                isSameDay(parseISO(corte.FechaCorte), hoy) && corte.Estatus !== "Cancelado"
             );
 
             if (corteDelDia) {
@@ -317,7 +319,9 @@ export const NuevoCorteDelDiaForm = ({ usuarios, onClose }: Props) => {
             Observaciones: data.Observaciones,
         };
 
+        // console.log("🚀 ~ manejarGuardarCorte ~ datosCorte:", datosCorte)
         const respuesta = await postCorteDelDia(datosCorte);
+        // console.log("🚀 ~ manejarGuardarCorte ~ respuesta:", respuesta)
 
         if (respuesta.statusCode) {
             toast({

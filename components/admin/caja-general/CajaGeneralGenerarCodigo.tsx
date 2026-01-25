@@ -3,26 +3,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { KeyRound } from "lucide-react";
-import GenerarCodigoModal from "./GenerarCodigoModal";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { GenerarCodigoGeneralModal } from "./GenerarCodigoGeneralModal";
 
-export const ClienteGenerarCodigo = () => {
+export const CajaGeneralGenerarCodigo = () => {
     const [modalAbierto, setModalAbierto] = useState(false);
-    const user = useCurrentUser();
-
-    // Solo mostrar el botón si el usuario es administrador
-    if (user?.grupo?.nombre !== "Administrador") {
-        return null;
-    }
 
     return (
         <>
-            <Button onClick={() => setModalAbierto(true)} variant="success">
+            <Button 
+                onClick={() => setModalAbierto(true)} 
+                variant="success"
+            >
                 <KeyRound className="h-4 w-4 mr-2" />
                 Generar código
             </Button>
 
-            <GenerarCodigoModal
+            <GenerarCodigoGeneralModal
                 abierto={modalAbierto}
                 alCerrar={() => setModalAbierto(false)}
             />

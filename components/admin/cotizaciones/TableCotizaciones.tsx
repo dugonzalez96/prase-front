@@ -66,6 +66,7 @@ interface TableCotizacionesProps {
   usosVehiculo: iGetUsosVehiculo[];
   coberturasData: iGetCoberturas[] | null | undefined;
   tiposPago: iGetTipoPagos[] | null | undefined;
+  direccionSucursal?: string;
 }
 
 interface ModalesControlProps {
@@ -80,6 +81,7 @@ interface ModalesControlProps {
   onCerrarReenvio: () => void;
   coberturas: iGetCoberturas[] | null | undefined;
   tiposPago: iGetTipoPagos[] | null | undefined;
+  direccionSucursal?: string;
 }
 
 export const TableCotizaciones = ({
@@ -88,6 +90,7 @@ export const TableCotizaciones = ({
   usosVehiculo,
   coberturasData,
   tiposPago,
+  direccionSucursal,
 }: TableCotizacionesProps) => {
   const [cotizacionSeleccionada, setCotizacionSeleccionada] = useState<iGetCotizacion | null>(null);
   const [modalEdicionAbierto, setModalEdicionAbierto] = useState(false);
@@ -197,6 +200,7 @@ export const TableCotizaciones = ({
         usosVehiculo,
         isSave: true,
         tiposPago: tiposPago ?? [],
+        direccionSucursal,
       });
 
       toast({
@@ -357,6 +361,7 @@ export const TableCotizaciones = ({
         }}
         coberturas={coberturasData}
         tiposPago={tiposPago}
+        direccionSucursal={direccionSucursal}
       />
     </div>
   );
@@ -472,6 +477,7 @@ const ModalesControl = ({
   onCerrarReenvio,
   coberturas,
   tiposPago,
+  direccionSucursal,
 }: ModalesControlProps) => (
   <>
     <Dialog open={modalEdicionAbierto} onOpenChange={onCerrarEdicion}>
@@ -528,6 +534,7 @@ const ModalesControl = ({
         abierto={modalReenvioAbierto}
         alCerrar={onCerrarReenvio}
         tiposPago={tiposPago}
+        direccionSucursal={direccionSucursal}
       />
     )}
   </>

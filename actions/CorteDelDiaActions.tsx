@@ -2,6 +2,7 @@
 
 import { IGetAllCorteDia, IPostCorteDelDia, CorteUsuario } from "@/interfaces/CorteDelDiaInterface";
 import { iGetUsers } from "@/interfaces/SeguridadInterface";
+import { currentUser } from "@/lib/auth";
 
 const url = process.env.API_URL;
 
@@ -103,12 +104,19 @@ export const getCorteCerradoByUserByDay = async (id: number) => {
 
 export const postCorteDelDia = async (body: IPostCorteDelDia) => {
     try {
+        const user = await currentUser();
+        
+        const bodyWithCreator = {
+            ...body,
+            usuarioCreadorID: user?.usuario?.UsuarioID || null
+        };
+
         const resp = await fetch(`${url}/cortes-usuarios/guardar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify(bodyWithCreator)
         });
 
         const data = await resp.json();
@@ -170,5 +178,47 @@ export const getUsuariosCortes = async () => {
         return data;
     } catch (error) {
         console.log('Error al obtener usuarios: ', error);
+    }
+}
+
+export const getGenerarCodigoCortesUsuario = async (idTransaccion: number) => {
+    try {
+        const resp = await fetch(`${url}/cortes-usuarios/${idTransaccion}/codigo`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            cache: 'no-store'
+        });
+
+        if (!resp.ok) return null;
+
+        const data: { id: string, codigo: string } = await resp.json();
+        return data;
+    } catch (error) {
+        console.log(`Error al generar código: ${error}`);
+    }
+}
+
+export const cancelarCorteConCodigo = async (id: number, usuario: string, codigo: string, motivo: string) => {
+    try {
+        const resp = await fetch(`${url}/cortes-usuarios/${id}/cancelar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ usuario, codigo, motivo }),
+        });
+
+        if (!resp.ok) {
+            const error = await resp.json();
+            return { success: false, error: error.message || 'Error al cancelar el corte' };
+        }
+
+        const data = await resp.json();
+        return { success: true, data };
+    } catch (error) {
+        console.log('Error al cancelar corte: ', error);
+        return { success: false, error: 'Error de conexión al servidor' };
     }
 }

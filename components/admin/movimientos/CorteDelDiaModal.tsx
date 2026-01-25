@@ -24,11 +24,14 @@ import {
     Info,
     Mail,
     Scale,
-    X
+    X,
+    Ban
 } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
 import { createPortal } from "react-dom"
+import CancelarCorteModal from "./CancelarCorteModal"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
 
 
 interface Usuario {
@@ -79,9 +82,10 @@ interface CorteUsuario {
 interface CorteUsuarioModalProps {
     corte: CorteUsuario
     onClose: () => void
+    ultimoCorteCerradoID?: number
 }
 
-export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
+export function CorteUsuarioModal({ corte, onClose, ultimoCorteCerradoID }: CorteUsuarioModalProps) {
     //useState para Ingresos y Egresos
     const [ingresos, setIngresos] = useState<any[]>([]);
     const [egresos, setEgresos] = useState<any[]>([]);
@@ -89,6 +93,8 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
     const [corteMovimientosInfo, setCorteMovimientosInfo] = useState<any[]>([]);
 
     const [showMovementsModal, setShowMovementsModal] = useState(false);
+    const [showCancelarModal, setShowCancelarModal] = useState(false);
+    const user = useCurrentUser();
 
     const toggleMovementsModal = async () => {
         setIngresos([]);
@@ -178,9 +184,24 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                             >
                                 <Card className="max-w-3xl md:max-h-[90vh] max-h-[50vh] overflow-y-auto bg-white shadow-lg rounded-md">
 
-                                    <div className="flex justify-end">
+                                    <div className="flex justify-between items-center p-2">
+                                        <div>
+                                            {corte.Estatus === "Cerrado" && 
+                                             ultimoCorteCerradoID && 
+                                             corte.CorteUsuarioID === ultimoCorteCerradoID && (
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => setShowCancelarModal(true)}
+                                                    className="rounded-md"
+                                                >
+                                                    <Ban className="w-4 h-4 mr-2" />
+                                                    Cancelar Corte
+                                                </Button>
+                                            )}
+                                        </div>
                                         <Button
-                                            className="bg-red-500 rounded-sm hover:bg-red-400 active:bg-red-600 "
+                                            className="bg-red-500 rounded-sm hover:bg-red-400 active:bg-red-600"
                                             size={"icon"}
                                             onClick={onClose}
                                         >
@@ -275,7 +296,7 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                                                     <div className="bg-white p-3 rounded-md shadow-sm">
                                                         <p className="flex items-center text-sm text-muted-foreground">
                                                             <Scale className="w-3 h-3 mr-1 text-blue-500" />
-                                                            Saldo Real
+                                                            Saldo entregó
                                                         </p>
                                                         <p className="font-medium text-lg">{formatCurrency(corte.SaldoReal)}</p>
                                                     </div>
@@ -582,6 +603,14 @@ export function CorteUsuarioModal({ corte, onClose }: CorteUsuarioModalProps) {
                     </motion.div>
                 </AnimatePresence>,
                 document.body
+            )}
+
+            {showCancelarModal && (
+                <CancelarCorteModal
+                    abierto={showCancelarModal}
+                    alCerrar={() => setShowCancelarModal(false)}
+                    corteID={corte.CorteUsuarioID}
+                />
             )}
 
         </>
