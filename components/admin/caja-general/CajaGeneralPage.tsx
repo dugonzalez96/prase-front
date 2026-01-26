@@ -63,6 +63,25 @@ export function CajaGeneralPage({
     const [modalCancelacionAbierto, setModalCancelacionAbierto] = useState(false);
     const [cuadreSeleccionado, setCuadreSeleccionado] = useState<number | null>(null);
 
+    // Función helper para formatear porcentajes de forma segura
+    const formatearPorcentaje = (valor: any): string => {
+        // Validar si el valor es null o undefined
+        if (valor === null || valor === undefined) {
+            return '0.00';
+        }
+        
+        // Convertir a número si es string
+        const numero = typeof valor === 'string' ? parseFloat(valor) : valor;
+        
+        // Validar si es un número válido
+        if (isNaN(numero) || !isFinite(numero)) {
+            return '0.00';
+        }
+        
+        // Redondear a 2 decimales
+        return numero.toFixed(2);
+    };
+
     // Obtener fecha local (no UTC)
     const getLocalDate = () => {
         const hoy = new Date();
@@ -807,7 +826,7 @@ export function CajaGeneralPage({
                                                             ? 'bg-green-500 text-white shadow-lg'
                                                             : 'bg-slate-300 text-slate-800 shadow'
                                                     }`}>
-                                                        {preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.totalEntradasPct}%
+                                                        {preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.analitica.variacionVsPromedio.totalEntradasPct)}%
                                                     </span>
                                                 </div>
 
@@ -832,7 +851,7 @@ export function CajaGeneralPage({
                                                             ? 'bg-green-500 text-white shadow-lg'
                                                             : 'bg-slate-300 text-slate-800 shadow'
                                                     }`}>
-                                                        {preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.totalEgresosPct}%
+                                                        {preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.analitica.variacionVsPromedio.totalEgresosPct)}%
                                                     </span>
                                                 </div>
 
@@ -857,7 +876,7 @@ export function CajaGeneralPage({
                                                             ? 'bg-green-500 text-white shadow-lg'
                                                             : 'bg-indigo-500 text-white shadow-lg'
                                                     }`}>
-                                                        {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct.toFixed(2)}%
+                                                        {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct)}%
                                                     </span>
                                                 </div>
                                             </div>

@@ -62,6 +62,7 @@ export const NuevoMovimientoForm = ({
     });
 
     const onSubmit = async (valores: z.infer<typeof nuevoMovimientoSchema>) => {
+        console.log("🚀 ~ onSubmit ~ valores:", valores)
         startTransition(async () => {
             try {
                 const respuesta = await postMovimiento(valores);
