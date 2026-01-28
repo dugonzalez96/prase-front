@@ -56,15 +56,20 @@ export interface iAnalitica {
     variacionVsPromedio: iVariacionVsPromedio;
 }
 
-export interface iPreCuadreResponse {
+export interface iPreCuadreResponseData {
     filtros: {
         fecha: string;
     };
     preCuadre: iPreCuadreData;
     entradasDetalle: iEntradasDetalle;
     egresosDetalle: iEgresosDetalle;
-    analitica: iAnalitica;
+    analitica: iAnalitica | null;
     puedeCuadrarHoy: boolean;
     yaCuadradoHoy: boolean;
     motivosBloqueo: string[];
+}
+
+export interface iPreCuadreResponse {
+    success: boolean;
+    data: iPreCuadreResponseData;
 }

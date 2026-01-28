@@ -1,39 +1,42 @@
 // Interfaces para el dashboard de Caja General
 
 export interface iCajaGeneralDashboard {
-  filtros: {
-    fecha: string;
+  success: boolean;
+  data: {
+    filtros: {
+      fecha: string;
+    };
+    resumen: {
+      saldoInicial: number;
+      totalEntradas: number;
+      totalEgresos: number;
+      saldoCalculado: number;
+      estadoCuadre: string;
+    };
+    entradas: iMovimientoCajaGeneralDashboard[];
+    egresos: iMovimientoCajaGeneralDashboard[];
+    entradasDetalle: {
+      cortesCajaChica: iCortesCajaChicaDetalle[];
+      pagosPoliza: iPagosPolizaDetalle[];
+      transaccionesIngreso: iTransaccionIngresoDetalle[];
+    };
+    egresosDetalle: {
+      transaccionesEgreso: iTransaccionEgresoDetalle[];
+    };
+    cortesUsuarios: iCorteUsuarioDashboard[];
+    iniciosUsuarios: iInicioUsuarioDashboard[];
+    preCuadre: {
+      saldoInicial: number;
+      totalEntradas: number;
+      totalEgresos: number;
+      saldoCalculado: number;
+      diferencia: number;
+      totalEfectivoCapturado: number;
+      totalTarjetaCapturado: number;
+      totalTransferenciaCapturado: number;
+    };
+    historialCuadres: iHistorialCuadre[];
   };
-  resumen: {
-    saldoInicial: number;
-    totalEntradas: number;
-    totalEgresos: number;
-    saldoCalculado: number;
-    estadoCuadre: string;
-  };
-  entradas: iMovimientoCajaGeneralDashboard[];
-  egresos: iMovimientoCajaGeneralDashboard[];
-  entradasDetalle: {
-    cortesCajaChica: iCortesCajaChicaDetalle[];
-    pagosPoliza: iPagosPolizaDetalle[];
-    transaccionesIngreso: iTransaccionIngresoDetalle[];
-  };
-  egresosDetalle: {
-    transaccionesEgreso: iTransaccionEgresoDetalle[];
-  };
-  cortesUsuarios: iCorteUsuarioDashboard[];
-  iniciosUsuarios: iInicioUsuarioDashboard[];
-  preCuadre: {
-    saldoInicial: number;
-    totalEntradas: number;
-    totalEgresos: number;
-    saldoCalculado: number;
-    diferencia: number;
-    totalEfectivoCapturado: number;
-    totalTarjetaCapturado: number;
-    totalTransferenciaCapturado: number;
-  };
-  historialCuadres: iHistorialCuadre[];
 }
 
 export interface iMovimientoCajaGeneralDashboard {
@@ -46,21 +49,18 @@ export interface iMovimientoCajaGeneralDashboard {
   monto: number;
 }
 
-export interface iCortesCajaChicaDetalle
-  extends iMovimientoCajaGeneralDashboard {}
+export interface iCortesCajaChicaDetalle extends iMovimientoCajaGeneralDashboard {}
 
 export interface iPagosPolizaDetalle extends iMovimientoCajaGeneralDashboard {
   polizaId?: number;
   numeroPoliza?: string;
 }
 
-export interface iTransaccionIngresoDetalle
-  extends iMovimientoCajaGeneralDashboard {
+export interface iTransaccionIngresoDetalle extends iMovimientoCajaGeneralDashboard {
   tipoTransaccion?: string;
 }
 
-export interface iTransaccionEgresoDetalle
-  extends iMovimientoCajaGeneralDashboard {
+export interface iTransaccionEgresoDetalle extends iMovimientoCajaGeneralDashboard {
   tipoTransaccion?: string;
 }
 
@@ -99,4 +99,7 @@ export interface iHistorialCuadre {
   saldoFinal: number;
   usuarioCuadre: string;
   estatus: string;
+  diferencia : number;
+  observaciones: string;
+  entrego: number;
 }
