@@ -57,6 +57,11 @@ export function CajaGeneralPage({
     cuentasBancarias,
     fechaActual
 }: CajaGeneralPageProps) {
+    // console.log("🚀 ~ CajaGeneralPage ~ cuentasBancarias:", cuentasBancarias)
+    // console.log("🚀 ~ CajaGeneralPage ~ usuarios:", usuarios)
+    // console.log("🚀 ~ CajaGeneralPage ~ sucursales:", sucursales)
+    // console.log("🚀 ~ CajaGeneralPage ~ preCuadreInicial:", preCuadreInicial)
+    // console.log("🚀 ~ CajaGeneralPage ~ dashboardInicial:", dashboardInicial)
     const user = useCurrentUser();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalCuadreOpen, setIsModalCuadreOpen] = useState(false);
@@ -271,7 +276,7 @@ export function CajaGeneralPage({
                 </Card>
 
                 {/* RESUMEN - 4 TARJETAS */}
-                {dashboard?.data && (
+                {dashboard && (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* Cuadre del dia anterior */}
@@ -291,7 +296,7 @@ export function CajaGeneralPage({
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">
-                                        $ {formatNumber(dashboard.data.resumen.saldoInicial)}
+                                        $ {formatNumber(dashboard.resumen.saldoInicial)}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -316,7 +321,7 @@ export function CajaGeneralPage({
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-green-600">
-                                        $ {formatNumber(dashboard.data.resumen.totalEntradas)}
+                                        $ {formatNumber(dashboard.resumen.totalEntradas)}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -341,7 +346,7 @@ export function CajaGeneralPage({
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-red-600">
-                                        $ {formatNumber(dashboard.data.resumen.totalEgresos)}
+                                        $ {formatNumber(dashboard.resumen.totalEgresos)}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -363,7 +368,7 @@ export function CajaGeneralPage({
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">
-                                        $ {formatNumber(dashboard.data.resumen.saldoCalculado)}
+                                        $ {formatNumber(dashboard.resumen.saldoCalculado)}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -391,9 +396,9 @@ export function CajaGeneralPage({
 
                             </CardHeader>
                             <CardContent>
-                                {dashboard.data.entradas && dashboard.data.entradas.length > 0 ? (
+                                {dashboard.entradas && dashboard.entradas.length > 0 ? (
                                     <div className="space-y-4">
-                                        {dashboard.data.entradas.map((entrada, idx) => (
+                                        {dashboard.entradas.map((entrada, idx) => (
                                             <div key={idx} className="flex gap-4 pb-4 border-b last:border-b-0">
                                                 <div className="flex-shrink-0">
                                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
@@ -443,9 +448,9 @@ export function CajaGeneralPage({
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {dashboard.data.egresos && dashboard.data.egresos.length > 0 ? (
+                                {dashboard.egresos && dashboard.egresos.length > 0 ? (
                                     <div className="space-y-4">
-                                        {dashboard.data.egresos.map((egreso, idx) => (
+                                        {dashboard.egresos.map((egreso, idx) => (
                                             <div key={idx} className="flex gap-4 pb-4 border-b last:border-b-0">
                                                 <div className="flex-shrink-0">
                                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
@@ -495,7 +500,7 @@ export function CajaGeneralPage({
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {dashboard.data.cortesUsuarios && dashboard.data.cortesUsuarios.length > 0 ? (
+                                {dashboard.cortesUsuarios && dashboard.cortesUsuarios.length > 0 ? (
                                     <div className="overflow-x-auto">
                                         <Table>
                                             <TableHeader>
@@ -511,7 +516,7 @@ export function CajaGeneralPage({
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {dashboard.data.cortesUsuarios.map((corte, idx) => (
+                                                {dashboard.cortesUsuarios.map((corte, idx) => (
                                                     <TableRow key={idx}>
                                                         <TableCell className="font-medium">{corte.usuario}</TableCell>
                                                         <TableCell>{corte.nombreSucursal}</TableCell>
@@ -565,7 +570,7 @@ export function CajaGeneralPage({
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {dashboard.data.iniciosUsuarios && dashboard.data.iniciosUsuarios.length > 0 ? (
+                                {dashboard.iniciosUsuarios && dashboard.iniciosUsuarios.length > 0 ? (
                                     <div className="overflow-x-auto">
                                         <Table>
                                             <TableHeader>
@@ -578,7 +583,7 @@ export function CajaGeneralPage({
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {dashboard.data.iniciosUsuarios.map((inicio, idx) => (
+                                                {dashboard.iniciosUsuarios.map((inicio, idx) => (
                                                     <TableRow key={idx}>
                                                         <TableCell className="font-medium">{inicio.usuario}</TableCell>
                                                         <TableCell>{inicio.nombreSucursal}</TableCell>
@@ -630,31 +635,31 @@ export function CajaGeneralPage({
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-medium">Saldo Inicial:</span>
                                         <span className="text-sm font-semibold">
-                                            $ {formatNumber(preCuadre.data.preCuadre.saldoInicial)}
+                                            $ {formatNumber(preCuadre.preCuadre.saldoInicial)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center pt-2 border-t">
                                         <span className="text-sm font-medium text-green-600">+ Total Entradas del día:</span>
                                         <span className="text-sm font-semibold text-green-600">
-                                            $ {formatNumber(preCuadre.data.preCuadre.totalEntradas)}
+                                            $ {formatNumber(preCuadre.preCuadre.totalEntradas)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center pb-2 border-b">
                                         <span className="text-sm font-medium text-red-600">- Total Egresos del día:</span>
                                         <span className="text-sm font-semibold text-red-600">
-                                            $ {formatNumber(preCuadre.data.preCuadre.totalEgresos)}
+                                            $ {formatNumber(preCuadre.preCuadre.totalEgresos)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center pt-2 bg-blue-100 p-2 rounded">
                                         <span className="font-semibold">= Saldo Calculado:</span>
                                         <span className="font-bold text-lg">
-                                            $ {formatNumber(preCuadre.data.preCuadre.saldoCalculado)}
+                                            $ {formatNumber(preCuadre.preCuadre.saldoCalculado)}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* SECCIÓN DE ANALÍTICA */}
-                                {preCuadre?.data && (
+                                {preCuadre && (
                                     <div className="space-y-4 bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 p-5 rounded-xl border-2 border-indigo-200 shadow-lg">
                                         <div className="flex items-center justify-between mb-2">
                                             <h3 className="font-bold text-lg text-indigo-900 flex items-center gap-2">
@@ -673,7 +678,7 @@ export function CajaGeneralPage({
                                         </div>
 
                                         {/* ÚLTIMO CUADRE */}
-                                        {preCuadre.data.analitica ? (
+                                        {preCuadre.analitica ? (
                                             <div className="bg-white/80 backdrop-blur p-4 rounded-lg border-l-4 border-l-indigo-500 shadow-md hover:shadow-lg transition-shadow">
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <Calendar className="h-4 w-4 text-indigo-600" />
@@ -691,7 +696,7 @@ export function CajaGeneralPage({
                                                     <div className="flex justify-between items-center">
                                                         <span className="text-xs text-slate-600">Fecha:</span>
                                                         <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
-                                                            {new Date(preCuadre.data.analitica.ultimoCuadreFecha).toLocaleDateString('es-MX', {
+                                                            {new Date(preCuadre.analitica.ultimoCuadreFecha).toLocaleDateString('es-MX', {
                                                                 year: 'numeric',
                                                                 month: '2-digit',
                                                                 day: '2-digit',
@@ -703,7 +708,7 @@ export function CajaGeneralPage({
                                                     <div className="flex justify-between items-center pt-2 border-t border-indigo-100">
                                                         <span className="text-xs text-slate-600 font-medium">Saldo Final:</span>
                                                         <span className="text-sm font-bold text-indigo-900 bg-indigo-100 px-3 py-1 rounded-full">
-                                                            $ {formatNumber(preCuadre.data.analitica.ultimoCuadreSaldoFinal)}
+                                                            $ {formatNumber(preCuadre.analitica.ultimoCuadreSaldoFinal)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -718,11 +723,11 @@ export function CajaGeneralPage({
                                         )}
 
                                         {/* PROMEDIO DE LOS ÚLTIMOS CUADRES */}
-                                        {preCuadre.data.analitica ? (
+                                        {preCuadre.analitica ? (
                                             <div>
                                                 <p className="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2">
                                                     <Target className="h-4 w-4 text-blue-600" />
-                                                    Promedios (Últimos {preCuadre.data.analitica.promedioUltimosCuadres.diasConsiderados} día(s))
+                                                    Promedios (Últimos {preCuadre.analitica.promedioUltimosCuadres.diasConsiderados} día(s))
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <HelpCircle className="h-4 w-4 text-blue-600 cursor-help" />
@@ -744,7 +749,7 @@ export function CajaGeneralPage({
                                                                 <span className="text-xs font-bold text-green-700">Entradas</span>
                                                             </div>
                                                             <p className="text-lg font-black text-green-900 mb-2">
-                                                                $ {formatNumber(preCuadre.data.analitica.promedioUltimosCuadres.totalEntradas)}
+                                                                $ {formatNumber(preCuadre.analitica.promedioUltimosCuadres.totalEntradas)}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -760,7 +765,7 @@ export function CajaGeneralPage({
                                                                 <span className="text-xs font-bold text-red-700">Egresos</span>
                                                             </div>
                                                             <p className="text-lg font-black text-red-900 mb-2">
-                                                                $ {formatNumber(preCuadre.data.analitica.promedioUltimosCuadres.totalEgresos)}
+                                                                $ {formatNumber(preCuadre.analitica.promedioUltimosCuadres.totalEgresos)}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -776,7 +781,7 @@ export function CajaGeneralPage({
                                                                 <span className="text-xs font-bold text-blue-700">Saldo Promedio</span>
                                                             </div>
                                                             <p className="text-lg font-black text-blue-900 mb-2">
-                                                                $ {formatNumber(preCuadre.data.analitica.promedioUltimosCuadres.saldoFinal)}
+                                                                $ {formatNumber(preCuadre.analitica.promedioUltimosCuadres.saldoFinal)}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -789,7 +794,7 @@ export function CajaGeneralPage({
                                         )}
 
                                         {/* VARIACIÓN VS PROMEDIO */}
-                                        {preCuadre.data.analitica && preCuadre.data.analitica.variacionVsPromedio ? (
+                                        {preCuadre.analitica && preCuadre.analitica.variacionVsPromedio ? (
                                             <div className="bg-white/80 backdrop-blur p-4 rounded-lg border-l-4 border-l-purple-500 shadow-md hover:shadow-lg transition-shadow">
                                                 <p className="text-sm font-bold text-purple-900 mb-4 flex items-center gap-2">
                                                     <TrendingUp className="h-4 w-4 text-purple-600" />
@@ -808,9 +813,9 @@ export function CajaGeneralPage({
                                                     <div className="flex flex-1 items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100 p-3 rounded-lg">
                                                         <div className="flex items-center gap-3">
                                                             <div className="p-2 bg-slate-200 rounded-full">
-                                                                {preCuadre.data.analitica.variacionVsPromedio.totalEntradasPct < 0 ? (
+                                                                {preCuadre.analitica.variacionVsPromedio.totalEntradasPct < 0 ? (
                                                                     <TrendingDown className="h-4 w-4 text-red-500" />
-                                                                ) : preCuadre.data.analitica.variacionVsPromedio.totalEntradasPct > 0 ? (
+                                                                ) : preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0 ? (
                                                                     <TrendingUp className="h-4 w-4 text-green-500" />
                                                                 ) : (
                                                                     <span className="text-xs text-slate-500 font-bold">─</span>
@@ -818,13 +823,13 @@ export function CajaGeneralPage({
                                                             </div>
                                                             <span className="text-xs font-semibold text-slate-700">Entradas</span>
                                                         </div>
-                                                        <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${preCuadre.data.analitica.variacionVsPromedio.totalEntradasPct < 0
-                                                                ? 'bg-red-500 text-white shadow-lg'
-                                                                : preCuadre.data.analitica.variacionVsPromedio.totalEntradasPct > 0
-                                                                    ? 'bg-green-500 text-white shadow-lg'
-                                                                    : 'bg-slate-300 text-slate-800 shadow'
+                                                        <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${preCuadre.analitica.variacionVsPromedio.totalEntradasPct < 0
+                                                            ? 'bg-red-500 text-white shadow-lg'
+                                                            : preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0
+                                                                ? 'bg-green-500 text-white shadow-lg'
+                                                                : 'bg-slate-300 text-slate-800 shadow'
                                                             }`}>
-                                                            {preCuadre.data.analitica.variacionVsPromedio.totalEntradasPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.data.analitica.variacionVsPromedio.totalEntradasPct)}%
+                                                            {preCuadre.analitica.variacionVsPromedio.totalEntradasPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.analitica.variacionVsPromedio.totalEntradasPct)}%
                                                         </span>
                                                     </div>
 
@@ -832,9 +837,9 @@ export function CajaGeneralPage({
                                                     <div className="flex flex-1 items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100 p-3 rounded-lg">
                                                         <div className="flex items-center gap-3">
                                                             <div className="p-2 bg-slate-200 rounded-full">
-                                                                {preCuadre.data.analitica.variacionVsPromedio.totalEgresosPct < 0 ? (
+                                                                {preCuadre.analitica.variacionVsPromedio.totalEgresosPct < 0 ? (
                                                                     <TrendingDown className="h-4 w-4 text-green-500" />
-                                                                ) : preCuadre.data.analitica.variacionVsPromedio.totalEgresosPct > 0 ? (
+                                                                ) : preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0 ? (
                                                                     <TrendingUp className="h-4 w-4 text-red-500" />
                                                                 ) : (
                                                                     <span className="text-xs text-slate-500 font-bold">─</span>
@@ -842,13 +847,13 @@ export function CajaGeneralPage({
                                                             </div>
                                                             <span className="text-xs font-semibold text-slate-700">Egresos</span>
                                                         </div>
-                                                        <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${preCuadre.data.analitica.variacionVsPromedio.totalEgresosPct > 0
-                                                                ? 'bg-red-500 text-white shadow-lg'
-                                                                : preCuadre.data.analitica.variacionVsPromedio.totalEgresosPct < 0
-                                                                    ? 'bg-green-500 text-white shadow-lg'
-                                                                    : 'bg-slate-300 text-slate-800 shadow'
+                                                        <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0
+                                                            ? 'bg-red-500 text-white shadow-lg'
+                                                            : preCuadre.analitica.variacionVsPromedio.totalEgresosPct < 0
+                                                                ? 'bg-green-500 text-white shadow-lg'
+                                                                : 'bg-slate-300 text-slate-800 shadow'
                                                             }`}>
-                                                            {preCuadre.data.analitica.variacionVsPromedio.totalEgresosPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.data.analitica.variacionVsPromedio.totalEgresosPct)}%
+                                                            {preCuadre.analitica.variacionVsPromedio.totalEgresosPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.analitica.variacionVsPromedio.totalEgresosPct)}%
                                                         </span>
                                                     </div>
 
@@ -856,9 +861,9 @@ export function CajaGeneralPage({
                                                     <div className="flex flex-1 items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg border-2 border-indigo-300 font-bold">
                                                         <div className="flex items-center gap-3">
                                                             <div className="p-2 bg-indigo-200 rounded-full">
-                                                                {preCuadre.data.analitica.variacionVsPromedio.saldoCalculadoPct < 0 ? (
+                                                                {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct < 0 ? (
                                                                     <TrendingDown className="h-4 w-4 text-red-500" />
-                                                                ) : preCuadre.data.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? (
+                                                                ) : preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? (
                                                                     <TrendingUp className="h-4 w-4 text-green-500" />
                                                                 ) : (
                                                                     <CheckCircle2 className="h-4 w-4 text-blue-500" />
@@ -866,13 +871,13 @@ export function CajaGeneralPage({
                                                             </div>
                                                             <span className="text-xs font-semibold text-indigo-900">Saldo Calculado</span>
                                                         </div>
-                                                        <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${preCuadre.data.analitica.variacionVsPromedio.saldoCalculadoPct < 0
-                                                                ? 'bg-red-500 text-white shadow-lg'
-                                                                : preCuadre.data.analitica.variacionVsPromedio.saldoCalculadoPct > 0
-                                                                    ? 'bg-green-500 text-white shadow-lg'
-                                                                    : 'bg-indigo-500 text-white shadow-lg'
+                                                        <span className={`text-sm font-black px-4 py-2 rounded-full font-mono ${preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct < 0
+                                                            ? 'bg-red-500 text-white shadow-lg'
+                                                            : preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0
+                                                                ? 'bg-green-500 text-white shadow-lg'
+                                                                : 'bg-indigo-500 text-white shadow-lg'
                                                             }`}>
-                                                            {preCuadre.data.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.data.analitica.variacionVsPromedio.saldoCalculadoPct)}%
+                                                            {preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct > 0 ? '+' : ''}{formatearPorcentaje(preCuadre.analitica.variacionVsPromedio.saldoCalculadoPct)}%
                                                         </span>
                                                     </div>
                                                 </div>
@@ -889,20 +894,20 @@ export function CajaGeneralPage({
                                     className="w-full"
                                     size="lg"
                                     onClick={() => setIsModalCuadreOpen(true)}
-                                    disabled={!preCuadre.data.puedeCuadrarHoy}
-                                    title={!preCuadre.data.puedeCuadrarHoy && preCuadre.data.motivosBloqueo.length > 0 ? preCuadre.data.motivosBloqueo[0] : ''}
+                                    disabled={!preCuadre.puedeCuadrarHoy}
+                                    title={!preCuadre.puedeCuadrarHoy && preCuadre.motivosBloqueo.length > 0 ? preCuadre.motivosBloqueo[0] : ''}
                                 >
-                                    {preCuadre.data.yaCuadradoHoy ? 'Ya Cuadrado Hoy' : preCuadre.data.puedeCuadrarHoy ? 'Proceder al Cuadre' : 'No se puede cuadrar'}
+                                    {preCuadre.yaCuadradoHoy ? 'Ya Cuadrado Hoy' : preCuadre.puedeCuadrarHoy ? 'Proceder al Cuadre' : 'No se puede cuadrar'}
                                 </Button>
 
-                                {!preCuadre.data.puedeCuadrarHoy && preCuadre.data.motivosBloqueo.length > 0 && (
+                                {!preCuadre.puedeCuadrarHoy && preCuadre.motivosBloqueo.length > 0 && (
                                     <div className="p-3 bg-amber-50 border-l-4 border-l-amber-500 rounded">
                                         <p className="text-xs font-semibold text-amber-900 flex items-center gap-2">
                                             <AlertCircle className="h-4 w-4" />
                                             Motivo del bloqueo:
                                         </p>
                                         <p className="text-xs text-amber-800 mt-1">
-                                            {preCuadre.data.motivosBloqueo[0]}
+                                            {preCuadre.motivosBloqueo[0]}
                                         </p>
                                     </div>
                                 )}
@@ -914,7 +919,7 @@ export function CajaGeneralPage({
                 )}
 
                 {/* HISTORIAL DE CUADRES */}
-                {dashboard?.data && (
+                {dashboard && (
                     <Card>
                         <CardHeader>
                             <div className="flex items-start justify-between">
@@ -935,7 +940,7 @@ export function CajaGeneralPage({
                             </div>
                         </CardHeader>
                         <CardContent>
-                            {dashboard.data.historialCuadres && dashboard.data.historialCuadres.length > 0 ? (
+                            {dashboard.historialCuadres && dashboard.historialCuadres.length > 0 ? (
                                 <div className="overflow-x-auto">
                                     <Table>
                                         <TableHeader>
@@ -947,7 +952,7 @@ export function CajaGeneralPage({
                                                 <TableHead className="text-right">Saldo Inicial</TableHead>
                                                 <TableHead className="text-right">Entradas</TableHead>
                                                 <TableHead className="text-right">Egresos</TableHead>
-                                                <TableHead className="text-right">Saldo Final</TableHead>
+                                                <TableHead className="text-right">Entregó</TableHead>
                                                 <TableHead className="text-right">Diferencia</TableHead>
                                                 <TableHead>Usuario</TableHead>
                                                 <TableHead>Estatus</TableHead>
@@ -955,7 +960,7 @@ export function CajaGeneralPage({
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {dashboard.data.historialCuadres.map((cuadre, idx) => {
+                                            {dashboard.historialCuadres.map((cuadre, idx) => {
                                                 const fecha = new Date(cuadre.fecha);
                                                 const fechaFormato = fecha.toLocaleDateString('es-MX');
                                                 const esElMasReciente = idx === 0;
@@ -978,10 +983,10 @@ export function CajaGeneralPage({
                                                             $ {formatNumber(cuadre.entrego)}
                                                         </TableCell>
                                                         <TableCell className={`text-right font-semibold whitespace-nowrap ${cuadre.diferencia < 0
-                                                                ? 'text-red-600'
-                                                                : cuadre.diferencia > 0
-                                                                    ? 'text-green-600'
-                                                                    : 'text-black'
+                                                            ? 'text-red-600'
+                                                            : cuadre.diferencia > 0
+                                                                ? 'text-green-600'
+                                                                : 'text-black'
                                                             }`}>
                                                             $ {formatNumber(cuadre.diferencia)}
                                                         </TableCell>
@@ -1057,9 +1062,9 @@ export function CajaGeneralPage({
                     sucursalUsuarioId={sucursalUsuarioId}
                     sucursales={sucursales}
                     fechaActual={fechaActual}
-                    saldoEsperado={preCuadre?.data?.preCuadre.saldoCalculado || 0}
-                    totalTarjetaCapturado={dashboard?.data?.preCuadre.totalTarjetaCapturado || 0}
-                    totalTransferenciaCapturado={dashboard?.data?.preCuadre.totalTransferenciaCapturado || 0}
+                    saldoEsperado={preCuadre?.preCuadre.saldoCalculado || 0}
+                    totalTarjetaCapturado={dashboard?.preCuadre.totalTarjetaCapturado || 0}
+                    totalTransferenciaCapturado={dashboard?.preCuadre.totalTransferenciaCapturado || 0}
                 />
 
                 {/* MODAL DE CANCELACIÓN */}

@@ -1,8 +1,7 @@
 // Interfaces para el dashboard de Caja General
 
 export interface iCajaGeneralDashboard {
-  success: boolean;
-  data: {
+  
     filtros: {
       fecha: string;
     };
@@ -36,7 +35,7 @@ export interface iCajaGeneralDashboard {
       totalTransferenciaCapturado: number;
     };
     historialCuadres: iHistorialCuadre[];
-  };
+  
 }
 
 export interface iMovimientoCajaGeneralDashboard {
