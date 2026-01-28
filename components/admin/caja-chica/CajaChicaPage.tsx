@@ -34,6 +34,8 @@ export function CajaChicaPage({
     precuadreInicial,
     sucursal,
 }: CajaChicaPageProps) {
+    // console.log("🚀 ~ CajaChicaPage ~ sucursal:", sucursal)
+    // console.log("🚀 ~ CajaChicaPage ~ precuadreInicial:", precuadreInicial)
     const user = useCurrentUser();
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [precuadre, setPrecuadre] = useState(precuadreInicial);
