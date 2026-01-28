@@ -93,6 +93,7 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
     const { toast } = useToast();
     const router = useRouter();
     const user = useCurrentUser();
+    // console.log("🚀 ~ TablaPolizas ~ user:", user)
 
     useEffect(() => {
         if (!user) location.reload()
@@ -230,7 +231,7 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
             console.log("🚀 ~ registrarPago ~ resp:", resp)
 
             if (resp.statusCode !== 400) {
-                await generarTicketPDF(resp, polizaSeleccionada?.NumeroPoliza || '');
+                await generarTicketPDF(resp, polizaSeleccionada?.NumeroPoliza || '', user?.Sucursal);
 
                 if (polizaSeleccionada) {
                     const nuevoEsquema = await getEsquemaPago(polizaSeleccionada.NumeroPoliza);

@@ -2,10 +2,12 @@ import { jsPDF } from "jspdf";
 import { formatCurrency } from "@/lib/format";
 import { formatDateTimeFull } from "@/lib/format-date";
 import { iPostPagoPolizaResp } from "@/interfaces/CatPolizas";
+import { SucursalLogin } from "@/next-auth";
 
 export const generarTicketPDF = async (
     respuestaPago: iPostPagoPolizaResp,
-    numeroPoliza: string
+    numeroPoliza: string,
+    sucursal?: SucursalLogin
 ) => {
     const doc = new jsPDF({
         format: [80, 200],
@@ -79,14 +81,14 @@ export const generarTicketPDF = async (
     const textoLegal = [
         "Este documento es un comprobante de pago válido.",
         "PRASE Protección Rápida y Segura A.C.",
-        "Avenida Independencia #361 Colonia los Llanitos,",
-        "Tepic Nayarit, C.p. 63170.",
+        sucursal?.Direccion,
+        sucursal?.Ciudad && sucursal?.Estado ? `${sucursal.Ciudad} ${sucursal.Estado}.` : undefined,
         "Teléfono: 311-909-10-00",
         "Conserve este ticket para cualquier aclaración."
-    ];
+    ].filter(Boolean);
 
     textoLegal.forEach((texto) => {
-        doc.text(texto, doc.internal.pageSize.width / 2, posicionY, { align: "center" });
+        doc.text(texto as string, doc.internal.pageSize.width / 2, posicionY, { align: "center" });
         posicionY += 3;
     });
 
