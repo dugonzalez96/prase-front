@@ -28,9 +28,7 @@ export default function EsquemaPagosPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `${apiBaseUrl}/polizas/esquema-pagos/${encodeURIComponent(
-          folio
-        )}`,
+        `https://prase-api.up.railway.app/polizas/esquema-pagos/${encodeURIComponent(folio)}`,
         { cache: "no-store" }
       );
 
@@ -108,13 +106,12 @@ export default function EsquemaPagosPage() {
         {/* Mensaje de Vigencia */}
         {mensajeVigencia && (
           <div
-            className={`flex items-center justify-center gap-2 font-bold mb-5 p-4 rounded-lg shadow-md ${
-              mensajeVigencia.includes("VIGENTE")
+            className={`flex items-center justify-center gap-2 font-bold mb-5 p-4 rounded-lg shadow-md ${mensajeVigencia.includes("VIGENTE")
                 ? "bg-green-50 text-green-600"
                 : mensajeVigencia.includes("gracia")
-                ? "bg-yellow-50 text-yellow-600"
-                : "bg-red-50 text-red-600"
-            }`}
+                  ? "bg-yellow-50 text-yellow-600"
+                  : "bg-red-50 text-red-600"
+              }`}
           >
             {mensajeVigencia.includes("VIGENTE") ? (
               <CheckCircle className="w-6 h-6" />
@@ -209,13 +206,12 @@ export default function EsquemaPagosPage() {
                     Pago #{pago.numeroPago}
                   </span>
                   <span
-                    className={`font-semibold ${
-                      pago.estado === "Pagado"
+                    className={`font-semibold ${pago.estado === "Pagado"
                         ? "text-green-600"
                         : pago.estado === "Atrasado"
-                        ? "text-red-600"
-                        : "text-orange-500"
-                    }`}
+                          ? "text-red-600"
+                          : "text-orange-500"
+                      }`}
                   >
                     {pago.estado}
                   </span>

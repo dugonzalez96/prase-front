@@ -40,6 +40,7 @@ interface CajaChicaClientProps {
 }
 
 export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaChicaClientProps) {
+    // console.log("🚀 ~ CajaChicaClient ~ precuadreInicial:", precuadreInicial)
     const { toast } = useToast();
     const router = useRouter();
     const [precuadre, setPrecuadre] = useState<iPrecuadreCajaChicaBackend | null>(precuadreInicial || null);
@@ -53,8 +54,6 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
         SucursalID: sucursal.SucursalID,
         SaldoReal: 0,
         TotalEfectivoCapturado: 0,
-        TotalTarjetaCapturado: 0,
-        TotalTransferenciaCapturado: 0,
         Observaciones: "",
     });
 
@@ -120,19 +119,18 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
     const handleCuadre = async () => {
         setIsLoadingCorte(true);
         try {
-            // Calcular el saldo real antes de enviar
-            const saldoReal =
-                formDataCuadre.TotalEfectivoCapturado +
-                formDataCuadre.TotalTarjetaCapturado +
-                formDataCuadre.TotalTransferenciaCapturado;
+            // Calcular el saldo real antes de enviar (solo efectivo)
+            const saldoReal = formDataCuadre.TotalEfectivoCapturado;
 
             const dataToSend = {
                 ...formDataCuadre,
-                SaldoReal: saldoReal
+                SaldoReal: saldoReal,
+                TotalTarjetaCapturado: 0,
+                TotalTransferenciaCapturado: 0
             };
 
             const result = await cuadrarCajaChicaAction(usuarioId, sucursal.SucursalID, dataToSend);
-            console.log("🚀 ~ handleCuadre ~ result:", result)
+            // console.log("🚀 ~ handleCuadre ~ result:", result)
 
             // Manejar respuestas con success
             if (result.success) {
@@ -429,10 +427,10 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                                 </CardDescription>
                             </div>
                             <div>
-                                <CardTitle className=" text-blue-700">
+                                <CardTitle className=" text-blue-700 text-right">
                                     {formatCurrency(precuadre.SaldoEsperado)}
                                 </CardTitle>
-                                <CardDescription className=" text-blue-600">Saldo Esperado</CardDescription>
+                                <CardDescription className=" text-blue-600">Saldo Esperado en Efectivo</CardDescription>
                             </div>
                         </div>
 
@@ -441,9 +439,10 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                         {/* CAMPOS DE CAPTURA */}
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* EFECTIVO - EDITABLE */}
                                 <div>
                                     <label className="text-sm font-medium">
-                                        Efec. Capturado
+                                        Efectivo Capturado *
                                     </label>
                                     <Input
                                         type="text"
@@ -457,83 +456,59 @@ export function CajaChicaClient({ usuarioId, precuadreInicial, sucursal }: CajaC
                                             });
                                         }}
                                         placeholder="0.00"
+                                        className="text-lg"
                                     />
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Ingresa el efectivo contado físicamente
+                                    </p>
                                 </div>
+
+                                {/* TARJETA - INFORMATIVO */}
                                 <div>
-                                    <label className="text-sm font-medium">
-                                        Tarjeta Capturada
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                        Tarjeta (Informativo)
                                     </label>
-                                    <Input
-                                        type="text"
-                                        value={formatCurrency(formDataCuadre.TotalTarjetaCapturado)}
-                                        onChange={(e) => {
-                                            const valor = e.target.value.replace(/[^0-9]/g, "");
-                                            setFormDataCuadre({
-                                                ...formDataCuadre,
-                                                TotalTarjetaCapturado:
-                                                    valor === "" ? 0 : Number(valor) / 100,
-                                            });
-                                        }}
-                                        placeholder="0.00"
-                                    />
+                                    <div className="text-lg font-bold py-2 text-muted-foreground">
+                                        {formatCurrency(precuadre.TotalTarjetaCapturado)}
+                                    </div>
                                 </div>
+
+                                {/* TRANSFERENCIA - INFORMATIVO */}
                                 <div>
-                                    <label className="text-sm font-medium">
-                                        Transfer. Capturada
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                        Transferencia (Informativo)
                                     </label>
-                                    <Input
-                                        type="text"
-                                        value={
-                                            formatCurrency(formDataCuadre.TotalTransferenciaCapturado)
-                                        }
-                                        onChange={(e) => {
-                                            const valor = e.target.value.replace(/[^0-9]/g, "");
-                                            setFormDataCuadre({
-                                                ...formDataCuadre,
-                                                TotalTransferenciaCapturado:
-                                                    valor === "" ? 0 : Number(valor) / 100,
-                                            });
-                                        }}
-                                        placeholder="0.00"
-                                    />
+                                    <div className="text-lg font-bold py-2 text-muted-foreground">
+                                        {formatCurrency(precuadre.TotalTransferenciaCapturado)}
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="flex gap-5 w-full">
                                 {/* SALDO REAL AUTOMÁTICO */}
                                 <div className="w-full">
-                                    <label className="text-sm font-medium">Saldo Real Contado</label>
+                                    <label className="text-sm font-medium">Saldo Real Contado (Efectivo)</label>
                                     <p className="text-lg font-semibold p-2 bg-gray-100 rounded border border-gray-300">
-                                        {formatCurrency(
-                                            formDataCuadre.TotalEfectivoCapturado +
-                                            formDataCuadre.TotalTarjetaCapturado +
-                                            formDataCuadre.TotalTransferenciaCapturado
-                                        )}
+                                        {formatCurrency(formDataCuadre.TotalEfectivoCapturado)}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        Se calcula automáticamente
+                                        Efectivo físico contado en caja
                                     </p>
                                 </div>
                                 {/* DIFERENCIA AUTOMÁTICA */}
                                 <div className="w-full">
                                     <label className="text-sm font-medium">Diferencia</label>
-                                    <p className={`text-lg font-semibold p-2 rounded border ${precuadre.SaldoEsperado -
-                                        (formDataCuadre.TotalEfectivoCapturado +
-                                            formDataCuadre.TotalTarjetaCapturado +
-                                            formDataCuadre.TotalTransferenciaCapturado) !==
-                                        0
-                                        ? "bg-orange-100 border-orange-300"
-                                        : "bg-green-100 border-green-300"
+                                    <p className={`text-lg font-semibold p-2 rounded border ${
+                                        precuadre.SaldoEsperado - formDataCuadre.TotalEfectivoCapturado !== 0
+                                            ? "bg-orange-100 border-orange-300 text-orange-800"
+                                            : "bg-green-100 border-green-300 text-green-800"
                                         }`}>
                                         {formatCurrency(
-                                            precuadre.SaldoEsperado -
-                                            (formDataCuadre.TotalEfectivoCapturado +
-                                                formDataCuadre.TotalTarjetaCapturado +
-                                                formDataCuadre.TotalTransferenciaCapturado)
+                                            precuadre.SaldoEsperado - formDataCuadre.TotalEfectivoCapturado
                                         )}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        Saldo Esperado - Saldo Real
+                                        Saldo Esperado - Efectivo Contado
                                     </p>
                                 </div>
                             </div>

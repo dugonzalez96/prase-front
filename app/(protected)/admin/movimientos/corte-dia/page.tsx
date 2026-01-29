@@ -1,5 +1,4 @@
 import { getCortesDelDiaAdmin, getUsuariosCortes } from "@/actions/CorteDelDiaActions";
-import { getUsuarios } from "@/actions/SeguridadActions";
 import { TablaCortesDelDia } from "@/components/admin/movimientos/TablaCortesDelDia";
 import { currentUser } from "@/lib/auth";
 
