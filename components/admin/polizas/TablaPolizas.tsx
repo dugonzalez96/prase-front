@@ -100,6 +100,23 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
     }, [user])
 
 
+    const obtenerEstadoReal = (poliza: iGetPolizas): string => {
+        if (poliza.EstadoPoliza === "PAGO INMEDIATO") {
+            const fechaInicio = new Date(poliza.FechaInicio);
+            const hoy = new Date();
+            
+            // Resetear horas para comparar solo fechas
+            fechaInicio.setHours(0, 0, 0, 0);
+            hoy.setHours(0, 0, 0, 0);
+            
+            // Si la fecha actual es diferente a la fecha de inicio, mostrar como vencida
+            if (hoy.getTime() !== fechaInicio.getTime()) {
+                return "VENCIDA";
+            }
+        }
+        return poliza.EstadoPoliza;
+    };
+
     const polizasFiltradas = useMemo(() => {
         return polizas.filter(poliza => {
             const cumpleBusqueda = !filtros.textoBusqueda ||
@@ -116,8 +133,9 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
             "ACTIVA": "success",
             "PERIODO DE GRACIA": "default",
             "PENDIENTE": "pendiente",
+            "PAGO INMEDIATO": "pendiente",
             "CANCELADA": "destructive",
-            "VENCIDA": "secondary",
+            "VENCIDA": "destructive",
         } as const;
 
         return colores[estado as keyof typeof colores] || "default";
@@ -225,7 +243,7 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
     };
 
     const registrarPago = async (datos: iPostPagoPoliza) => {
-        console.log("🚀 ~ registrarPago ~ datos:", datos)
+        // console.log("🚀 ~ registrarPago ~ datos:", datos)
         try {
             const resp = await postPagoPoliza(datos);
             console.log("🚀 ~ registrarPago ~ resp:", resp)
@@ -386,8 +404,8 @@ export const TablaPolizas = ({ polizas, coberturas, statusPago, metodosPago, cli
                                     />
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={obtenerColorEstado(poliza.EstadoPoliza)}>
-                                        {poliza.EstadoPoliza}
+                                    <Badge variant={obtenerColorEstado(obtenerEstadoReal(poliza))}>
+                                        {obtenerEstadoReal(poliza)}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
