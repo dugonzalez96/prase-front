@@ -139,12 +139,16 @@ export const getEsquemaPago = async (numPoliza: string) => {
             cache: "no-store",
         });
 
-        if (!resp.ok) return null;
+        if (!resp.ok) {
+            const errorData = await resp.json();
+            throw new Error(errorData.message || "Error al obtener el esquema de pagos.");
+        }
 
         const data: iGetEsquemaPago = await resp.json();
         return data;
     } catch (error) {
         console.log("Error al obtener esquemas de pago: ", error);
+        throw error;
     }
 };
 

@@ -73,6 +73,7 @@ export interface iCorteUsuarioDashboard {
   efectivoEntregado?: number;
   transferencias?: number;
   depositos?: number;
+  diferencia?: number;
   estadoCajaChica: string;
   estadoCajaGeneral: string;
 }

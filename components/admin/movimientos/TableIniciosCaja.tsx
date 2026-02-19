@@ -93,9 +93,17 @@ export const TableIniciosCaja = ({ iniciosCaja }: TableIniciosCajaProps) => {
                 )
 
                 if (respuesta?.error) {
+                    if (respuesta?.statusCode === 500 || respuesta.error === "Internal server error") {
+                        toast({
+                            title: "Error",
+                            description: "Hay un problema con el servidor. Contacte con un administrador.",
+                            variant: "destructive",
+                        })
+                        return
+                    }
                     toast({
                         title: "Error",
-                        description: "Ocurrió un error al eliminar el inicio de caja",
+                        description: respuesta.error || "Ocurrió un error al eliminar el inicio de caja",
                         variant: "destructive",
                     })
                     return

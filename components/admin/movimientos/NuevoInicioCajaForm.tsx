@@ -30,8 +30,8 @@ import {
 import { iGetUsers } from "@/interfaces/SeguridadInterface"
 
 const nuevoInicioCajaSchema = z.object({
-    TotalEfectivo: z.number().min(1, { message: "El total de efectivo es requerido" }),
-    TotalTransferencia: z.number().min(1, { message: "El total de transferencia es requerido" }),
+    TotalEfectivo: z.number().min(0, { message: "El total de efectivo es requerido" }),
+    TotalTransferencia: z.number().min(0, { message: "El total de transferencia es requerido" }),
     UsuarioID: z.number().min(1, { message: "El usuario es requerido" }),
     UsuarioAutorizoID: z.number(),
 })

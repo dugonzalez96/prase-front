@@ -11,34 +11,26 @@ import {
   Calendar,
   DollarSign,
 } from "lucide-react";
+import { getEsquemaPago } from "@/actions/PolizasActions";
+import { iGetEsquemaPago } from "@/interfaces/CatPolizas";
 
 export default function EsquemaPagosPage() {
   const params = useParams();
   const folioParam = params?.folio;
   const folio = Array.isArray(folioParam) ? folioParam[0] : folioParam;
 
-  const [esquemaPagos, setEsquemaPagos] = useState<any>(null);
+  const [esquemaPagos, setEsquemaPagos] = useState<iGetEsquemaPago | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [mensajeVigencia, setMensajeVigencia] = useState<string | null>(null);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
-
   const fetchEsquemaPagos = async (folio: string) => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(
-        `https://prase-api.up.railway.app/polizas/esquema-pagos/${encodeURIComponent(folio)}`,
-        { cache: "no-store" }
-      );
+      const data = await getEsquemaPago(folio);
+      console.log("🚀 ~ fetchEsquemaPagos ~ data:", data)
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.message || "Error al obtener el esquema de pagos.");
-        return;
-      }
-
-      const data = await response.json();
       setEsquemaPagos(data);
 
       // Validación de los mensajes de vigencia
@@ -71,7 +63,7 @@ export default function EsquemaPagosPage() {
     }
   };
 
-  const ajustarFecha = (fechaISO: string) => {
+  const ajustarFecha = (fechaISO: string | Date) => {
     const fecha = new Date(fechaISO);
     fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset());
     return fecha.toLocaleDateString();
@@ -223,7 +215,7 @@ export default function EsquemaPagosPage() {
                 </p>
                 <p>
                   <DollarSign className="inline-block w-5 h-5 text-blue-500 mr-1" />
-                  <strong>Monto por Pagar:</strong> ${pago.montoPorPagar}
+                  <strong>Monto por Pagar:</strong> ${pago.montoObjetivo}
                 </p>
 
                 {/* Pagos Realizados */}

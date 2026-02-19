@@ -94,13 +94,17 @@ export const deleteInicioCaja = async (id: number, usuario: number, body: { moti
 
         if (!resp.ok) {
             const respuesta = await resp.json();
-            // console.log(respuesta)
-            return { error: 'Error al eliminar inicio de caja' }
+            console.log(respuesta)
+            return {
+                statusCode: respuesta.statusCode,
+                error: respuesta.message || 'Error al eliminar inicio de caja',
+            }
         }
 
         return { msg: 'Inicio de caja eliminado correctamente' }
     } catch (error) {
-        console.log(`Error al eliminar inicio de caja: ${error}`)
+        console.log(`Error al eliminar inicio de caja: ${error}`);
+        return { error: 'Error al eliminar inicio de caja' };
     }
 }
 

@@ -512,6 +512,7 @@ export function CajaGeneralPage({
                                                     <TableHead className="text-right">Efectivo</TableHead>
                                                     <TableHead className="text-right">Transferencias</TableHead>
                                                     <TableHead className="text-right">Depósitos</TableHead>
+                                                    <TableHead className="text-right">Diferencia</TableHead>
                                                     <TableHead>Estado</TableHead>
                                                 </TableRow>
                                             </TableHeader>
@@ -532,6 +533,9 @@ export function CajaGeneralPage({
                                                         </TableCell>
                                                         <TableCell className="text-right text-purple-700 whitespace-nowrap">
                                                             {corte.depositos !== undefined ? `$ ${formatNumber(corte.depositos)}` : '-'}
+                                                        </TableCell>
+                                                        <TableCell className="text-right whitespace-nowrap">
+                                                            {corte.diferencia !== undefined ? `$ ${formatNumber(corte.diferencia)}` : '-'}
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge className={getEstadoBadge(corte.estadoCajaChica)}>
