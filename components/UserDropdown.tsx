@@ -14,9 +14,9 @@ import { logout } from "@/actions/logout";
 import { signOut } from "next-auth/react";
 
 export default function UserDropdown({ user }: { user: CustomUser | null }) {
-    const handleLogout = async () => {
-        await signOut({ callbackUrl: "/login" }); // 🔹 Cierra sesión y redirige a login
-    };
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/login" }); // 🔹 Cierra sesión y redirige a login
+  };
 
   return (
     <DropdownMenu>
@@ -50,8 +50,15 @@ export default function UserDropdown({ user }: { user: CustomUser | null }) {
         <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span onClick={() => handleLogout()}>Cerrar Sesión</span>
+          <Button
+            className="w-full text-left items-center justify-start p-0 m-0"
+            variant="ghost"
+            onClick={() => handleLogout()}
+            type="button"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span >Cerrar Sesión</span>
+          </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

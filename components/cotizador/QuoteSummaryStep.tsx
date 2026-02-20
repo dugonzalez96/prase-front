@@ -233,8 +233,15 @@ export const QuoteSummaryStep = ({ form, setIsStepValid }: StepProps) => {
                                         <Input
                                             {...field}
                                             placeholder="10 dígitos"
+                                            type="tel"
                                             maxLength={10}
+                                            pattern="[0-9]*"
+                                            inputMode="numeric"
                                             required
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/\D/g, '');
+                                                field.onChange(value);
+                                            }}
                                         />
                                     </FormControl>
                                     <FormMessage />

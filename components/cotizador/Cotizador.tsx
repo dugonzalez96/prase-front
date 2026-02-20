@@ -196,7 +196,7 @@ export const Cotizador = ({
                     }
 
                     form.reset();
-                    router.push('/cotizaciones/lista');
+                    router.push('/cotizaciones/nueva');
                 } else {
                     toast({
                         title: "Error",

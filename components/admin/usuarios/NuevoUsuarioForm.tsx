@@ -26,6 +26,7 @@ import { iGetEmpleados } from '@/interfaces/EmpleadosInterface';
 import { iGetSucursales } from '@/interfaces/SucursalesInterface';
 
 export const NuevoUsuarioForm = ({ groups, empleados, sucursales }: { groups: iGetGroups[], empleados: iGetEmpleados[], sucursales: iGetSucursales[] }) => {
+    // console.log("🚀 ~ NuevoUsuarioForm ~ sucursales:", sucursales)
     const [showPassword, setShowPassword] = useState(false);
     const [fuerzaPassword, setFuerzaPassword] = useState(0);
     const [isPending, startTransition] = useTransition();
@@ -69,6 +70,12 @@ export const NuevoUsuarioForm = ({ groups, empleados, sucursales }: { groups: iG
                     toast({
                         title: "Error",
                         description: "Hubo un problema al crear usuario.",
+                        variant: "destructive",
+                    })
+                } else if (resp?.error) {
+                    toast({
+                        title: "Error",
+                        description: resp.message || "Hubo un problema al crear usuario.",
                         variant: "destructive",
                     })
                 } else {

@@ -30,6 +30,7 @@ interface Props {
 }
 
 export const TableUsuarios = ({ usuarios, grupos }: Props) => {
+    // console.log("🚀 ~ TableUsuarios ~ usuarios:", usuarios)
     const [editUsuario, setEditUsuario] = useState<iGetUsers | null>(null);
     const [editUsuarioModalOpen, setEditUsuarioModalOpen] = useState(false);
 

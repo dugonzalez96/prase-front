@@ -55,7 +55,7 @@ interface CuentaBancaria {
 const esquemaPagoPoliza = z.object({
     PolizaID: z.number(),
     FechaPago: z.string(),
-    MontoPagado: z.number().min(1, { message: "El monto debe ser mayor a 0" }),
+    MontoPagado: z.number().min(0.01, { message: "El monto debe ser mayor a 0" }),
     ReferenciaPago: z.string(),
     NombreTitular: z.string(),
     FechaMovimiento: z.string(),

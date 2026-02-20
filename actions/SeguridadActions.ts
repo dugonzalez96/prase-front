@@ -162,6 +162,7 @@ export const getUsuarios = async () => {
 }
 
 export const postUsuario = async (body: iPostUsuario) => {
+    // console.log("🚀 ~ postUsuario ~ body:", body)
     try {
         const resp = await fetch(`${url}/users/register`, {
             method: 'POST',
@@ -170,10 +171,12 @@ export const postUsuario = async (body: iPostUsuario) => {
             },
             body: JSON.stringify(body)
         });
-
-        if (!resp.ok) return null;
-
         const data = await resp.json();
+
+        if (!resp.ok) {
+            return { error: true, message: data?.message || 'Error al crear usuario.' };
+        }
+
         return data;
     } catch (error) {
         console.log('Error al crear paquete: ', error);
